@@ -1195,7 +1195,7 @@ ZVSE2
   ; If it is cure, check spell power as well
   !!el&(spell)=(SPELL_CURE);            [2 times of power for Cure (10 HP regen per unit)]
     !!FU(tum_GetMonCurePower):P(type)/?(power:y);
-    !!UN:C(ebp)/28/4/d*(power);
+    !!UN&(power)>0:C(ebp)/28/4/d*(power);
   !!en;
 !!en;
 
@@ -1208,8 +1208,39 @@ ZVSE2
 !?FU(tum_GetMonCurePower);
 !#VA(mon:x) (result:x);
 
-!!VR(result):S2;
+!!VR(result):S0;
+!!VR(result)|(mon)=(MON_DRYAD)/(mon)=(MON_PLAGUE_DOCTOR):S2;
 !!VR(result)&(mon)=(MON_OAK_DRYAD):S3;
+
+
+// Cure spell power
+; For non-commander creatures, each creature power heals 10 Hp
+!?FU(tum_CreateERMHook);
+!#VA(setHook:x);
+
+!!SN:E(setHook)/1/4481794/(tum_OnCalcCureHealthPoints); 446302
+
+!?FU(tum_OnCalcCureHealthPoints);
+!#VA(hook:x);
+
+; Exit if it is a hero's spell
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y);
+!!UN:C(ebp)/16/4/?(heroStruct:y);
+!!FU&(heroStruct):E;
+
+; Exit if it is a commander's spell
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stackStruct:y);
+!!UN:C(stackStruct)/52/4/?(type:y);
+!!FU&(type)>=(MON_COMMANDER_FIRST_A)/(type)<=(MON_COMMANDER_LAST_D):E;
+
+!!UN:C(ebp)/12/4/?(power:y);
+!!VR(regenHp:y):S(power) *10;           [10 HP each power]
+!!VR(regenHp)&(regenHp)<0:S(INT_MAX);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/4/(regenHp);
+
+!!SN:X?t/0;
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/4481837;
 
 
 // Custom hatred
@@ -9387,6 +9418,7 @@ ZVSE2
 
       !!BMi:T?(type:y) N?(num:y);
       !!co&(type)<=(NO_MON)/(num)<=0;
+      !!co&(type)>=(MON_CATAPULT)/(type)<=(MON_ARROW_TOWERS); [Skip war machines in order to resolve the compatibility with WS Artillery. WMs are slow anyway]
 
       !!BMi:G74/?(paralyzeDuration:y)/?(level:y);
 
