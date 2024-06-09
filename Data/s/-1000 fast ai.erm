@@ -1,0 +1,1020 @@
+ZVSE2
+; Author:   Archer30
+; Special thanks to RoseKavalier for his help on some addresses
+; Engine:   ERM 2.0+
+; Requires: ERA 3.3+, Era Erm Framework, WoG Scripts
+
+; This script provides multiple methods to speed up AI turns
+
+
+; ============== SETTINGS ==============
+; Hero Reset
+!#VRi^fastai_hardResetInterval^:S0;     [Reset all the AI heroes every X day. Default: 0]
+!#VRi^fastai_SoftResetStuckHeroes^:S3;  [Reset stuck hero every 3 days]
+!#VRi^fastai_hotkey^:S(FALSE);          [Hotkey for resetting all the AI heroes immmediately. Default: FALSE]
+; 
+!#VRi^fastai_aiThinkingRadius^:S28000;  [Thinking radius of AI. Default: 32000]
+!#VRi^fastai_aiHeroLimit^:S0;           [Limit of active AI heroes of each player. Default: 5]
+!#VRi^fastai_totalHeroLimit_0^:S0;      [Limit of total active AI heroes on the map - Easy. Default: 7]
+!#VRi^fastai_totalHeroLimit_1^:S0;      [Limit of total active AI heroes on the map - Normal. Default: 9]
+!#VRi^fastai_totalHeroLimit_2^:S0;      [Limit of total active AI heroes on the map - Hard. Default: 11]
+!#VRi^fastai_totalHeroLimit_3^:S0;      [Limit of total active AI heroes on the map - Expert. Default: 13]
+!#VRi^fastai_totalHeroLimit_4^:S0;      [Limit of total active AI heroes on the map - Impossible. Default: 15]
+;
+!#VRi^fastai_maxBattleRound^:S30;       [Limit the max battle round before quick end. Default: 30 (SoD default)]
+;
+!#VRi^fastai_aiValueDivider^:S0;        [Divider for AI values. Default: 0]
+; 
+!#VRi^fastai_modOptions_enabled^:S(TRUE); [Option for controlling options from other mods. Default: TRUE]
+;
+!#VRi^fastai_aiBuldingInterval^:S3;     [Help AI build town buildings every X day. Default: 3 - Now it's just every Monday from the second week]
+; ============ END SETTINGS ============
+
+
+*********************************************
+**** Reset all the AI heroes every X day ****
+*********************************************
+!?FU(OnEveryDay)&i^timerOnce^/i^fastai_hardResetInterval^>0;
+!!VR(value:y):Si^timerDay^ %i^fastai_hardResetInterval^;
+!!FU(fastai_ResetAllTheAIHeroes)&(value)=0:P;
+
+!?FU(fastai_ResetAllTheAIHeroes);
+*!UN:P904/(TRUE);                     [turn off errors showing]
+
+!#VA(hero[8]:y);
+!#VA(townList[48]:y);
+
+!!re (player:y)/(PLAYER_FIRST)/(PLAYER_LAST);
+  !!co|(player)=(PLAYER_RED)/(player)=(PLAYER_PINK); [Skip Red/Pink player as it's beend reported with issues]
+
+  !!OW:I(player)/?(isAi:y)/?(hasLost:y);
+
+  !!if&(isAi)/(hasLost)<>(TRUE);
+    ; Store hero list so it won't mess up for some reason
+    !!OW:O(player)/?(heroesOnMap:y)/?(hero[0])/?(hero[1])/?(hero[2])/?(hero[3])/?(hero[4])/?(hero[5])/?(hero[6])/?(hero[7]);
+
+    ; Reset heroes on the map
+    !!if&(heroesOnMap)>0;
+      ; Store town list (it also may mess up)
+      !!re j/(MAP_TOWN_FIRST)/(MAP_TOWN_LAST);
+        !!OW:N(player)/j/?(townList[j]);
+      !!en;
+
+      !!re i/0/7;
+        !!if&(hero[i])>(NO_HERO);
+          !!FU(fastai_HardResetHeroBackInTheSamePos):P(hero[i]);
+          !!HE(hero[i]):O(player);
+        !!en;
+      !!en;
+
+      ; Restore hero and town list
+      !!OW:O(player)/?(heroesOnMap)/(hero[0])/(hero[1])/(hero[2])/(hero[3])/(hero[4])/(hero[5])/(hero[6])/(hero[7]);
+
+      !!re j/(MAP_TOWN_FIRST)/(MAP_TOWN_LAST);
+        !!OW:N(player)/j/(townList[j]);
+      !!en;
+    !!en;
+  !!en;
+!!en;
+
+*!UN:P904/(FALSE);                    [turn on errors showing]
+
+*****************************************************************
+**** Reset any AI hero stucking in the same place for 3 days ****
+*****************************************************************
+// Fix stuck AI heroes by checking their coordinates of the last turn. Reset them if they stuck in the same place for 3 turns
+; Currently not used - may have map drawing error and is not necessary
+!?FU(OnEveryDay)&i^timerWeek^>1/i^timerIsAi^/i^fastai_SoftResetStuckHeroes^;
+!!FU(fastai_GetPlayerActiveHeroesList):Pi^timerOwner^/?(activeHeroList:y);
+!!FU&(activeHeroList)=0:E;
+
+!!SN:M(activeHeroList)/?(size:y);
+
+!!re i/0/(size)/1/-1;
+  !!SN:M(activeHeroList)/i/?(hero:y);
+  !!HE(hero):P?(x:y)/?(y:y)/?(z:y);
+
+  ; Skip if the hero is on a boat
+  !!HE(hero):R7/?(flags:y);
+  !!VR(isOnBoat:y):S(flags) &262144;
+  !!co&(isOnBoat); 
+
+  ; Skip if the hero has a radius of patrolling defined
+  !!HE(hero):Z?(heroStruct:y);
+  !!UN:C(heroStruct)/46/(UNC_INT8)/?(radius:y);
+  !!co&(radius)<>-1;
+
+  !!FU(UnpackUnion):Pi^fastai_SoftResetHeroBackToTavern_%(hero)^/?(lastX:y)/8/?(lastY:y)/8/?(lastZ:y)/8/?(counter:y)/8;
+
+  !!if&(lastX)=(x)/(lastY)=(y)/(lastZ)=(z);
+    !!VR(counter):+1;
+  !!el;
+    !!VR(lastX):S(x);
+    !!VR(lastY):S(y);
+    !!VR(lastZ):S(z);
+  !!en;
+
+  ; If the counter reaches 3, check if the hero is either vistiting a town or in a Sanctuary. Reset the hero if both negative
+  !!if&(counter)>=3;
+    !!UN:C(heroStruct)/12/(UNC_INT)/?(objType:y);
+
+    !!co&(objType)=(OBJ_SANCTUARY);
+
+    ; If it is not at the entrance of a town, reset the hero
+    !!if&(objType)<>(OBJ_TOWN);
+      *!FU(fastai_HardResetHeroBackInTheSamePos):P(hero);
+      !!FU(fastai_SoftResetHeroBackToTavern):P(hero);
+    ; If it is at the entrance, kill the hero and recruit a new one
+    ; Disable as it has signs of bugs
+    *!el;
+      ; Check if it is a random map
+      *!UN:C(GAME_MANAGER)/4/?(gameMgr:y) C(gameMgr)/128980/1/?(value:y);
+
+      *!if&(value)=114;
+        *!FU(fastai_ReplaceHeroWithTavernHero):P(hero);
+      *!en;
+    !!en;
+
+    ; Reset the counter in whatever situations
+    !!VRi^fastai_SoftResetHeroBackToTavern_%(hero)^:S0;
+  !!el;
+    !!FU(PackUnion):P(lastX:y)/8/(lastY:y)/8/(lastZ:y)/8/(counter:y)/8/?i^fastai_SoftResetHeroBackToTavern_%(hero)^;
+  !!en;
+!!en;
+
+**********************************
+**** Reset AI on Key pressing ****
+**********************************
+// Press a key to reset all the AI heroes
+!?FU(OnKeyPressed_AdvMap)&i^fastai_hotkey^/i^key^=i^fastai_hotkey^;
+*!FU(fastai_FixActiveHeroList):P;
+*!FU(fastai_FixHeroWithoutOwner):P;
+!!FU(fastai_ResetAllTheAIHeroes):P;
+!!IF:L^Errors have been corrected (hopefully)!^;
+
+*******************
+**** Functions ****
+*******************
+// Function for getting the active hero of the given player
+!?FU(fastai_GetPlayerActiveHeroesList);
+!#VA(playerID:x) (array:x);
+
+!!VR(array):S0;
+
+!#VA(hero[8]:y);
+!!OW:O(playerID)/?(heroesOnMap:y)/?(hero[0])/?(hero[1])/?(hero[2])/?(hero[3])/?(hero[4])/?(hero[5])/?(hero[6])/?(hero[7]);
+
+!!if&(heroesOnMap)>0;
+  !!FU(NewIntArray):P(heroesOnMap)/?(array);
+
+  !!re i/0/(heroesOnMap)/1/-1;
+    !!SN:M(array)/i/(hero[i]);
+  !!en;
+  
+  !!SN:F^ExtendArrayLifetime^/(array);
+!!en;
+
+// Function to reset a hero
+// Hard reset: internal function is called - this may be the reason it results in weird hero list sometimes
+!?FU(fastai_HardResetHeroBackInTheSamePos);
+!#VA(hero:x);
+
+; Get owner and coordinates
+!!HE(hero):O?(owner:y) P?(x:y)/?(y:y)/?(z:y);
+
+; Flags
+!!HE(hero):R7/?(flags:y);
+
+; Check if the hero has a boat - ignore this hero if positive since we haven't got a way to deal with them yet
+!!VR(isOnBoat:y):S(flags) &262144;
+!!FU&(isOnBoat):E;
+
+; Get the other data of the hero
+; Hero Structure
+!!HE(hero):Z?(heroPtr:y);
+
+; Experience
+!!HE(hero):E?(exp:y)/?(level:y)/1;
+
+; Name, bio, type and portrait
+!!HE(hero):B0/?z2 B1/?z3 B2/?(heroType:y);
+!!FU(fastai_GetHeroPortrait):P(hero)/0/4 P(hero)/1/5;
+
+; Movement and Mana
+!!HE(hero):W?(movement:y)/1 I?(mana:y)/1;
+
+; Specialty
+!#VA(spec[7]:y);
+
+!!HE(hero):X?(spec[0])/?(spec[1])/?(spec[2])/?(spec[3])/?(spec[4])/?(spec[5])/?(spec[6]);
+!!SN:H^spec^/(hero)/2/?z6;
+
+; Troops
+!#VA(types[7]:y);
+!#VA(nums[7]:y);
+!#VA(ranks[7]:y);
+
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(hero):C0/i/?(types[i])/?(nums[i])/?(ranks[i])/12;
+!!en;
+
+; Artifacts
+!!FU(NewIntArray):P?(artifactList:y);
+
+!!re i/(ART_SLOT_FIRST)/(ART_SLOT_LAST);
+  !!HE(hero):A1/?(art:y)/i;
+  !!FU(Array_Push):P(artifactList)/(art);
+!!en;
+
+; Spells
+!!FU(NewIntArray):P?(spellsList:y);
+
+!!re i/(SPELL_FIRST)/(SPELL_LAST_WOG);
+  !!HE(hero):M=i/1;
+  !!FU(Array_Push)&1:P(spellsList)/i;
+!!en;
+
+; Visited objects
+!#VA(visitedObj[10]:y);
+
+!!re i/0/9;
+  !!HE(hero):Vi/?(visitedObj[i]);
+!!en;
+
+; Secondary Skills
+!#VA(secSkills[28]:y);
+
+!!re i/(SEC_SKILL_FIRST)/(SEC_SKILL_LAST);
+  !!HE(hero):Si/?(secSkills[i]);
+!!en;
+
+; Primary Skills
+!!HE(hero):F?(atk:y)/?(def:y)/?(pwr:y)/?(knl:y);
+
+; Patrol data and Sprite direction
+!!UN:C(heroPtr)/68/(UNC_INT)/?(patrolAndDirection:y);
+
+; Kill and reset the hero
+!!HE(hero):O(NO_OWNER) K;
+!!SN:E5081488/(CALLCONV_THISCALL)/(heroPtr)/(hero);
+
+; Set back the hero's data
+; Send the hero back to the map
+!!HE(hero):P(x)/(y)/(z) O(owner);
+
+; Name, bio, type and portrait
+!!HE(hero):B0/z2 B1/z3 B2/(heroType:y);
+!!HE(hero):L1^%z4^ L2^%z5^;
+
+; Movement and Mana
+!!HE(hero):W(movement)/1 I?(mana)/1;
+
+; Specialty
+!!HE(hero):X(spec[0])/(spec[1])/(spec[2])/(spec[3])/(spec[4])/(spec[5])/(spec[6]);
+!!SN:H^spec^/(hero)/2/z6;
+
+; Troops
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(hero):C0/i/(types[i])/(nums[i])/(ranks[i])/12;
+!!en;
+
+; Secondary skills
+!!re i/(SEC_SKILL_FIRST)/(SEC_SKILL_LAST);
+  !!HE(hero):Si/(secSkills[i]);
+!!en;
+
+; Artifacts
+!!re i/(ART_SLOT_FIRST)/(ART_SLOT_LAST);
+  !!SN:M(artifactList)/i/?(art);
+  !!co|(art)=(NO_ART)/(art)=(ART_ARTIFACT_LOCK);
+
+  !!if|i<=(ART_SLOT_MISC_4)/i=(ART_SLOT_MISC_5);
+    !!HE(hero):A4/(art);
+  ; For machine slots, spell book and backpack
+  !!el;
+    !!HE(hero):A1/(art)/i;
+  !!en;
+!!en;
+
+; Spells
+!!SN:M(spellsList)/?(size:y);
+
+!!if&(size)>0;
+  !!re i/0/(size)/1/-1;
+    !!SN:M(spellsList)/i/?(spell:y);
+    !!HE(hero):M(spell)/1;
+  !!en;
+!!en;
+
+; Visited objects
+!#VA(visitedObj[10]:y);
+
+!!re i/0/9;
+  !!HE(hero):Vi/(visitedObj[i]);
+!!en;
+
+; Secondary Skills
+!!re i/(SEC_SKILL_FIRST)/(SEC_SKILL_LAST);
+  !!HE(hero):Si/(secSkills[i]);
+!!en;
+
+; Primary Skills
+!!HE(hero):F(atk:y)/(def:y)/(pwr:y)/(knl:y);
+
+; Set up a boat if there should be one
+*!UN&(isOnBoat):I(x)/(y)/(z)/(OBJ_BOAT)/0/(OBJ_BOAT)/0/8/1;
+
+; Patrol data and Sprite direction
+!!UN:C(heroPtr)/68/(UNC_INT)/(patrolAndDirection:y);
+
+; Flags
+!!HE(hero):R7/(flags);
+
+; Experience
+!!HE(hero):E?(exp)/(level)/1;
+
+!!FU:E;
+
+; Fail safe check
+; Sometimes the hero is not send to the map for some reason (not visible but still alive). Here we try again. If the problem persists, kill the hero
+*!UN:P905/(FALSE);
+; Check if the hero has been sent to the target position
+*!HE(x)/(y)/(z):N?(heroA:y);
+
+*!UN:P905/?(hasError:y);
+
+; If was not send, try again
+*!if&(hasError);
+  *!HE(hero):P(x)/(y)/(z);
+  *!HE(x)/(y)/(z):N?(heroA);
+  *!UN:P905/?(hasError:y);
+
+  ; If fails again, send the hero back to the owner's tarvern
+  *!if&(hasError);
+    *!HE(hero):O(NO_OWNER) K;
+    *!OW:V(owner)/?(heroLeft:y)/(hero);
+    *!UN:P905/(FALSE);
+  *!en;
+*!en;
+
+// Function to reset a stuck hero
+// Soft reset: Internal function is not called. Here we only kill the hero and put him/her at the entrance of town
+!?FU(fastai_SoftResetHeroBackToTavern);
+!#VA(hero:x);
+
+; Get owner
+!!HE(hero):O?(owner:y);
+
+; Check if there is any town spot available
+!!FU(fastai_GetOpenTown):P(owner)/?(x:y)/?(y:y)/?(z:y);
+*!HE(hero):P?(x:y)/?(y:y)/?(z:y);       [puting back to the same spot won't help with soft reset]
+!!FU&(x)=-1:E;
+
+; Troops
+!#VA(types[7]:y);
+!#VA(nums[7]:y);
+!#VA(ranks[7]:y);
+
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(hero):C0/i/?(types[i])/?(nums[i])/?(ranks[i])/12;
+!!en;
+
+; Kill the hero
+!!HE(hero):K;
+
+; Re-hire the hero
+!!HE(hero):P(x)/(y)/(z);                                    //Add new hero.
+!!HE(hero):O(owner);                                       //Set new hero's owner to player.
+
+; For testing
+*!IF:L^%(hero) %(owner) %(x)/%(y)/%(z)^;
+
+; Troops
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(hero):C0/i/(types[i])/(nums[i])/(ranks[i])/12;
+!!en;
+
+// Returns the coords of the first town owned by player that does not have a visiting hero
+// by Ameranth
+!?FU(fastai_GetOpenTown);
+!#VA(player:x);
+!#VA(returnX:x);
+!#VA(returnY:x);
+!#VA(returnZ:x);
+
+!!VR(x:y):S-1;          //setting x-coordinate to -1 will force to start search from scratch
+!!VR(y:y):S-1;
+!!VR(z:y):S-1;
+!!VR(returnX):S-1;      //Parent function can check for -1 to detect failure.
+
+!!re i;     //infinite loop
+  !!UN:U(OBJ_TOWN)/(ANY_OBJ)/-1/(x)/(y)/(z);      //Get next town. -1=iterate forward.
+  !!br&(x)<0;                                    //break if nothing found
+  
+  !!OB(x)/(y)/(z):T?(foundObj:y);                 //(foundObj)=type of object at coords. This may not be a town if a hero is visiting the town.
+  !!co&(foundObj)<>(OBJ_TOWN);                   //co if the object type is not a town.
+  
+  !!CA(x)/(y)/(z):O?(objOwner:y);
+  !!co&(objOwner)<>(player);                     //co if not owned by current player.
+  
+  !!CA(x)/(y)/(z):B3/5;                           //Get if tavern is built for this town, in flag 1.
+  !!co&-1;                                       //co if no tavern (flag 1 not set).
+  
+  !!CA(x)/(y)/(z):H1/?(visitingHero:y);           //Check for visiting hero.
+  !!co&(visitingHero)>-1;                        //co if there *is* a visiting hero (town entrance is full).
+  
+  !!VR(returnX):S(x); !!VR(returnY):S(y); !!VR(returnZ):S(z);
+  !!br;            //Escape the loop, we've found a town.
+!!en;
+
+// Function to replace a stuck hero at the entrance of a town with the hero in the tavern
+// Used in random maps only
+!?FU(fastai_ReplaceHeroWithTavernHero);
+!#VA(hero:x);
+
+; Get owner and coordinates
+!!HE(hero):O?(owner:y) P?(x:y)/?(y:y)/?(z:y);
+
+; Ensure the town belongs to the hero - sometimes it can be buggy
+!!CA(x)/(y)/(z):O?(townOwner:y);
+!!FU&(owner)<>(townOwner):E;
+
+; Check if tavern is built
+!!CA(x)/(y)/(z):B3/5;
+!!FU&-1:E;
+
+; Get better hero (in terms of level) in the tavern
+!#VA(tavernHeroes[2]:y);
+!!VR(heroLevels[2]:y):C0/0;
+!!OW:V(owner)/?(tavernHeroes[0])/?(tavernHeroes[1]);
+!!VR(heroNew:y):S(NO_HERO);
+
+!!re i/0/1;
+  !!co&(tavernHeroes[i])<=(NO_HERO);
+
+  !!HE(tavernHeroes[i]):E?(exp:y)/?(heroLevels[i])/1;
+!!en;
+
+!!if&(heroLevels[0])>=(heroLevels[1]);
+  !!VR(heroNew):S(tavernHeroes[0]);
+!!el;
+  !!VR(heroNew)&(tavernHeroes[1])>(NO_HERO):S(tavernHeroes[1]);
+!!en;
+
+!!FU&(heroNew)=(NO_HERO):E;
+
+; Save stats of the original hero
+; Get the other data of the hero
+; Hero Structure
+!!HE(hero):Z?(heroPtr:y);
+
+; Experience
+!!HE(hero):E?(exp:y)/?(level:y)/1;
+
+; Troops
+!#VA(types[7]:y);
+!#VA(nums[7]:y);
+!#VA(ranks[7]:y);
+
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(hero):C0/i/?(types[i])/?(nums[i])/?(ranks[i])/12;
+!!en;
+
+; Artifacts
+!!FU(NewIntArray):P?(artifactList:y);
+
+!!re i/(ART_SLOT_FIRST)/(ART_SLOT_LAST);
+  !!HE(hero):A1/?(art:y)/i;
+  !!FU(Array_Push):P(artifactList)/(art);
+!!en;
+
+; Spells
+!!FU(NewIntArray):P?(spellsList:y);
+
+!!re i/(SPELL_FIRST)/(SPELL_LAST_WOG);
+  !!HE(hero):M=i/1;
+  !!FU(Array_Push)&1:P(spellsList)/i;
+!!en;
+
+
+; Kill the hero
+!!HE(hero):O(NO_OWNER) K;
+
+; Set the hero as exclusive to the owner (does this work?)
+!!VR(playerBit:y):S1 Sd<<(owner);
+!!HE(hero):R3/(playerBit)/1;
+
+
+; Set back the hero's data - for the tavern hero
+; Swap the hero at the entrance and the tavern hero
+!!OW:V(owner)/?(tavernHeroes[0])/?(tavernHeroes[1]);
+
+!!if&(tavernHeroes[0])=(heroNew);
+  !!OW:V(owner)/(hero)/d;
+!!el;
+  !!OW:V(owner)/d/(hero);
+!!en;
+
+
+; Send the hero back to the map
+!!VR(hero):S(heroNew);
+
+!!HE(hero):P(x)/(y)/(z) O(owner);
+
+; Troops
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(hero):C0/i/(types[i])/(nums[i])/(ranks[i])/12;
+!!en;
+
+; Artifacts
+!!re i/(ART_SLOT_FIRST)/(ART_SLOT_LAST);
+  !!SN:M(artifactList)/i/?(art);
+  !!co|(art)=(NO_ART)/(art)=(ART_ARTIFACT_LOCK);
+
+  !!if|i<=(ART_SLOT_MISC_4)/i=(ART_SLOT_MISC_5);
+    !!HE(hero):A4/(art);
+  ; For machine slots, spell book and backpack
+  !!el;
+    !!HE(hero):A1/(art)/i;
+  !!en;
+!!en;
+
+; Spells
+!!SN:M(spellsList)/?(size:y);
+
+!!if&(size)>0;
+  !!re i/0/(size)/1/-1;
+    !!SN:M(spellsList)/i/?(spell:y);
+    !!HE(hero):M(spell)/1;
+  !!en;
+!!en;
+
+; Experience
+!!VR(exp):F0/1508362195;                [exp of level 74]
+!!HE(hero):E(exp);
+
+
+// Function for getting the filenames of the hero's portrait
+!?FU(fastai_GetHeroPortrait);           [by igrik/Algor]
+!#VA(hero:x);                           [hero's number (0..155)]
+!#VA(isLarge:x);                        [portrait type (0-small, 1-large)]
+!#VA(zIndex:x);                         [The number of the z var for storing the name of the portrait]
+
+!!VRz(zIndex):S^^;
+!!FU&(hero)<=(NO_HERO):E;
+
+!!UN:C6806760/4/?(value:y);
+!!VR(isLarge):*4 +48 +(value);
+!!VR(zIndex):*512+9597416;
+!!SN:E7411341/1/(hero);
+!!VR(value):Sv1 +52;
+!!UN:C(value)/1/?(value);
+!!VR(value)&(value)<0:+256;
+!!VR(value):*92 +(isLarge);
+!!UN:C(value)/4/?(value);
+
+!!re i/1/512;
+  !!UN:C(value)/1/?(value2:y) C(zIndex)/1/(value2);
+  !!br&(value2)=0;
+
+  !!VR(value):+1;
+  !!VR(zIndex):+1;
+!!en;
+
+// Function for fixing errors
+!?FU(fastai_FixActiveHeroList);
+; Fix hero from the list no longer belongs to the owner for some reason
+!!re (player:y)/(PLAYER_FIRST)/(PLAYER_LAST);
+  !!OW:I(player)/?(isAi:y)/?(hasLost:y);
+  
+  !!if&(hasLost)<>(TRUE);
+    !#VA(hero[8]:y);
+    !!OW:O(player)/?(heroesOnMap:y)/?(hero[0])/?(hero[1])/?(hero[2])/?(hero[3])/?(hero[4])/?(hero[5])/?(hero[6])/?(hero[7]);
+
+    !!if&(heroesOnMap)>0;
+      ; Fix the active hero list so it won't have duplicated heroes
+      !!FU(NewIntArray):P8/?(activeHeroList:y);
+      !!SN:V(activeHeroList)/0/(hero[0])/(hero[1])/(hero[2])/(hero[3])/(hero[4])/(hero[5])/(hero[6])/(hero[7]);
+      !!FU(Array_SortedUnique):P(activeHeroList);
+      !!FU(Array_Revert):P(activeHeroList);
+      !!FU(Array_EnsureMinSize):P(activeHeroList)/8/(NO_HERO);
+
+      !!re i/0/7;
+        !!SN:M(activeHeroList)/i/?(hero[i]);
+
+        ; Fix hero owner
+        !!if&(hero[i])>(NO_HERO);
+          !!HE(hero[i]):O(player);
+        !!en;
+      !!en;
+
+      *!co&(player)=(PLAYER_PINK);
+
+      !!OW:O(player)/?(heroesOnMap:y)/(hero[0])/(hero[1])/(hero[2])/(hero[3])/(hero[4])/(hero[5])/(hero[6])/(hero[7]);
+    !!en;
+  !!en;
+!!en;
+
+!?FU(fastai_FixHeroWithoutOwner);
+!!re i/(HERO_FIRST)/(HERO_LAST_WOG);
+  !!HEi:P?(x:y)/?(y:y)/?(z:y) O?(owner:y);
+
+  !!if&(x)>-1/(y)>-1/(z)>-1/(owner)=(NO_OWNER);
+    !!HEi:O(PLAYER_RED) K;
+  !!en;
+!!en;
+
+********************************
+**** Set AI thinking radius ****
+********************************
+// It must be at 32000 to have AI act correclty on the adventure map
+!?FU(OnEveryDay)&i^fastai_aiThinkingRadius^>0;
+!!FU(fastai_ManageRadiusOfThinking):P;
+
+!?FU(OnGameEnter)&i^fastai_aiThinkingRadius^>0;
+!!FU(fastai_ManageRadiusOfThinking):P;
+
+!?FU(fastai_ManageRadiusOfThinking);
+!!UN:J4/i^fastai_aiThinkingRadius^;
+
+**************************************************************
+**** Restrain the active AI heroes amount for each player ****
+**************************************************************
+// Must be executed later than any script doing the same
+!?FU(OnEveryDay)&i^fastai_aiHeroLimit^>0;
+!!if&i^timerOnce^/i^timerDay^=1;
+  !!UN:C6129162/1/?i^fastai_humanHeroLimit^;
+  !!VRi^fastai_aiHeroLimit^:Si^fastai_aiHeroLimit^ F1/i^fastai_humanHeroLimit^;
+
+!!el&i^timerDay^>1;
+  !!if&i^timerIsHuman^;
+    !!VR(limit:y):Si^fastai_humanHeroLimit^;
+  !!el;
+    !!VR(limit):Si^fastai_aiHeroLimit^;
+  !!en;
+
+  !!UN:C6129162/1/(limit) C4864993/1/(limit) C6116975/1/(limit) C4395921/1/(limit) C5417105/1/(limit) C6127106/1/(limit);
+!!en;
+
+****************************************************
+**** Restrain the total active AI heroes amount ****
+****************************************************
+
+!?FU(OnGameEnter);
+!!re i/0/4;
+  !!if&i^fastai_totalHeroLimit_%i^>0;
+    !!VR(address:y):Si *(UNC_INT) +6685996;
+    !!UN:C(address)/(UNC_INT)/21;
+  !!en;
+!!en;
+
+*************************************************************
+**** Set the max combat round in battle before quick end ****
+*************************************************************
+; This value is 30 in SoD, but was raised to 100 by ERA/Hota
+; Usually this number of rounds won't be reached anyway. It's possible to happen only in late game.
+!?FU(OnGameEnter)&i^fastai_maxBattleRound^>0;
+!!UN:C4676661/(UNC_INT8)/30; 00475C2F
+
+****************************************
+**** Manage options from other mods ****
+****************************************
+// Manage Difficulty mod settings
+; Disable Artifact Equipment script by Perry as it is not compatible with new artifacts (and results in lags)
+; Enable AI has no Dimension Door as it boosts the speed of AI turn a bit
+!?FU(OnAfterErmInited)&i^fastai_modOptions_enabled^;
+!!VRi^AI_Artifacts_Eq^:S(FALSE);
+!!VRi^AI_has_no_DD^:S(TRUE);
+
+; Trigger on closing the main DL of Difficulty Mod (after artifact equipment option set)
+!?DL&v998=13/v999=30722/v1000=13/i^fastai_modOptions_enabled^;
+!!VRi^AI_Artifacts_Eq^:S(FALSE);
+!!VRi^AI_has_no_DD^:S(TRUE);
+
+// Manage Human AI settings
+; Disable Artifact handling from Human Ai
+!?FU(OnAfterErmInited);
+!!VRi^huAI_replaceHeroes^:S(FALSE);
+!!VRi^huAI_funnelTroops^:S(FALSE);
+!!VRi^huAI_improvedArtifactAI^:S(FALSE);
+!!VRi^huAI_hireMoreHeroes^:S(FALSE);
+
+************************************************
+**** Assemble Combination artifacts for AIs ****
+************************************************
+; Code from Human AI - thanks to Ameranth
+!?FU(huAI_dailyAIBestHeroes_EndOfTurn);
+    !#VA(owner:x);
+    
+    !!VRi^huAI_Artifacts_EndOfTurn^:S(TRUE);                //Use this later to equip artifacts differently at end of turn.
+    
+    !!re i/1/i^huAI_currentHero_Count^:;                    //Don't do arti sending again, just assemble combos/recalc equipment before ending turn.
+        !!FU(huAI_AssembleCombos):Pi^huAI_currentHero_%i^;
+        !!FU(huAI_RecalcEquipment):Pi^huAI_currentHero_%i^;
+    !!en:;
+
+**********************************************************************************************************************
+**** Divide all the AI values by 100 in order to prevent negative values after gathering massive amount of troops ****
+**********************************************************************************************************************
+; This script blocks the same script from GEM
+!?FU(fastai_DivideAllAIValues);
+; The script is currently disabeld
+!!FU:E;
+
+; Divide AI values only when Peasant's AI value is original (15)
+!!MA:I(MON_PEASANT)/?(aiValuePeasant:y);
+
+!!if&(aiValuePeasant)=15;
+  !!FU(GetMaxMonsterId):P?(lastMon:y);
+  !!VR(arraySize:y):S(lastMon) +1;
+  !!FU(NewIntArray):P(arraySize)/?i^fastai_origAiValues^/(M_STORED);
+
+  !!re i/(MON_FIRST)/(lastMon);
+    !!MA:Ii/?(aiValue:y);
+    !!SN:Vi^fastai_origAiValues^/i/(aiValue);
+  !!en;
+
+  !!VRi^fastai_aiValuesDivided^:S(TRUE);
+!!en;
+
+!!FU(fastai_ManageAIValues):P1;
+
+!?OB(OBJ_ALTAR_OF_SACRIFICE);
+!!FU(fastai_ManageAIValues):P0;         [Resstore]
+
+!$OB(OBJ_ALTAR_OF_SACRIFICE);
+!!FU(fastai_ManageAIValues):P1;         [Divide]
+
+!?FU(fastai_ManageAIValues)&i^fastai_aiValuesDivided^/i^fastai_aiValueDivider^>0;
+!#VA(mode:x);                           [0 - restoration, 1 - division]
+
+; The script is currently disabeld
+!!FU:E;
+
+!!FU(GetMaxMonsterId):P?(lastMon:y);
+
+; Restoration
+!!if&(mode)=0;
+  !!re i/(MON_FIRST)/(lastMon);
+    !!SN:Vi^fastai_origAiValues^/i/?(aiValue:y);
+    !!MA:Ii/(aiValue);
+  !!en;
+; Division
+!!el;
+  !!re i/(MON_FIRST)/(lastMon);
+    !!MA:Ii/?(aiValue:y);
+
+    !!VR(isSpecial:y):S(FALSE);
+    !!VR(isSpecial)&i>=(MON_COMMANDER_FIRST_A)/i<=(MON_COMMANDER_LAST_D):S(TRUE);
+    !!VR(isSpecial)&i>=(MON_CATAPULT)/i<=(MON_AMMO_CART):S(TRUE);
+    !!VR(isSpecial)&i>=(MON_EMISSARY_OF_WAR)/i<=(MON_EMISSARY_OF_LORE):S(TRUE);
+
+    !!if&(isSpecial);
+      !!VR(aiValue)::15 F1/(INT_MAX);
+    !!el;
+      !!VR(aiValue)::i^fastai_aiValueDivider^ F1/(INT_MAX);
+    !!en;
+
+    !!MA:Ii/(aiValue:y);
+  !!en;
+
+  !!VRi^fastai_aiValuesDivided^:S(TRUE);
+!!en;
+
+!#FU(fastai_DivideAllAIValues)&i^fastai_aiValueDivider^>0:P;
+
+********************************************
+**** Make all the heroes more aggresive ****
+********************************************
+; This simply modify the aggresion value from hero structure
+; It is not clear how come there is a aggresion level here, but it helps
+; 00427353 is one of the place this offset is used
+!?FU(OnEveryDay)&i^timerDay^=8/i^timerOnce^;
+!!FU(fastai_DoubleAIHeroAggressions):P;
+
+!?FU(fastai_DoubleAIHeroAggressions);
+!!re i/(HERO_FIRST)/(HERO_LAST_WOG);
+  !!HEi:Z?(heroStruct:y);
+
+  !!UN:C(heroStruct)/1146/4/?(valueFloat:e);
+  !!VR(valueFloatNew:e):S(valueFloat) *5 :4;
+  !!UN:C(heroStruct)/1146/4/(valueFloatNew);
+!!en;
+
+**********************************************************************************
+**** Compensate AI army (since they might be more aggresive than they should) ****
+**********************************************************************************
+; This is for fixing AIs' strategy with Perry's CBs. They might appear to be weaker than they thought.
+; AI will grant additional troops for the strongest stack before battle. This stack should not exceed the quantity at the start, after the battle ended
+!?FU(OnBeforeBattleUniversal)&i^timerIsAi^;
+; Exit if it is a battle vs a hero
+!!FU&i^battle_hero_1^>(NO_HERO)/i^wog_72_randHeroActive^<>(TRUE):E;
+
+*!re i/(ART_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  *!HEi^battle_hero_0^:C0/i/?(mon:y)/?(num:y);
+
+  *!if&(mon)>(NO_MON)/(num)>0;
+
+  *!en;
+*!en;
+
+!!VR(highestAiValue:y):S0;
+!!VR(highestSlot:y):S-1;
+
+!!re i/(ART_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HEi^battle_hero_0^:C0/i/?(mon:y)/?(num:y);
+
+  !!if&(mon)>(NO_MON)/(num)>0;
+    !!FU(tum_CheckIfMonAttractsDeadSouls):P(mon)/?(result1:y);
+    !!FU(fastai_CheckIfMonCanBeRaised):P(mon)/?(result2:y);
+
+    !!if&(result1)<>(TRUE)/(result2)<>(TRUE);
+      !!MA:I(mon)/?(aiValue:y);
+      !!VR(totalAiValue:y):S(aiValue) *(num);
+
+      !!if&(totalAiValue)>(highestAiValue);
+        !!VR(highestAiValue):S(totalAiValue);
+        !!VR(highestSlot):Si;
+      !!en;
+    !!en;
+  !!en;
+!!en;
+
+!!if&(highestSlot)>-1;
+  !!HEi^battle_hero_0^:C0/(highestSlot)/?(mon)/?(num);
+  !!VRi^fastai_highestAiSlot^:S(highestSlot);
+  !!VRi^fastai_highestAiType^:S(mon);
+  !!VRi^fastai_highestAiNum^:S(num);
+  !!VR(newNum:y):S(num) *3 F1/(INT_MAX);[3 times strength for the strongest stack]
+  !!HEi^battle_hero_0^&(newNum)>(num):C0/(highestSlot)/(mon)/(newNum);
+!!en;
+
+!?FU(OnAfterBattleUniversal)&i^timerIsAi^/i^fastai_highestAiNum^;
+!!HEi^battle_hero_0^:C0/i^fastai_highestAiSlot^/?(mon:y)/?(num:y);
+
+!!if&(mon)=i^fastai_highestAiType^/(num)>i^fastai_highestAiNum^;
+  !!HEi^battle_hero_0^:C0/i^fastai_highestAiSlot^/(mon)/i^fastai_highestAiNum^;
+  !!VRi^fastai_highestAiNum^:S0;
+!!en;
+
+!?FU(fastai_CheckIfMonCanBeRaised);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S(FALSE);
+!!MA:O(mon)/?(townType:y);
+
+!!if&(townType)=(TOWN_NECROPOLIS);
+  !!MA:L(mon)/?(level:y);
+
+  !!if|(level)=0/(level)=1/(level)=2/(level)=4; [Level 1, 2, 3 or 5 can be raised in vanilla game]
+    !!VR(result):S(TRUE);
+  !!el|(level)=3/(level)=5;             [Level 4 and 6 can also be raised with ACM]
+    !!VR(result)&i^Advanced_Classes_Mod_Active^:S(TRUE);
+  !!en;
+!!en;
+
+********************************
+**** Help AI take dwellings ****
+********************************
+; Help AI take dwellings when they are about to step on it
+; This is to fix sometimes AI just give no shit to these dwellings. This helps them more like human players.
+; It is still uncertain whether this script really help. Becasue usually when OB:T = dwelling, AI is on to way to take the dwelling
+
+; First implementation - I suspect it set the owner visually before the hero actually step on the dwelling
+*?FU(OnHeroMove)&i^timerIsAi^;
+*!OB998:T?(objType:y);
+
+*!if|(objType)=(OBJ_CREATURE_GENERATOR_1)/(objType)=(OBJ_CREATURE_GENERATOR_4);
+  *!FU(fastai_TakeCurrDwell):P;
+*!en;
+
+; Second implementation - should be safer than the first. Although this might skip some cases.
+!?OB(OBJ_CREATURE_GENERATOR_1)&i^timerIsAi^;
+!!FU(fastai_TakeCurrDwell):P;
+
+!?OB(OBJ_CREATURE_GENERATOR_4)&i^timerIsAi^;
+!!FU(fastai_TakeCurrDwell):P;
+
+!?FU(fastai_TakeCurrDwell);
+!!DW998:O?(owner:y);
+
+!!if&(owner)=(NO_OWNER);
+  ; Give the neutral dwelling to the AI immediately
+  !!DW998:Oi^timerOwner^/1;
+
+  ; Give exp for defeating the guards
+  !!DW998:G(ARMY_SLOT_FIRST)/?(mon:y)/?(num:y);
+
+  !!if&(mon)>(NO_MON)/(num)>0;
+    !!MA:P(mon)/?(hp:y);
+    !!VR(exp:y):S(hp) *(num);
+    !!VR(exp)&(exp)<0:S1000000;
+    !!HE(CURRENT_HERO):Ed(exp);
+  !!en;
+
+  ; Reset all the guards
+  !!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+    !!DW998:Gi/(NO_MON)/0;
+  !!en;
+!!en;
+
+**************************************
+**** Help AI build town buildings ****
+**************************************
+; Check AI's town every X day and see if they have any unbuilt buildings, build for them and take their resources
+; This is useful as it's been reported that AI doesn't build certain buildings
+
+!?FU(OnAfterErmInstructions);
+!!FU(NewIntArray):P?i^fastai_aiBuildingList^/(M_STORED);
+!!FU(Array_Push):Pi^fastai_aiBuildingList^/37/38/39/40/17/21/22/23/41/42; [All the upg dwellings and special buildings]
+
+; Start from the third week for AI
+!?FU(WOG_EndOfTurn)&i^timerIsAi^/i^timerWeek^>=3;
+; Every i^fastai_aiBuldingInterval^ days only
+!!VR(remainder:y):Si^timerDay^ %i^fastai_aiBuldingInterval^;
+!!FU&(remainder)<>0:E;
+
+; loop through all towns
+!!VR(x:y):S-1;
+
+!!re i;
+  !!UN:U(OBJ_TOWN)/(ANY_OBJ)/-1/(x)/(y:y)/(z:y);
+  !!br&(x)<0;
+
+  ; next town if belongs to no player
+  !!CA(x)/(y)/(z):O?(player:y);
+  !!co&(player)<>i^timerOwner^;
+
+  ; Get town info
+  !!CA(x)/(y)/(z):U?(townId:y);
+  !!FU(WOG_Town_GetStruct):P(townId)/?(townStruct:y);
+
+  // Build town buildings
+  ; Next if built this turn
+  !!CA(x)/(y)/(z):R?(hasBuilt:y);
+
+  !!if&(hasBuilt)=(FALSE);
+    ; Next if not all the basic dwellings are built
+    !!re (buildingId:y)/30/36;
+      !!CA(x)/(y)/(z):B3/(buildingId);
+
+      !!br&-1;
+    !!en;
+
+    ; Get a building from the list
+    !!if&(buildingId)>36;
+      !!SN:Mi^fastai_aiBuildingList^/?(size:y);
+
+      !!re j/0/(size)/1/-1;
+        !!SN:Mi^fastai_aiBuildingList^/j/?(buildId:y);
+
+        ; Skip if the building has been built
+        !!CA(x)/(y)/(z):B3/(buildId);
+        !!co&1;
+
+        !!SN:E6033696/(CALLCONV_THISCALL)/(townStruct)/(buildId); [Can build building] 005C1120
+        !!co&v1=(FALSE);
+        
+        ; If can build, check if has enough resouces to build
+        !!SN:E4590864/3/(townStruct)/(buildId);
+        !!co&v1=(FALSE);
+
+        ; If has enough resources to build, get those resources
+        !!VR(ptr:y):S8943244; ptr v10
+        !!SN:E6034672/2/(townStruct)/(buildId)/(ptr); [v10 - v16, wood, mercury...gold]
+
+        ; And take thoe resources
+        !!re (res:y)/(RES_FIRST)/(RES_LAST_SOD);
+          !!VR(index:y):S(res) +10;
+          !!OW:R(player)/(res)/d-v(index);
+        !!en;
+
+        ; Build town building
+        !!CA(x)/(y)/(z):B6/(buildId);
+
+        ; Break the loop of buildings for this town
+        !!br;
+      !!en;
+    !!en;
+  !!en;
+
+  // Recruit monsters in towns
+  ; Help AI merge the same creatures into one slot
+  *!re (slot:y)/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+    *!CA(x)/(y)/(z):M2/(slot)/?(type:y)/?(num:y);
+
+    *!if&(type)<=(NO_MON)/(num)<=0;
+      *!br;
+    *!en;
+  *!en;
+
+  ; Skip to the next town if no slot left
+  *!if&(slot)<=(ARMY_SLOT_LAST);
+
+    *!re (level:y)/(MON_MAX_LEVEL)/(MON_MIN_LEVEL);
+      *!CA
+    *!en;
+      *!CA(x)/(y)/(z):M1
+    *!en;
+  *!en;
+!!en;

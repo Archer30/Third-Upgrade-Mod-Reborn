@@ -1,0 +1,34 @@
+ZVSE2
+; Author:   Archer30 and Hawaiing
+; Engine:   ERM 2.0+
+; Requires: ERA 3.3+, Era Erm Framework
+
+; Show monster detials on the adventure map by Shift Right-clicking
+
+
+!?FU(OnAdventureMapRightMouseClick)&i^key_shift^;
+!!OBi^mouse_mapX^/i^mouse_mapY^/i^mouse_mapZ^:T?(type:y) U?(subtype:y);
+
+!!if&(type)=(OBJ_MONSTER);
+  !!FU(info_ShowMonDlgRecruiting):P(subtype)/(TRUE);
+  !!CM:R0;
+!!en;
+
+!?FU(info_ShowMonDlgRecruiting);        [by Hawaiing]
+!#VA(mon:x) (isPopup:x);
+
+!!FU&(mon)<=(NO_MON):E;
+
+!!VR(value:y):S9990 *4 +8943204;
+!!VR(value2:y):S(isPopup)* -1 +1;       [Get negative value]
+!!SN:E6243760/2/(value)/(mon)/119/32/(value2);[Create the dialogue]
+!!SN:E6289408/2/(value)/-1/-1;
+!!UN:C7998936/4/(mon);                  [For stack Exp Panel]
+
+!!if&(isPopup);
+  !!SN:E6245264/2/(value);              [Popup]
+!!el;
+  !!SN:E6245280/2/(value);              [Normal]
+!!en;
+
+!!SN:E6244736/2/(value);                [Destroy the dialogue]

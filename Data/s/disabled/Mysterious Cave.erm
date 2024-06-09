@@ -1,0 +1,1215 @@
+ZVSE2
+
+; USED z958-z959, w121-w127, D61
+
+;10-19:Nothing
+;20:Random stats bonus (1-4*month)
+;21:Gives random experience (1000-5000*month)
+;22:Gives Boots of haste and gloves
+;23:Gives logistic expert, go to next if already have
+;24:Gives one of the 4 magic schools expert
+;25:Gives one of the 6 resource artifacts
+;26:Gives one of the components of statue of legion
+;27:Sells for 100k gold one of the 3 tomes (not air)
+;28:Gives magic book and all level 1 spells
+;29:Gives magic book and all level 2 spells
+;30:Gives magic book and all level 1-3 spells
+;31-32:Random resource 10-20*month, *1000 if gold
+;33:Gives shackles
+;34:Gives 10 enchanters
+;35:10k mvm points
+;36:One random obelisk is automatically visited
+;37:Builds one full mage guild in one random town you own
+;38:All the creatures from this hero army will be prayer/haste/shield enchanted until next week, if already have, go next
+;39:All the creatures this hero owns will have +3 speed until next week, if already have, go next
+;40:All the creatures this hero owns will have +100% HP until next week, if already have, go next
+;41:+ one experience level
+;42:Gives bag of gold (+750 gold daily)
+;43:Gives 100 spell points*month
+;44-45:Gives knowledge of what all other Caves offer, lasts 7 days
+;46:Blessed, hero will produce resources daily for 7 days
+;47:Blessed, hero will receive experience daily for 7 days
+;48:Blessed, hero will move faster for 7 days
+;49:Hero will have great scouting radius for 7 days (range=12)
+;50:Gets expert estates
+;51:Rockfeller: monsters drop money when defeated by this hero
+;52:Pestilence: Hero is contagious and can't be attacked
+;53:Teleport: Hero can visit objects in distant land
+;54:Builder: Hero can rebuild town to the faction of your choice
+;55-61:Gives one of commander's artifacts (if commanders are enabled)
+;62-64:Gives a primary skill to commander which he doesn't have (if commanders are enabled)
+
+!?FU9643278;
+!!HEx16:S1/?y1/1; ask what skill occupies display slot 1
+!!HEx16:Sy1/?y2; get expertise
+!!SN:W^C_Hero1-1_%X16^/y1;
+!!SN:W^C_Hero1-2_%X16^/y2;
+!!HEx16:S2/?y1/1; ask what skill occupies display slot 2
+!!HEx16&y1>-1:Sy1/?y2; get expertise
+!!SN:W^C_Hero2-1_%X16^/y1;
+!!SN:W^C_Hero2-2_%X16^/y2;
+;
+!!HEx16:F?y1/?y2/?y3/?y4;
+!!SN:W^HERO3-A_%X16^/y1;
+!!SN:W^HERO3-D_%X16^/y2;
+!!SN:W^HERO3-S_%X16^/y3;
+!!SN:W^HERO3-K_%X16^/y4;
+!!HEx16:I?y5;
+!!SN:W^HERO3-M_%X16^/y5;
+!!HEx16:G?y6; check mvm points
+!!SN:W^HERO3-U_%X16^/y6;
+
+!?FU33465124;
+;set options from ini
+!!VRvx16:Vzx16;
+
+!#VRz959:S^{神秘洞穴} (已访问)^;
+!#SN:W^R99builderID^/-1;
+
+!#SN:L^era.dll^/?y1 Ay1/^ReadStrFromIni^/?y2;
+;
+!#SN:Ey2/1/^Den of Thieves^/^Player settings^/^Caves.ini^/?z2;
+!#SN:Ey2/1/^Learning Stones^/^Player settings^/^Caves.ini^/?z3;
+!#SN:Ey2/1/^Creature Banks^/^Player settings^/^Caves.ini^/?z4;
+!#SN:Ey2/1/^Crypts^/^Player settings^/^Caves.ini^/?z5;
+!#SN:Ey2/1/^Schools of Magic^/^Player settings^/^Caves.ini^/?z6;
+!#SN:Ey2/1/^Creature Generators^/^Player settings^/^Caves.ini^/?z7;
+!#SN:Ey2/1/^Taverns^/^Player settings^/^Caves.ini^/?z8;
+!#SN:Ey2/1/^Obelisks^/^Player settings^/^Caves.ini^/?z9;
+!#SN:Ey2/1/^Prisons^/^Player settings^/^Caves.ini^/?z10;
+!#SN:Ey2/1/^Watcher^/^Player settings^/^Caves.ini^/?z11;
+!#SN:Ey2/1/^Closed^/^Player settings^/^Caves.ini^/?z12;
+
+!#DO33465124/2/12/1:P;
+
+!#SN:W^R97percentage^/v2;  den of thieves
+!#SN:W^R100percentage^/v3;  learning stones
+!#SN:W^R16percentage^/v4;  creature banks
+!#SN:W^R85percentage^/v5; Crypts
+!#SN:W^R47percentage^/v6;  Schools of magic
+!#SN:W^R17percentage^/v7;  Creature generators
+!#SN:W^R95percentage^/v8;  Taverns
+!#SN:W^R57percentage^/v9; Obelisks
+!#SN:W^R62percentage^/v10;   Prisons
+!#VRv11&v11=1:S7;
+!#SN:W^R199counter^/v11;   Watcher
+!#SN:W^R99counter^/v11;   Watcher
+!#SN:W^Closed^/v12;   percentage of visitable Caves
+
+!#DO9643278/0/155/1:P; store Heroes skills
+
+!?FU324569214;
+;x1 human player faction
+!!HEx16:O?v1;
+!!FU&v1<0:E;
+!!FU&v1<>x1:E;
+
+!!IF:Wx16;
+!!SN&w127>1:W^R99IDscourge^/x16; set to that hero
+
+!?FU(OnAfterErmInstructions);
+!!SN:W^R99IDscourge^/-1;  initialize scourge
+
+; replace objects on first day
+!!SN:W^R97percentage^/?y3; den of thieves
+!!UN:U97/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P97/y3;  Run through
+
+!!SN:W^R100percentage^/?y3; learning stone
+!!UN:U100/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P100/y3;  Run through
+
+!!SN:W^R16percentage^/?y3; creature banks
+!!UN:U16/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P16/y3;  Run through
+
+!!SN:W^R85percentage^/?y3; crypts
+!!UN:U85/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P85/y3;  Run through
+
+!!SN:W^R47percentage^/?y3; school of magic
+!!UN:U47/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P47/y3;  Run through
+
+!!SN:W^R17percentage^/?y3; creature generators
+!!UN:U17/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P17/y3;  Run through
+
+!!SN:W^R95percentage^/?y3; taverns
+!!UN:U95/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P95/y3;  Run through
+
+!!SN:W^R62percentage^/?y3; prisons
+!!UN:U62/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456132/1/y-1/1&y-1>0:P62/y3;  Run through
+*!DO32466132/0/155/1:P; run all heroes to fix prisoners levels [disabled - Archer]
+!!SN:W^dreams^/99;  [run only once]
+!!VRz958:S^{神秘洞穴} (未访问)^;
+!!HT63/55:T958; set name
+
+!?FU(OnEveryDay);
+!!OW:C?y2; [get current player]
+!!OW:Iy2/?y3;  [get if AI or human]
+!!SN&y3=0:W^R99humanplayer^/y2; set human player to y2
+!!SN:W^R99humanplayer^/?y2; set human player to y2
+;for AI only, scourge
+!!if&y3=1; if AI
+  !!DO324569214/0/155/1:Py2; check if human hero has scourge
+  !!SN:W^R99IDscourge^/?y1;
+  !!DO654789321/0/7/1&y1>-1:Py1/y2;
+!!en;
+
+;for human only
+!!FU&y3<>0:E;  [exit if AI]
+
+;continue
+!!VRv1:Sc+27:28; get month
+!!VRy1:S31R3;
+!!SN:W^R99primaryskills^/y1;
+!!VRy1:S1R3;
+!!VRy1:*v1;
+!!SN:W^R99randomstat^/y1;
+!!VRy1:S1000R4000;
+!!VRy1:*v1;
+!!SN:W^R99experience^/y1;
+!!VRy1:S14R3; get magic schools
+!!SN:W^R99magic^/y1;
+!!VRy1:S109R5; get random artifact resource
+!!SN:W^R99cornucopia^/y1;
+!!VRy1:S118R4;
+!!SN:W^R99legion^/y1;
+!!VRy1:S86R3;
+!!VRy1&y1=87:+1;
+!!SN:W^R99tomes^/y1;
+!!VRy1:S0R6;
+!!SN:W^R99resourcename^/y1;
+!!VRy1:S10R10;
+!!VRy1:*v1;
+!!SN:W^R99resource^/y1;
+!!VRy1:S100*v1;
+!!SN:W^R99manabonus^/y1;
+!!VRy1:S146R9;
+!!SN:W^R99commander^/y1;
+!!VRy1:S3R3;
+!!VRy1:*v1;
+!!SN:W^R99blessmultiple^/y1;
+!!VRy1:S500R1500;
+!!VRy1:*v1;
+!!SN:W^R99experience^/y1;
+!!VRy1:S1000R1000;
+!!VRy1:*v1;
+!!SN:W^R99movement^/y1;
+!!VRy1:S1R6;
+!!SN:W^R99OV^/y1;
+!!DO45696526/0/155/1:P; loop heroes for w vars / scourge and builder
+!!UN:U98/-1/?y-1;
+!!VRv1:S-1;
+!!DO32456140/1/y-1/1:P98;
+
+!?FU32456132; if multiple choice
+;x1: object ID
+;x2 percentage
+!!UN:Ux1/-1/-1/1;
+!!VRy1:S1R9;
+
+!!UN&y1<=x2:Ov1/v2/v3; [delete]
+!!VRv1:+1; correction location
+!!UN&y1<=x2:Iv1/v2/v3/63/56;
+
+!?FU32466132;
+!!HEx16:E?y1/?y2;
+!!FU&y1<200:E;
+;fix prisoners levels
+!!DO32466133/0/27/1:Px16; remove first all skills
+!!HEx16:E53/1; set to level 1 and [53] experience so you know how was bad boy and in prison:)
+!!SN:W^C_Hero1-1_%X16^/?y1;
+!!SN:W^C_Hero1-2_%X16^/?y2;
+!!HEx16:S1/y1/1; set skill
+!!HEx16:Sy1/y2;
+;
+!!SN:W^C_Hero2-1_%X16^/?y1;
+!!SN:W^C_Hero2-2_%X16^/?y2;
+!!HEx16&y1>-1:S2/y1/1; set skill
+!!HEx16&y1>-1:Sy1/y2;
+
+!!SN:W^HERO3-A_%X16^/?y1;
+!!SN:W^HERO3-D_%X16^/?y2;
+!!SN:W^HERO3-S_%X16^/?y3;
+!!SN:W^HERO3-K_%X16^/?y4;
+!!HEx16:Fy1/y2/y3/y4;
+!!SN:W^HERO3-M_%X16^/?y5;
+!!HEx16:Iy5;
+!!SN:W^HERO3-U_%X16^/?y6;
+!!HEx16:Gy6;
+
+
+!?FU32466133;
+!!HEx1:Sx16/0;
+
+!?FU32456140;  demolition fix (one day delay)
+!!UN:Ux1/-1/-1/1;
+!!CAv1/v2/v3:U?y2;
+!!VRy1:Sy2*30+8630976+12;
+!!UN:Cy1/4/-7;
+
+!?FU(OnEveryDay)&i^timerWeekday^=1;
+!!OW:C?y1; [get current player]
+!!OW:Iy1/?y2;  [get if AI or human]
+!!FU&y2<>0:E;  [exit if AI]
+;addition for scrolls**********
+!!UN:U93/-1/?y-1; [get scrolls number]
+!!VRv1:S-1;
+;end addition for scrolls********
+!!UN:P3/?y2; check if commanders enabled
+!!SN:W^Closed^/?y3;   percentage of visitable Caves
+!!UN:U63/56/?y-1; [get Caves number]
+!!VRv1:S-1;
+!!DO56789012/1/y-1/1:P63/56/y2/y3;  [run through each one and reinitialize PO]
+!!UN:U63/55/?y-1; [get Caves number]
+!!VRv1:S-1;
+!!DO56789012/1/y-1/1:P63/55/y2/y3;  [run through each one and reinitialize PO]
+
+!?OB63/56;
+!!HE-1:O?y3;  get owner
+!!OW:Iy3/?y4; get AI/human
+
+!!if&y4<>0; If AI
+  !!PO998:N?v1;
+  !!FU&v1>0:E;
+
+  !!VRy1:S0R3;
+  !!HE-1:F?y2/?y3/?y4/?y5;  check if stats not too high
+  !!HE-1&y1=0/y2<110:Fd2/d/d/d;   if below 110 give a +2 bonus to random primary skill
+  !!HE-1&y1=1/y3<110:Fd/d2/d/d;
+  !!HE-1&y1=2/y4<110:Fd/d/d2/d;
+  !!HE-1&y1=3/y5<110:Fd/d/d/d2;
+  !!HE-1:B0/?z1;
+  !*IF:L^%Z1 visited a Cave^;   test
+  !!OB998:Hz959; set to visited for this week
+
+  !!PO998:N15;
+  !!FU:E;
+!!en;
+;if Human
+!!PO998:N?v1;
+
+!!if&v1>0;
+  !!IF:M^这个洞穴关闭了，下周再来试试吧。^;
+  !!SN:P^Enter.wav^;
+  !!SN:P^MaleG09a.wav^;
+  !!FU:E;
+!!en;
+
+!!PO998:B0/?y10; check value
+
+!!if&y10<20;
+  !!IF:M^这个洞穴关闭了，下周再来试试吧。^;
+  !!PO998:N15;
+  *!OB998:Hz959;
+  !!HT63/55:T959;
+
+  !!SN:P^Enter.wav^;
+  !!SN:P^MaleG09a.wav^;
+  !!FU:E;
+!!en;
+
+!!HE-1&y10=23:S2/?y2; get if he has logistic
+!!VRy10&y2=3:S25; set to different
+
+!!if&y10=20;  get a random primary skill
+!!SN:W^R99primaryskills^/?y1;
+!!SN:W^R99randomstat^/?y2;
+!!IF:Q1/y1/y2/1^一个陷入疯狂的巫师试图袭击你，意识到他的力量来源于王冠，你便用弓箭将其射落，让他从疯狂的状态中解脱出来。
+为了感谢你，他教了你一些技巧，你觉得自己更强大了。"^;
+!!HE-1&y1=31:Fdy2/d/d/d;
+!!HE-1&y1=32:Fd/dy2/d/d;
+!!HE-1&y1=33:Fd/d/dy2/d;
+!!HE-1&y1=34:Fd/d/d/dy2;
+!!VRz1:S^07_01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=21; random experience
+!!SN:W^R99experience^/?y1;
+!!IF:Q1/17/y1/1^一个泰坦巨人拦住你，“给我5000金币，否则我会杀了你。”你拒绝了。于是泰坦巨人拔出剑砍向你，你躲进他的胯下。他吓了一跳，然后被绊倒了，刚好摔在自己的剑上...
+你拿走了他的财物，并获得了一些经验。^;
+!!HE-1:Edy1;
+!!VRz1:S^05_01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=22; boots of haste and gloves
+!!IF:Q1/8/98/8/70/1^你看到了一双靴子和一副手套深深地嵌在地上。
+你的部下尝试了几次都没能将其拔出来，你紧紧的抓住后，毫不费力地将它们拔出来。^;
+!!HE-1:A4/98;
+!!HE-1:A4/70;
+!!VRz1:S^11_02.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=23;  logistic expert
+!!IF:Q1/20/11/1^当你走在一条狭窄的小路上时，附近的一丛灌木突然燃烧起来。 火焰在你眼中变成了一个美女的形象，很快她便向远方跑去。
+
+你设法抓住了她，并发现从现在开始你可以走得更远更快。^;
+!!HE-1:S2/3;
+!!VRz1:S^17_01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=24;
+!!SN:W^R99magic^/?y1;
+!!HE-1:Sy1/?y2; get level
+!!VRy3:Sy1*3+5;
+!!UN:N4/z1/y1; get skill name
+  !!if&y2<3;
+  !!HE-1:Sy1/3;
+  !!VRz1&y1=14:S^47_01.wav^;
+  !!VRz1&y1=15:S^48_01.wav^;
+  !!VRz1&y1=16:S^49_01.wav^;
+  !!VRz1&y1=17:S^50_01.wav^;
+  !!IF:Q1/20/y3/1^一个老萨满出现在你面前，用你听不懂的语言在说着什么。突然他消失在一团烟雾中。
+当烟雾散去之后，你在原地发现一本神奇的书。你捡起它，学习到了新的技能。^;
+  !!en;
+    !!if&y2=3;
+    !!IF:Q1/20/y3/1^一个老萨满出现在你面前，用你听不懂的语言在说着什么。突然他消失在一团烟雾中。
+当烟雾散去之后，你在原地发现一本神奇的书。你捡起它，却发现书中的内容你已经掌握了...^;
+    !!VRz1:S^MaleD24b^;
+    !!en;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=25;   give one resource artifact
+!!SN:W^R99cornucopia^/?y1;
+!!UN:N0/z1/y1;
+!!IF:Q1/8/y1/1^当你在一个被遗弃的法师塔中短暂的逗留时，你在角落发现了一个%Z1。
+
+你把它装进了背包。^;
+!!HE-1:A4/y1;
+!!VRz1:S^Pickup03.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=26;  get one of the statue of legion components
+!!SN:W^R99legion^/?y1;
+!!UN:N0/z1/y1;
+!!IF:Q1/8/y1/1^当你在一个塌陷的矿井的废墟中搜寻时，你解救了一群被困的矮人。 感激之余，矮人首领给了你一把精制的%Z1。^;
+!!HE-1:A4/y1;
+!!VRz1:S^31_02.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=27; get one of the three tomes
+!!SN:W^R99tomes^/?y1;
+!!OW:R-1/6/?y2;
+!!UN:N0/z1/y1;
+!!IF&y2<300000:Q1/8/y1/6/300000/1^一个来自远方的商人准备用他的一件宝物%Z1，来换取一些金钱。但你已经破产了，买不起。^;
+!!VRz2:S^10_03.wav^;
+!!SN&y2<300000:Pz2;
+!!FU&y2<300000:E;
+!!IF&y2>=300000:Q1/8/y1/6/300000/2^一个来自远方的商人准备用他的一件宝物%Z1，来换取一些金钱。你想要吗？^;
+!!FU&-1:E;
+!!HE-1&y2>=300000:A4/y1;
+!!OW&y2>=300000:R-1/6/d-300000;
+!!VRz1:S^Gold01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=28; magic book + all level 1 spells
+!!HE-1:A2/0/?y1/?y2;
+!!HE-1&y2<1:A4/1000; equip the book
+!!HE-1:M41/1 M43/1 M37/1 M42/1 M35/1 M53/1;
+!!HE-1:M15/1 M31/1 M32/1 M27/1 M54/1 M46/1;
+!!HE-1:M0/1 M5/1 M3/1;
+!!IF:N9/41/9/43/9/37/9/42/9/35/9/53/9/15/9/31;
+!!IF:N^你发现一个精致的容器，里面放着一本古老的牛皮纸书。容器上的字符非常古老，艺术性也令人惊叹。
+
+当你把书拿出来的时候，你觉得被赋予了神秘的力量。^;
+!!IF:N9/32/9/27/9/54/9/46/9/0/9/5/9/3;
+!!IF:N^学会了所有的1级魔法。^;
+!!VRz1:S^SYSMSG.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=29;  magic book + all level 2 spells
+!!HE-1:A2/0/?y1/?y2;
+!!HE-1&y2<1:A4/1000; equip the book
+!!HE-1:M62/1 M24/1 M4/1 M47/1 M13/1 M51/1;
+!!HE-1:M16/1 M17/1 M44/1 M30/1 M10/1 M64/1;
+!!HE-1:M1/1 M2/1 M45/1;
+!!IF:N9/62/9/24/9/4/9/47/9/13/9/51/9/16/9/17;
+!!IF:N^你发现一个精致的容器，里面放着一本古老的牛皮纸书。容器上的字符非常古老，艺术性也令人惊叹。
+
+当你把书拿出来的时候，你觉得被赋予了神秘的力量。^;
+!!IF:N9/44/9/30/9/10/9/64/9/1/9/2/9/45;
+!!IF:N^学会了所有的2级魔法。^;
+!!VRz1:S^SYSMSG.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=30;   magic book + all level 1-3 spells
+!!IF:M^你发现一个精致的容器，里面放着一本古老的牛皮纸书。容器上的字符非常古老，艺术性也令人惊叹。
+
+当你把书拿出来的时候，你觉得被赋予了神秘的力量。^;
+!!HE-1:N?y3;
+!!HE-1:A2/0/?y1/?y2;
+!!HE-1&y2<1:A4/1000; equip the book
+!!IF:N9/41/9/43/9/37/9/42/9/35/9/53/9/15/9/31;
+!!IF:N^你发现一个精致的容器，里面放着一本古老的牛皮纸书。容器上的字符非常古老，艺术性也令人惊叹。
+
+当你把书拿出来的时候，你觉得被赋予了神秘的力量。^;
+!!IF:N9/32/9/27/9/54/9/46/9/0/9/5/9/3;
+!!IF:N^^;
+!!IF:N9/62/9/24/9/4/9/47/9/13/9/51/9/16/9/17;
+!!IF:N^^;
+!!IF:N9/44/9/30/9/10/9/64/9/1/9/2/9/45;
+!!IF:N^^;
+!!IF:N9/28/9/39/9/34/9/25/9/14/9/13/9/12/9/61;
+!!IF:N^^;
+!!IF:N9/20/9/60/9/11/9/49/9/52/9/33/9/63;
+!!IF:N^学会了所有的1-3级魔法！^;
+!!DO15157575/0/69/1:Py3;
+!!VRz1:S^SYSMSG.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if|y10=31/y10=32; get random resource x month
+!!SN:W^R99resourcename^/?y1;
+!!SN:W^R99resource^/?y2;
+!!VRy2&y1=6:*1000;
+!!IF:Q1/y1/y2/1^你看到了一个骑士和邪恶的巫师在战斗，巫师用火球轰击骑士，使他跪倒在地。在巫师对骑士发出最后一击前，你迅速行动将巫师击杀。
+骑士为了报答你，递给你一些珍贵的资源。^;
+!!OW:R-1/y1/dy2;
+!!UN:R2;
+!!VRz1:S^09_03.wav^;
+!!SN:Pz1;
+!!VRz2:S^Gold01.wav^;
+!!SN:Pz2;
+!!en;
+
+!!if&y10=33; give shackles
+!!IF:Q1/8/125/1^你来到了一座桥前，当你开始过桥时，在桥的另一边出现了一只疯狂的食人魔，并朝你发起了进攻。
+你击杀了它之后，便将它的镣铐作为战利品取了下来。^;
+!!HE-1:A125;
+!!VRz1:S^PICKUP06.wav^;
+!!SN:Pz1;
+!!VRz2:S^09_02.wav^;
+!!SN:Pz2;
+!!en;
+
+!!if&y10=34; give 10 enchanters
+!!IF:Q1/21/136/1^你遇到了一队魔幻法师的车队，他们正在大快朵颐。他们对你说：“如果你能跳Rama-Buta，我们就跟着你。”你完全不会，但仍然尝试了一下。
+他们笑得歇斯底里，但很佩服你的勇气，然后就加入了你的军队。^;
+!!HE-1:C2/136/10/1;
+!!UN:R1;
+!!VRz1:S^28_01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=35; give 10k movement
+!!VRz1:S^10000点移动点数^;
+!!UN:A98/9/z1;
+!!IF:Q1/8/98/1^在你面前出现了一个悬浮的玻璃箱，箱子里有个金色的手环放在红天鹅绒上。
+当你触碰箱子时，箱子自动开启，手环飘到你的手中。今天你可以走得更远！^;
+!!HE-1:Wd10000;
+!!UN:A98/9/0; restore boots name
+!!VRz1:S^Haste.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=36;   gets one free obelisk
+!!OW:C?y1; get current player
+!!UN:U57/-1/?y-1;
+!!VRv1:S-1;
+!!DO45696523/1/y-1/1&y-1>0:P57/y1;  Run through
+!!IF&y-1>0:M^你突然发现自己置身于一个可怕的战后遗迹中??秃鹫盘旋于空中觅食。
+你粗略地搜索了一下遗迹，发现了一张藏宝图，似乎是从某个方尖塔上拓印而来的。^;
+!!IF&y-1<1:M^你突然发现自己置身于一个可怕的战后遗迹中??秃鹫盘旋于空中觅食。
+你粗略地搜索了一下遗迹，发现了一张藏宝图，但你已经有张一样的了。^;
+!!PO998&y-1<1:N15;
+!!FU&y-1<1:E;
+!!UN:Sv1/v2/v3/y1/3; show radius around
+!!VRz1:S^obelisk.wav^;
+!!SN:Pz1;
+!!SN:W^R99obelisk^/1;
+!!en;
+
+!!if&y10=37; get one free mage guild
+!!SN:W^R99notbuild^/0;
+!!OW:C?y1; current player
+!!UN:U98/-1/?y-1;
+!!VRv1:S-1;
+!!DO45696524/1/y-1/1&y-1>0:P98/y1;
+!!SN:W^R99notbuild^/?y1;
+!!SN:W^R99towntype^/?y2;
+!!VRy2:+22; get town type for display
+!!SN:W^R99guildlevel^/?y3;
+!!IF&y1<1:M^你的城镇都已经建完魔法行会了，无法再帮助你了。^;
+!!IF&y1>0:Q1/y2/y3/1^在你的实力以及领导力的影响下，%Z1的居民修建了一个完整的魔法行会！^;
+!!IF&y1>0:L^%Z1建立了完整的魔法行会！^;
+!!VRz1:S^ULTIMATEARTIFACT.wav^;
+!!SN&y1>0:Pz1;
+!!en;
+
+!!if&y10=38; hero creatures get prayer/haste/shield enchanted until next week
+!!IF:W-1;
+!!IF&y10=38:Q1/9/53/9/48/9/27/1^在7天之内，你的部队在战斗中将会获得增益魔法。^;
+!!VRw121:S7;
+!!VRz1:S^Prayer.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=39;  hero creatures get +3 speed until next week
+!!IF:W-1;
+!!VRz1:S^速度+3^;
+!!UN:A98/9/z1;
+!!IF:Q1/8/98/1^在7天之内，你的部队在战斗中将会获得速度+3。^;
+!!UN:A98/9/0; restore name
+!!VRw122:S7;
+!!VRz1:S^Haste.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=40; +100% HP
+!!VRz1:S^+100%生命值^;
+!!UN:A131/9/z1;
+!!IF:Q1/8/131/1^在7天之内，你的部队在战斗中将会获得生命值+100%。^;
+!!UN:A131/9/0;
+!!IF:W-1;
+!!VRw123:S7;
+!!VRz1:S^Bloodlus.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=41; give one experience level
+!!HE-1:B0/?z2;
+!!HE-1:Ed/?y1/d;
+!!IF:M^旅行过程中，你遇到了一位先知，他住在一个整洁的小屋。
+他抽出时间施加祝福，使你上升了一个经验等级。^;
+!!HE-1:E?y1/?y2;
+!!VRy2:+1; increase hero level by 1
+!!FU45696529:Py2/?v2;
+!!VRv2:-y1;
+!!HE-1:Edv2;
+!!en;
+
+!!if&y10=42;  give endless bag of gold
+!!IF:Q1/8/116/1^你发现一个大盒子，似乎是由某种不知名的金属制作而成的。
+当你触碰它时，盒子在一声巨大的响声中打开，露出里面一袋闪闪发光的金子。^;
+!!HE-1:A4/116;
+!!VRz1:S^gold01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=43;  get spell points
+!!SN:W^R99manabonus^/?y1;
+!!IF:Q1/35/y1/1^你看到一个小妖精绕着一个魔法袋欢快地跳舞。看到你走近之后，小妖精停了下来，他发出了一声尖叫然后消失了。
+你上前拿起袋子，发现里面充盈着魔力。^;
+!!HE-1:Idy1;
+!!VRz1:S^MaleA33b.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10>43/y10<46;
+  !!VRy10:R0/46/48;
+!!en;
+
+!!if&y10=46; gets blessed
+!!SN:W^R99blessmultiple^/?y1;
+!!IF:N1/y1/3/y1/4/y1/5/y1;
+!!IF:N^一个旅行者向你乞求食物和水，你帮助了他。他实现了你的愿望：在7天之内每天都会获得资源。^;
+!!HE-1:Y5/y1/7/1;
+!!VRz1:S^Bless.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=47; gets daily experience
+!!SN:W^R99experience^/?y1;
+!!IF:Q1/17/y1/1^一个游牧商人在大耳怪部落里寻求你的保护。为了得到你的帮助，他同意在7天内训练你的战斗技巧。你将每天获得经验值。^;
+!!HE-1:Y9/y1/7/1;
+!!VRz1:S^05_01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=48; gets daily movement
+!!SN:W^R99movement^/?y1;
+!!VRz1:S^7天内移动点数奖励：%Y1^;
+!!UN:A98/9/z1;
+!!IF:Q1/8/98/1^一个游牧商人在大耳怪部落里寻求你的保护。为了得到你的帮助，他给了你一双用最柔软的皮革制作而成的靴子。在7天之内，你将可以走得更远。^;
+!!HE-1:Y65/y1/7/1;
+!!UN:A98/9/0; restore
+!!VRz1:S^11_02.wav^;
+!!SN:Pz1;
+!!VRz2:S^Horse00.wav^;
+!!SN:Pz2;
+!!en;
+
+!!if&y10=49; gets scouting radius bigger
+!!VRz1:S^侦察半径12！^;
+!!UN:A52/9/z1;
+!!IF:Q1/8/52/1^你捡到一个奇怪的窥镜，在7天之内，你将可以侦察到更远的地方。^;
+!!IF:W-1;
+!!VRw125:S7;
+!!VRz1:S^Bless.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=50; get expert estates
+!!HE-1:S13/?y1;
+!!IF&y1<3:Q1/20/44/1^你看到一个术士骑着马狂奔，后面一条龙在追赶。术士匆忙打开一个传送门，骑马通过，但被门框挤掉了包裹。龙紧跟在后面，随后大门关闭。你捡起包裹，打开它。里面是一张卷轴，用古老的字符写着--读懂我的人将会变得富有。^;
+!!IF&y1=3:Q1/20/44/1^你已经学会了这个技能。^;
+!!HE-1&y1<3:S13/3;
+!!VRz1:S^MaleG13B.wav^;
+!!SN&y1<3:Pz1;
+!!en;
+
+!!if&y10=51; monsters drop money when defeated
+!!IF:Q1/36/d/36/d/36/d/1^你捡到了一个神奇的袋子。有了这个不可思议的宝物，你就能在击败怪物之后收集到怪物的黄金。7天之后，袋子将会消失。^;
+!!IF:W-1;
+!!VRw126:S7;
+!!VRz1:S^Military.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=52; Scourge
+!!VRz2:S^Poison.wav^;
+!!SN:Pz2;
+!!SN:W^R99IDscourge^/?y11;  initialize scourge
+!!HEy11&y11>-1:B0/?z1;
+!!IF&y11>-1:M^{~Yellow}所有的王国都被隔离，在%Z1的瘟疫被治愈前都无法进去！{~}^;
+!!FU&y11>-1:E;
+!!HE-1:B0/?z3;
+!!HE-1:N?y1;
+!!IF:Wy1;
+!!VRw127:S7;
+!!HEy1:L1^Ghost1.pcx^;
+!!HEy1:L2^Ghost2.pcx^;
+!!VRz1:S^Pestilence^;
+!!VRz2:S^^;
+!!UN:G1/141/0/1;
+!!UN:G1/141/1/2;
+!!IF:Q1/21/141/1^{~Yellow}利未记 26:25:
+
+我又要使刀剑临到你们，报复你们背约的仇。聚集你们在各城内，降瘟疫在你们中间，即便是敌人也不敢接近你。{~}
+
+瘟疫：在7天之内，敌人将无法靠近%Z3。^;
+!!UN:G1/141/0/0; restore
+!!UN:G1/141/1/0; restore
+!!UN:R1;
+!!en;
+
+!!if&y10=53; teleportation
+!!HE-1:N?y7;
+!!SN:W^R99OV^/?y2;  OV ID to visit today
+!!VRy1&y2=1:S23; Marletto Tower
+!!VRy1&y2=2:S32; Garden of Revelation
+!!VRy1&y2=3:S51;  Mercenary Camp
+!!VRy1&y2=4:S61;  Star Axis
+!!VRy1&y2=5:S41; Library of Enlightenment
+!!VRy1&y2=6:S4;  Arena
+!!VRy1&y2=7:S47; School of Magic
+
+!!VRy3&y2=1:S1; OV ID
+!!VRy3&y2=2:S2;
+!!VRy3&y2=3:S3;
+!!VRy3&y2=4:S4;
+!!VRy3&y2=5:S6; skip trees
+!!VRy3&y2=6:S7;
+!!VRy3&y2=7:S8;
+
+!!VRz1&y2=1:S^马力特塔^;
+!!VRz1&y2=2:S^真理之园^;
+!!VRz1&y2=3:S^雇佣兵营帐^;
+!!VRz1&y2=4:S^星轴^;
+!!VRz1&y2=5:S^智者图书馆^;
+!!VRz1&y2=6:S^竞技场^;
+!!VRz1&y2=7:S^魔法学校^;
+!!UN:Uy1/-1/?y-1; OV number
+!!IF&y-1<1:M^不幸的是，地图上没有%Z1可供访问。^;
+!!FU&y-1<1:E;
+!!VRv1:S-1;
+!!DO32456139/1/y-1/1&y-1>0:Py1/y3/y7/y-1;  Run through
+!!VRz1:S^wind01.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10=54; builder
+!!SN:W^R99builderID^/?y1;
+!!IF&y1>-1:M^你已经拥有一个建筑师了！^;
+!!FU&y1>-1:E;
+!!VRz1:S^^;
+!!UN:A3/9/1;
+!!IF:Q1/8/3/2^你想让这个英雄的特长在9天之内更改为{~Gold}建筑师{~}吗？^;
+!!UN&-1:A3/9/0;
+!!FU&-1:E;
+!!HE-1:N?y1;
+!!IF:Wy1;
+!!VRw124:S7;
+!!SN:W^R99builderID^/y1;
+!!HEy1:X?y5/?y6/?y7/?y8/?y9/?y10/?y11;
+!!SN:W^R99ID5^/y5;
+!!SN:W^R99ID6^/y6;
+!!SN:W^R99ID7^/y7;
+!!SN:W^R99ID8^/y8;
+!!SN:W^R99ID9^/y9;
+!!SN:W^R99ID10^/y10; 
+!!SN:W^R99ID11^/y11;
+!!HEy1:X8/2; make him builder
+!!VRz1:S^Dragon.wav^;
+!!SN:Pz1;
+!!UN:A3/9/0;
+!!en;
+
+!!if&y10>54/y10<62; give one commander artifacts
+!!SN:W^R99commander^/?y1;
+!!IF:Q1/8/y1/1^在一个乡村客栈短暂停留，离开时你拿错了行李，在新背包里发现了一件神奇的宝物。^;
+!!HE-1:Ay1;
+!!VRz1:S^smith.wav^;
+!!SN:Pz1;
+!!en;
+
+!!if&y10>61; commander receives one skill he doesn't have
+!!SN:W^R99completed^/0;
+!!HE-1:N?y1;
+!!DO45696539/0/6/1:Py1;
+!!COy1:T?y2;
+!!VRy2:+174;
+!!SN:W^R99completed^/?y1;
+!!IF&y1<99:Q1/21/y2/1^你的指挥官获得一项新的技能：%Z1^;
+!!VRz1:S^01_02.wav^;
+!!SN&y1<99:Pz1;
+!!IF&y1=99:M^你的指挥官已经掌握这个技能了！^;
+!!en;
+;replace Caves
+!!VRv3:Cv998/v999/v1000;
+!!VRv3:+1;
+!!UN:Ov3/v4/v5;
+!!UN:Iv3/v4/v5/63/55;
+!!OB998:Hz959; set to visited
+!!PO998:N15;
+
+!?FU45696539;
+!!SN&x16=6:W^R99completed^/99;
+!!FU&x16=6:E;
+!!COx1:Sx16/?y1;
+!!FU&y1>0:E;
+!!COx1:Sx16/1;
+!!VRz1&x16=0:S^攻击^;
+!!VRz1&x16=1:S^防御^;
+!!VRz1&x16=2:S^生命^;
+!!VRz1&x16=3:S^杀伤^;
+!!VRz1&x16=4:S^魔法^;
+!!VRz1&x16=5:S^速度^;
+!!VRx16:S99;
+
+!?FU45696529; Custom levels
+; x1 - level
+; ?x2 - exp (don't use y-vars in get syntax)
+!!UN:J1/?y1/d J1/12/?y2 J1/x1/?y3 J1/y1/?y4;
+!!VRx2:Sy3;
+!!FU&x1<=12:E;
+!!VRx2:Sy2;
+!!VRy4:S13;
+!!UN:J1/y4/?y5; #5
+!!VRx2:+y5;
+!!VRy4:+1;
+!!SN&y4<=x1:G5;
+!!UN:J1/y1/?y5;
+
+!?FU45696524;
+!!UN:Ux1/-1/-1/1;
+!!CAv1/v2/v3:O?y1;
+!!FU&y1<>x2:E; exit if current player not owner
+!!CAv1/v2/v3:T?y1;
+!!VRy2:S4; set y2 to mage guild level 5 index
+!!VRy2&y1=0:S3; if castle set to level 4
+!!VRy2&y1>5/y1<8:S2;   if fortress/stronghold set to level 3
+!!CAv1/v2/v3:B3/y2; check in flag one if guild built
+!!FU&1:E; exit if already full guild
+!!CAv1/v2/v3:B6/y2; build
+!!CAv1/v2/v3:N?z1; get town name
+!!SN:W^R99notbuild^/99;
+!!SN:W^R99towntype^/y1;
+!!SN:W^R99guildlevel^/y2;
+!!VRx16:S99; exit loop
+
+!?FU45696523;
+;x2 current player
+!!UN:Ux1/-1/-1/1;
+!!MTv1/v2/v3:N?y1; get obelisk index
+!!UN:Lx2/y1/?y2;
+!!FU&y2>0:E;
+!!UN:Lx2/y1/1; set to visited
+!!VRx16:S99; exit loop
+
+!?FU15157575;
+!!SSx16:L?y1; check spell level
+!!HEx1&y1<4:Mx16/1; give all spells level 1-3
+
+!?BF&1000;
+!!BA:H0/?y1;
+!!BA:H1/?y2;
+!!IF:Wy1;
+!!DO45696525/0/20/1&w121>0:P;
+!!DO45696527/0/20/1&w122>0:P;
+!!DO45696528/0/20/1&w123>0:P;
+!!IF&y2>-1:Wy2;
+!!DO45696525/21/41/1&w121>0/y2>-1:P;
+!!DO45696527/21/41/1&w122>0/y2>-1:P;
+!!DO45696528/21/41/1&w123>0/y2>-1:P;
+
+!?BA0&1000;  Rockfeller bonus
+!!BA:H0/?y1;
+!!BA:H1/?y2;
+!!IF:Wy1;
+!!SN&w126>0:W^R99Health^/0;
+!!DO45696538/0/6/1&w126>0/y2<0:P;
+
+; Get total health of neutrals
+!?FU45696538;
+!!SN:W^R99Health^/?y10;
+!!BA:M1/x16/?y3/?y4; [If neutrals]
+!!FU|y3<0/y4=0:E; [Exit if nothing in slot]
+!!MA:Py3/?y5; base HP of the creature
+!!VRy6:Sy5*y4; total health for the stack
+!!VRy10:+y6; add stack's health to total health: y10;
+!!SN:W^R99Health^/y10;
+
+!?BA1&1000;
+;Rockfeller
+!!HE-1:O?v1;
+!!FU&v1<0:E;
+!!IF:W-1;
+!!FU&w126<1:E;
+!!SN:W^R99Health^/?y1;
+!!FU&y1<1:E; exit if AI hero
+!!VRy1::2; adjust spoils
+!!HE-1:B0/?z1;
+!!IF:Q1/6/y1/1^奖励：%Z1在击败怪物后成功收集到%Y1黄金。^;
+!!OW:R-1/6/dy1;
+!!UN:R2;
+
+!?FU45696525;
+!!BMx16:M53/999/3 M48/999/3 M27/999/3;
+
+!?FU45696527;
+!!BMx16:S?(speed:y);
+!!BMx16&(speed)>0:Sd3; +3 speed
+
+!?FU45696528;
+!!BMx16:H?y1;
+!!VRy1:*2;
+!!BMx16:Hy1;
+
+
+!?FU45696526;
+!!IF:Wx16;
+!!VRw121&w121>0:-1;
+!!VRw122&w122>0:-1;
+!!VRw123&w123>0:-1;
+!!VRw125&w125>0:-1;
+!!VRw126&w126>0:-1;
+!!VRw127&w127>1:-1;                     [scourge]
+!!VRw124&w124>1:-1;                     [builder]
+
+!!if&w127=1; scourge
+  !!HEx16:B0/?z2;
+  !!HEx16:L3/x16; restore
+  !!VRw127:-1;
+  !!IF:L^%Z2的瘟疫被治愈了。^;
+  !!SN:W^R99IDscourge^/-1;  initialize scourge
+  !!HOx16:R;                            [hero can be attacked again - WIP. not HO:S?]
+!!en;
+
+!!if&w124=1;
+  !!SN:W^R99ID5^/?y5;
+  !!SN:W^R99ID6^/?y6;
+  !!SN:W^R99ID7^/?y7;
+  !!SN:W^R99ID8^/?y8;
+  !!SN:W^R99ID9^/?y9;
+  !!SN:W^R99ID10^/?y10;
+  !!SN:W^R99ID11^/?y11;
+  !!HEx16:Xy5/y6/y7/y8/y9/y10/y11;
+  !!UN:G0/d/d/0; restore
+  !!VRw124:-1;
+  !!SN:W^R99builderID^/-1;
+  !!HEx16:B0/?z1;
+  !!IF:L^%Z1不再是建筑师了。^;
+!!en;
+
+!?FU654789321;
+;x1 hero ID
+;x2 faction
+!!HOx1&x2<>x16:Dx16; exclude his faction
+
+!?FU56789012;
+;x1, x2 type/subtype
+;x3 commanders enabled/no
+;x4 percentage of Caves visitable (0=75%, 1=100%)
+!!if&x3=0:; commanders enabled
+!!VRy1&x4=0:S10 R54;  75%
+!!VRy1&x4=1:S20 R44;  100%
+!!en:;
+  !!if&x3=1:; commanders not enabled
+  !!VRy1&x4=0:S10 R44;   75%
+  !!VRy1&x4=1:S20 R34;   100%
+  !!en:;
+!!SN:W^R199counter^/?y2;   check if Watcher on/off
+!!VRy1&y1>43/y1<46/y2>0:S43;   set to 100 spell points instead
+!!UN:Ux1/x2/-1/1;
+!!POv1/v2/v3:N0;
+!!SN:W^R57percentage^/?y10; check if obelisks are all removed
+!!VRy1&y10=10/y1=36:S43; set to spell points
+!!POv1/v2/v3:B0/y1;
+!!OBv1/v2/v3:Hz958;
+!!VRy1:Sv1+1;
+!!UN:P904/1; turn errors off
+!!UN:P905/0; clear error flag
+!!HEv1/v2/v3:N?y8; get hero to y8, if any
+!!UN:P904/0; turn on errors showing
+!!UN:P905/?y9; get error flag to y9
+!!FU&y9=0:E; exit if hero on Cave (will crash if not)
+!!UN:Ov1/v2/v3;
+!!UN:Iy1/v2/v3/63/56;
+
+!?CM0;
+!!SN:L^user32.dll^/?y1 Ay1/^GetKeyState^/?y2 Ey2/1/17;
+!!VRy1:Sv1&65535;
+!!FU&y1>32768:E; exit if ctrl hold
+!!CM:P?y4/?y5/?y6;
+!!SN:W^R99counter^/?y7;
+!!FU&y7<1:E;
+!!OBy4/y5/y6:T?y7 U?y8;
+!!if&y7=63/y8=55; if visited
+!!IF:Q1/-1/-1/4^已访问^;
+!!CM:R0;
+!!en;
+
+!!if&y7=63/y8=56; if Cave
+!!POy4/y5/y6:N?y9;
+!!FU&y9>0:E;
+!!POy4/y5/y6:B0/?y10;
+;
+!!IF&y10<20:Q1/13/-1/4^洞穴是空的^; give nothing
+!!SN&y10=20:W^R99primaryskills^/?y1;  gives random primary skill
+!!SN&y10=20:W^R99randomstat^/?y2;
+!!IF&y10=20:Q1/y1/y2/4^基本技能奖励^;
+!!SN&y10=21:W^R99experience^/?y1;
+!!IF&y10=21:Q1/17/y1/4^给予经验值^;
+!!IF&y10=22:Q1/8/98/8/70/4^给予神行靴和骑士手套^;
+!!IF&y10=23:Q1/20/11/4^给予高级后勤学^;
+!!SN&y10=24:W^R99magic^/?y1; get one magic school
+!!VRy3&y10=24:Sy1*3+5;
+!!UN&y10=24:N4/z1/y1;
+!!IF&y10=24:Q1/20/y3/4^给予高级%Z1^;
+!!SN&y10=25:W^R99cornucopia^/?y1;
+!!UN&y10=25:N0/z1/y1;
+!!IF&y10=25:Q1/8/y1/4^给予%Z1^;
+!!SN&y10=26:W^R99legion^/?y1;
+!!UN&y10=26:N0/z1/y1;
+!!IF&y10=26:Q1/8/y1/4^给予%Z1^;
+!!SN&y10=27:W^R99tomes^/?y1;
+!!UN&y10=27:N0/z1/y1;
+!!IF&y10=27:Q1/8/y1/4^30万售卖%Z1^;
+!!IF&y10=28:Q1/-1/-1/4^给予所有1级魔法^;
+!!IF&y10=29:Q1/-1/-1/4^给予所有2级魔法^;
+!!IF&y10=30:Q1/-1/-1/4^给予所有1-3级魔法^;
+!!SN|y10=31/y10=32:W^R99resourcename^/?y1;
+!!SN|y10=31/y10=32:W^R99resource^/?y2;
+!!VRy2&y10>30/y10<33/y1=6:*1000; gold x 1000
+!!IF|y10=31/y10=32:Q1/y1/y2/4^给予资源^;
+!!IF&y10=33:Q1/8/125/4^给予战争枷锁^;
+!!VRy1&y10=34:S65536*10+136;
+!!IF&y10=34:Q1/21/y1/4^给予10个魔幻法师^;
+!!VRz1&y10=35:S^给予10000移动点数^;
+!!UN&y10=35:A98/9/z1;
+!!IF&y10=35:Q1/8/98/4^^;
+!!UN&y10=35:A98/9/0;
+!!IF&y10=36:Q1/-1/-1/4^开启随机一个方尖塔^;
+!!IF&y10=37:Q1/24/4/4^建造魔法行会^;
+!!IF&y10=38:Q1/9/53/9/27/9/48/4^给予部队魔法^;
+!!IF&y10=39:Q1/9/53/4^给予部队速度+3^;
+!!IF&y10=40:Q1/-1/-1/4^给予部队生命值+100%^;
+!!IF&y10=41:Q1/17/-1/4^{~Yellow}等级上升{~}^;
+!!IF&y10=42:Q1/8/116/4^给予黄金袋^;
+!!SN&y10=43:W^R99manabonus^/?y1;
+!!IF&y10=43:Q1/35/y1/4^给予%Y1魔法值^;
+!!VRz1|y10=44/y10=45:S^^;
+!!UN|y10=44/y10=45:A92/9/z1;
+!!IF|y10=44/y10=45:Q1/8/92/8/92/8/92/4^{~SeaShell}预知
+
+在7天之内可查看其它神秘洞穴的奖励{~}^;
+!!UN|y10=44/y10=45:A92/9/0;
+!!SN&y10=46:W^R99blessmultiple^/?y1;
+!!IF&y10=46:Q1/-1/-1/4^祝福：英雄每天为王国带来%Y1的资源收入^;
+!!SN&y10=47:W^R99experience^/?y1;
+!!IF&y10=47:Q1/17/y1/4^祝福：英雄每天获得经验值^;
+!!VRz1&y10=48:S^祝福：英雄7天之内获得移动点数奖励^;
+!!UN&y10=48:A98/9/z1;
+!!IF&y10=48:Q1/8/98/4^^;
+!!UN&y10=48:A98/9/0;
+!!VRz1&y10=49:S^祝福：扩大侦察范围^;
+!!UN&y10=49:A52/9/z1;
+!!IF&y10=49:Q1/8/52/4^^;
+!!UN&y10=49:A52/9/0;
+!!IF&y10=50:Q1/20/44/4^给予高级理财术^;
+;commanders
+!!IF&y10=51:Q1/36/d/36/d/36/d/4^击败怪物掉落黄金^;
+!!VRz1&y10=52:S^瘟疫^;
+!!VRz2&y10=52:S^^;
+!!UN&y10=52:G1/141/0/1;
+!!UN&y10=52:G1/141/1/2;
+!!IF&y10=52:Q1/21/141/4^{~Crimson}%Z1{~}^;
+!!UN&y10=52:G1/141/0/0; restore
+!!UN&y10=52:G1/141/1/0; restore
+!!IF&y10=53:Q1/31/d/32/d/33/d/4^传送：你可以从远处访问地图上的一些对象^;
+!!VRz1&y10=54:S^^;
+!!UN&y10=54:A3/9/1;
+!!IF&y10=54:Q1/8/3/4^{~Gold}建筑师：{~}
+
+英雄可以拆除和重建城镇^;
+!!UN&y10=54:A3/9/0; restore
+!!SN&y10>54/y10<62:W^R99commander^/?y1;
+!!UN&y10>54/y10<62:N0/z1/y1;
+!!IF&y10>54/y10<62:Q1/8/y1/4^{~Cyan}指挥官宝物：%Z1{~}^;
+!!IF&y10>61/y10<65:Q1/-1/-1/4^{~Chartreuse}指挥官：新技能{~}^;
+!!CM:R0;
+!!en;
+
+
+!?HM-1;  increase scouting radius
+!!IF:W-1;
+!!FU&w125=0:E;
+!!OW:C?v1;
+!!HE-1:P?y1/?y2/?y3;
+!!UN:Sy1/y2/y3/v1/12;
+
+!?FU32456139;
+;x1= OB ID
+;x2= OV ID
+;x3 Hero ID
+;x4 number of objects on map
+!!UN:Ux1/-1/-1/1; [OV at coordinates in v1/v2/v3]
+!!OBv1/v2/v3:C?y2; Get number
+!!HEx3:Vx2/y2/?y3; Visited?
+!!IF&x16=x4/y3=1:M^你已经访问过地图上所有的这个类型的物体了^;
+!!FU&y3=1:E;
+!!OW:A-1/-1;
+!!UN:Lv1/v2/v3/100;  stop view on for one second
+!!OW:C?y4; current player
+!!UN:Sv1/v2/v3/y4/1; open view for current player
+!!HEx3:Vx2/y2/1; set to visited
+!!HEx3&x2=1:Fd/d1/d/d;
+!!HEx3&x2=2:Fd/d/d/d1;
+!!HEx3&x2=3:Fd1/d/d/d;
+!!HEx3&x2=4:Fd/d/d1/d;
+!!HEx3&x2=6:Fd2/d2/d2/d2;
+!!HEx3&x2=7:Fd2/d/d/d;
+!!HEx3&x2=8:Fd/d/d1/d;
+!!VRy1&x2=1:S32;
+!!VRy1&x2=2:S34;
+!!VRy1&x2=3:S31;
+!!VRy1&x2=4:S33;
+!!VRy1&x2=7:S31;
+!!VRy1&x2=8:S33;
+!!VRy2:S1;
+!!VRy2&x2=7:S2;
+!!IF&x2<>6:Q1/y1/y2/1^通过风的力量，你访问了远处的地方。^;
+!!IF&x2=6:N31/2/32/2/33/2/34/2;
+!!IF&x2=6:N^通过风的力量，你访问了远处的一个图书馆。^;
+!!UN:R1;
+!!VRx16:S999; exit
+
+!?FU(OnHeroScreenMouseClick)&i^mouse_item^=139;
+!!CM:R0;
+!!IF:W-1;
+!!HE-1:B0/?z7;
+;pestilency
+!!VRy1:Sw127;
+!!VRz1&y1<1:S^^;
+!!VRz1&y1>0:S^瘟疫：%Z7无法被攻击，将在%Y1天后被治愈。^;
+!!VRy2:Sw126;
+!!VRz2&y2<1:S^^;
+!!VRz2&y2>0:S^击败怪物掉落金币的效果，将在%Y2天后失效。^;
+!!VRy3:Sw125;
+!!VRz3&y3<1:S^^;
+!!VRz3&y3>0:S^侦查范围扩大的效果，将在%Y3天后失效。^;
+!!VRy4:Sw123;
+!!VRz4&y4<1:S^^;
+!!VRz4&y4>0:S^部队战斗中+100%生命值的效果，将在%Y4天后失效。^;
+!!VRy5:Sw122;
+!!VRz5&y5<1:S^^;
+!!VRz5&y5>0:S^部队战斗中+3速度的效果，将在%Y5天后失效。^;
+!!VRy6:Sw121;
+!!VRz6&y6<1:S^^;
+!!VRz6&y6>0:S^部队战斗中获得祈祷、加速和护盾的效果，将在%Y6天后失效。^;
+
+!!if&i^mouse_action^=(MOUSE_LMB_PRESSED);
+  !!VRy30:S(MSG_TYPE_MES);
+!!el&i^mouse_action^=(MOUSE_RMB_PRESSED);
+  !!VRy30:S(MSG_TYPE_POPUP);
+!!en;
+
+!!if&y1=0/y2=0/y3=0/y4=0/y5=0/y6=0;
+  !!IF:Q1/-1/-1/y30^你的英雄本周内没有获得奖励。^;
+  !!FU:E;
+!!en;
+
+!!IF:Q1/17/d/17/d/17/d/y30^
+{~Gold}%Z7这周的奖励：{~}
+
+{~Aqua}%Z1
+{~Aqua}%Z2
+{~Aqua}%Z3
+{~Aqua}%Z4
+{~Aqua}%Z5
+{~Aqua}%Z6{~}^;
+
+!?CM1; Builder, inside town
+*!UN:P4/1;                              [set to no demolition - disabled by Archer]
+!!CA-1:H1/?y1;
+!!FU&y1<0:E;
+!!IF:Wy1;
+!!FU&w124<1:E;
+*!UN:P4/0;                              [set to demolition]
+!!CD:D10 M0; allow 10 demolitions day for 0 movement penalty
+!!CA-1:T?y1;
+!!CM:I?y2;
+!!FU|y2<0/y2>43:E;  check if clicked on valid area
+!!CD:Ay1/y2/1 Ey1/y2/0; set experience and HP required to minimum
+
+
+!?CM2; Builder specialty icon text
+!!IF:W-1;
+!!FU&w124<1:E;
+!!CM:I?y1;
+!!FU&y1<>118:E;
+!!VRz2:S^{~Gold}建筑师：{~}
+英雄可以重建所选择派系的城镇。
+
+说明：一旦拆除掉最后一个建筑 (议事堂)，一个铁匠铺会出现在城镇中。你可以在拆除这个铁匠铺的2天后重建城镇。^;
+!!IF:Q1/-1/-1/4^%Z2^;
+!!CM:R0;
+
+!?CM1; Ghosts in blacksmith, get rid of
+!!FU:E;                                 [Archer - restore blacksmith as the dwelling of ghost]
+!!CA-1:U?y1;
+!!VRy1:*30+8630976+20;
+!!UN:Cy1/4/0;
+
+!$OB63/56&1000;
+!!SN:W^R99obelisk^/?y1;
+!!FU&y1<1:E;
+!!UN:C6918840/4/?y1; [pAdvManager]
+!!SN:E4302672/2/y1;  [ShowOracleMap]
+!!SN:W^R99obelisk^/-1;
+
+!?OB63/55&1000;
+!!IF:M^下周再来吧！^;

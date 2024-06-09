@@ -1,0 +1,40 @@
+{
+  "eighth": {
+    "dwellDesc": "{建造 @dwellName@}\n\n@dwellName@允许你招募@monName@。\n\n\n需要：\n",
+    "comma":  "，",
+    "reqMet": "建造此建筑的前提条件都已满足。",
+    "built":  "本回合这里已经建造过了。",
+    "missBuild":  "你尚未建造所有的前置建筑。",
+    "missRes": "你没有足够的资源。",
+    "dwellAsk":  "你想建造这个建筑吗？",
+
+    "dwell_0": "大教堂",
+    "dwell_1": "高级大教堂",
+    "dwell_2": "树屋",
+    "dwell_3": "高级树屋",
+    "dwell_4": "傀儡龙工厂",
+    "dwell_5": "高级傀儡龙工厂",
+    "dwell_6": "欲望之间",
+    "dwell_7": "高级欲望之间",
+    "dwell_8": "致命墓室",
+    "dwell_9": "高级致命墓室",
+    "dwell_10": "远古深渊",
+    "dwell_11": "高级远古深渊",
+    "dwell_12": "神塔",
+    "dwell_13": "高级神塔",
+    "dwell_14": "沼泽小屋",
+    "dwell_15": "高级沼泽小屋",
+    "dwell_16": "深海神殿",
+    "dwell_17": "高级深海神殿",
+
+    "growthDetails":  "@monName@的每周生长率为@totalGrowth@\n",
+    "growthBasic":  "基本生长率@basicGrowth@",
+    "growthCastle": "@castle@ +@castleBonus@",
+    "growthExtDwell": "野外巢穴 +@extDwellBonus@",
+
+    "hintBuild": "{建造 @buildName@}",
+    "hintRecruit":  "招募 @monName@. {每周增长: @totalGrowth@ .}",
+
+    "disabled": "第8生物已被禁用。\n\n请从WOG选项的第一页中启用此选项。"
+  }
+}

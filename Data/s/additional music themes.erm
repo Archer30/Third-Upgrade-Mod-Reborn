@@ -1,0 +1,54 @@
+ZVSE2
+; Author:   Archer30
+; Engine:   ERM 2.0+
+; Requires: ERA 3.3+, Era Erm Framework
+
+; Additional sound tracks support for comvat and AI themes
+
+
+!?FU(OnMp3MusicChange);
+!!FU(amt_ChangeSoundTrack):P^combat^ P^aitheme^;
+
+!?FU(amt_ChangeSoundTrack);
+!#VA(theme:x);
+
+; Set Up variables
+!!if&z(theme)=^combat^;
+  !!VR(firstTrack:y):S1;
+  !!VR(lastTrack:y):S4;
+  !!VR(unitsPrefix:z):S^0^;
+!!el;
+  !!VR(firstTrack):S0;
+  !!VR(lastTrack):S2;
+  !!VR(unitsPrefix):S^^;
+!!en;
+
+; Check if playing a normal track
+!!MP:S?(currTrack:z)/?(dontTrackPos:y)/?(loop:y); [remade receiver for ERA 2.8.7+]
+
+!!re i/1/(lastTrack);
+  !!br&(currTrack)=^%z(theme)%(unitsPrefix)%i^;
+!!en;
+
+!!if&i<=(lastTrack);
+  !!re j/(firstTrack)/99;
+    !!if&j<=9;
+      !!FU(FileExists):P^Mp3\%z(theme)%(unitsPrefix)%j.mp3^/?(result:y);
+    !!el&j>9/j<=99;
+      !!FU(FileExists):P^Mp3\%z(theme)%j.mp3^/?(result);
+    !!en;
+
+    !!br&(result)=(FALSE);
+  !!en;
+
+  !!VR(newLastTrack:y):Sj -1;
+  !!VR(random:y):R0/(firstTrack)/(newLastTrack);
+
+  !!if&(random)<=9;
+    !!VR(newTrack:z):S^%z(theme)%(unitsPrefix)%(random)^;
+  !!el&(random)>9/(random)<=99;
+    !!VR(newTrack):S^%z(theme)%(random)^;
+  !!en;
+
+  !!MP:S(newTrack)/?(dontTrackPos)/?(loop);
+!!en;

@@ -1,0 +1,250 @@
+{
+  "tumr": {
+    // **** Localization starts from here **** //
+    "str": {
+      "endl": "\n",
+      "comma": "，",
+      "period": "。",
+      "exclamationMark": "！",
+
+      // Precise creature description for Golems, Elementals and other Non-livings
+      "golem": "魔像。",
+      "elemental": "元素。",
+      "nonLiving": "无生命。",
+
+      // Compatibility check
+      "wf": "{未找到WoG图像优化mod！}\n\n三阶升级mod：重生需要和WoG图像优化mod (或WoG图像优化精简版) 一同使用。请在mod管理器内启用此mod后再进行游戏。",
+
+      // Custom buffs
+      "spellName0": "丧尸",
+      "spellDesc0": "这支部队属于丧尸。",
+      "spellName1": "龙",
+      "spellDesc1": "这支部队属于龙。",
+      "spellName2": "地狱援军",
+      "spellDesc2": "这支部队已召唤来自地狱的盟友。",
+
+      "spellName5": "魔法干扰",
+      "spellDesc5": "部队无法施放魔法。", // The target can't cast spells.
+      "spellName6": "易燃涂层",
+      "spellDesc6": "部队受到火系魔法的损伤+50%，并且每回合受到等级*5的损伤。", // Increased damage from fire. The target will suffer damage every turn.
+      "spellName7": "复仇",
+      "spellDesc7": "部队获得额外的攻击力和最大杀伤力。", // Ravens grow fierce after being attacked.
+
+      "spellName76": "空气印记",
+      "spellDesc76": "空气印记可以和流水印记或者大地印记结合，产生不同的效果。同时，会被大地印记抵消。",
+      "spellName77": "流水印记",
+      "spellDesc77": "流水印记可以和空气印记或者大地印记结合，产生不同的效果。同时，会被烈火印记抵消。",
+      "spellName78": "烈火印记",
+      "spellDesc78": "烈火印记可以和空气印记或者大地印记结合，产生不同的效果。同时，会被流水印记抵消。",
+      "spellName79": "大地印记",
+      "spellDesc79": "大地印记可以和流水印记或者烈火印记结合，产生不同的效果。同时，会被空气印记抵消。",
+
+      "stun0": "@mon@陷入了眩晕。",
+      "stun1": "@mon@陷入了眩晕。",
+
+      // Vault of Ashes (+1 growth for Phoenix)
+      "vaultOfAshes": "\n元素城的大本营 +1",
+      "castleCitadel": "\n城堡的大本营 +1",
+
+      // Heroes
+      "specDesc": "{~r}生物特长{~}\n\n使@mon@攻击力+@atk@、防御力+@def@，",
+      "specMon0": "@mon1@、@mon2@和@mon3@",
+      "specMon1": "@mon1@、@mon2@、@mon3@和@mon4@",
+      "specEnd0": "杀伤力+@stat@。",
+      "specEnd1": "速度+@stat@。",
+      
+      "spec150": "在战斗中使5级以上有生命的部队获得丧尸属性。5级以上的丧尸杀伤力+1、生命值+5%、速度+1。",
+      "specBattle150": "{@hero@}的部队变成了丧尸！",
+      "spec153": "在战斗中使1-4级有生命的部队获得龙属性以及吐息攻击的能力。",
+      "specBattle153": "{@hero@}的部队变成了龙！",
+      
+      // Creatures
+      // Hatred
+      "hatred0": "在愤怒中，@atkMon@造成额外的损伤在@defMon@身上。", // Burning with anger, the @AtkMon@ does extra damage to the @defMon@.
+      "hatred1": "在愤怒中，@atkMon@造成额外的损伤在@defMon@身上。", // Burning with anger, the @AtkMon@ do extra damage to the @defMon@.
+
+      // WoG
+      "block": "@mon@设法挡住了这次攻击", // managed to block the next attack
+      "transmutation0": "@atkMon@将@defMon@转化成了@victim@", //%s turns %s to %s
+      "transmutation1": "@atkMon@将@defMon@转化成了@victim@", //%s turn %s to %s
+
+      // Monsters - General
+      "noSpell0": "@mon@耗尽了他的所有魔法值", // The %s has exhausted his spell points
+      "noSpell1": "@mon@耗尽了他们的所有魔法值", // The %s have exhausted their spell points
+      "tooManyStacks": "战场已经容纳不下更多的部队了",
+
+      "res0": "@num@个@mon@起死回生了！", // %d %s rises from the dead!
+      "res1": "@num@个@mon@起死回生了！", // %d %s rise from the dead!
+
+      // TUM Towns Monsters
+      "holyCharge0": "@mon@对经过的所有敌人造成@dmg@%的攻击损伤！",
+      "holyCharge1": "@mon@对经过的所有敌人造成@dmg@%的攻击损伤！",
+
+      "wingsOfRenewal0": "@mon@的复活能量传递给了周围的盟友！",
+      "wingsOfRenewal1": "@mon@的复活能量传递给了周围的盟友！",
+
+      "hammerCrush": "重锤粉碎：@bonus@%",
+
+      //"blindingLightNoTarget": "无法施放致盲之光 (邻近没有会被失明的敌人)",
+      "blindingLightMain": "施放致盲之光 (使邻近的所有敌人失明)",
+      "blindingLightCast0": "@mon@使邻近的所有敌人失明了！",
+      "blindingLightCast1": "@mon@使邻近的所有敌人失明了！",
+
+      "mendNotConstruct": "只有魔像才能复活。", // Only the non-living (golem) can be resurected.
+      "mendNotEnough0": "@currMon@没有足够的能力复活@targetMon@", // is not powerful enough to resurect the
+      "mendNotEnough1": "@currMon@没有足够的能力复活@targetMon@", // are not powerful enough to resurect the
+      "mendMain": "复活@num@个@mon@", // Resurrect the
+
+      "hardenedShelter0": "@mon@变成了石像！",
+      "hardenedShelter1": "@mon@变成了石像！",
+
+      "disarm0": "@mon@使敌人的反击次数降低了！",
+      "disarm1": "@mon@使敌人的反击次数降低了！",
+
+      "teamAttack0": "@mon@发起了援护射击！",
+      "teamAttack1": "@mon@发起了援护射击！",
+
+      "infernoReinforcements0": "@mon@召唤了来自地狱的盟友。",
+      "infernoReinforcements1": "@mon@召唤了来自地狱的盟友。",
+
+      "malevolentReckoning0": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
+      "malevolentReckoning1": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
+
+      "feast0": "在血肉的滋养下，@mon@的攻击力和防御力提高了@bonus@点！",
+      "feast1": "在血肉的滋养下，@mon@的攻击力和防御力提高了@bonus@点！",
+
+      "soulReap": "灵魂收割：@bonus@%",
+
+      "riteOfBloodNotDragon": "只能从有生命的龙或九头怪的尸体中召唤@mon@",
+      "riteOfBloodNotEnoughBody": "没有足够的尸体用于召唤@mon@",
+      "riteOfBloodNotEnoughCaster0": "@mon@没有足够的能力进行血之祭",
+      "riteOfBloodNotEnoughCaster1": "@mon@没有足够的能力进行血之祭",
+      "riteOfBloodMain": "召唤@num@个@riteMon@ (@targetMon@的尸体)",
+
+      "reflection0": "@mon@的影子从深渊中显现。",
+      "reflection1": "@mon@的影子从深渊中显现。",
+
+      "axeRampage": "飞斧狂暴：@bonus@%",
+
+      "imperviousToPainNeglect0": "@mon@无视了所受的@dmg@点损伤！",
+      "imperviousToPainNeglect1": "@mon@无视了所受的@dmg@点损伤！",
+      "imperviousToPainInflict0": "@mon@终于感受到了痛楚，受到@dmg@点损伤。",
+      "imperviousToPainInflict1": "@mon@终于感受到了痛楚，受到@dmg@点损伤。",
+
+      "spectralEcho": "超额的@dmg@点损伤击中了@mon@！",
+
+      //"venomweaveSeizure0": "@mon@在毒素的作用下陷入了昏迷！",
+      //"venomweaveSeizure1": "@mon@在毒素的作用下陷入了昏迷！",
+      "poisonNova": "剧毒新星使周围的所有敌人都中毒了！",
+
+      "nightmare0": "@mon@陷入绝望，丧失了攻击的机会。",
+      "nightmare1": "@mon@陷入绝望，丧失了攻击的机会。",
+
+      "manaSiphon0": "@mon@夺走了敌人的施法次数！",
+      "manaSiphon1": "@mon@夺走了敌人的施法次数！",
+
+      "manaTransferNotEnough0": "@mon@的施法次数不足以完成传输",
+      "manaTransferNotEnough1": "@mon@的施法次数不足以完成传输",
+      //"manaTransferNotValid": "@targetMon@无法接受@currMon@的施法次数",
+      "manaTransferMain": "将@spell@次施法次数转移给@mon@",
+      "manaTransferCast0": "@currMon@将@spell@次施法次数转移给了@targetMon@！",
+      "manaTransferCast1": "@currMon@将@spell@次施法次数转移给了@targetMon@！",
+
+      "flameRenewal0": "爆炸对邻近的部队造成@dmg@点损伤！",
+      "flameRenewal1": "爆炸使邻近的火系元素恢复了@dmg@点生命值！", // Fire-type Element
+      "flameRenewal2": "爆炸对邻近的部队造成@dmg@点损伤，火系元素恢复了@hp@点生命值！",
+
+      // 8th creatures
+      "naturalsPurification0": "@mon@的净化能量传递给了周围的盟友！",
+      "naturalsPurification1": "@mon@的净化能量传递给了周围的盟友！",
+
+      "veilOfChaos0": "@mon@丧失理智了！",
+      "veilOfChaos1": "@mon@丧失理智了！",
+
+      "hardenedSkin0": "@mon@的防御力提升了！",
+      "hardenedSkin1": "@mon@的防御力提升了！",
+
+      // TUM Neutral Monsters
+      "cleavingBlow0": "@atkMon@的攻击穿透了敌人的防御！",
+      "cleavingBlow1": "@atkMon@的攻击穿透了敌人的防御！",
+
+      "mysticUnravel0": "@mon@身上的有益魔法都被解除了。",
+      "mysticUnravel1": "@mon@身上的有益魔法都被解除了。",
+      "mysticUnravelEnd": " 并且防御力下降了@def@点！",
+
+      "backstab": "背刺：@bonus@%",
+      "smoothCriminal0": "犯罪高手",
+      "smoothCriminal1": "犯罪高手",
+
+      "spellAbsorption": "@atkMon@吸收了@defMon@的@spell@。",
+
+      "lightningRod": "@mon@引来了闪电！",
+
+      "spellBreak": "@mon@的魔力消散了！",
+
+      "adaptabilityDesc0": "{泥地}：攻击后施放迟缓大法。",
+      "adaptabilityDesc1": "{沙地}：杀伤力降低5%。",
+      "adaptabilityDesc2": "{草地}：拥有攻击加速。",
+      "adaptabilityDesc3": "{雪地}：20%的几率攻击后施放霹雳寒冰。",
+      "adaptabilityDesc4": "{沼泽}：行动后使邻近的敌人中毒 (一回合一次)。",
+      "adaptabilityDesc5": "{戈壁}：25%的魔法抵抗力。",
+      "adaptabilityDesc6": "{地下洞穴}：10%的几率格挡。",
+      "adaptabilityDesc7": "{熔岩}：受火系魔法攻击时损伤增加30%。",
+      "adaptabilityDesc8": "{水域}：行动前恢复35点生命值 (一回合一次，可复活)。",
+
+      "eternalResilience": "@mon@恢复了@regenHp@点生命值",
+      "eternalResilienceExt": "，并且@reviveNum@个复活了。",
+
+      "shadowSneak": "@defMon@无视了@atkMon@的攻击并发动了反击！",
+
+      "flesheater0": "@flesheater@吞噬了敌人的尸体并恢复了@hp@点生命值！",
+      "flesheater1": "@flesheater@吞噬了敌人的尸体并恢复了@hp@点生命值！",
+
+      "spellJammer0": "@mon@的魔法被夺走了。",
+      "spellJammer1": "@mon@的魔法被夺走了。", // The target can't cast spells.
+
+      "flammableCoatBuff0": "@mon@被易燃涂层包裹了。",
+      "flammableCoatBuff1": "@mon@被易燃涂层包裹了。",
+      "flammableCoatDmg0": "易燃涂层对@mon@造成@dmg@点损伤。",
+      "flammableCoatDmg1": "易燃涂层对@mon@造成@dmg@点损伤。",
+
+      "vendetta0": "@mon@受到攻击后变得更凶残了。",
+      "vendetta1": "@mon@受到攻击后变得更凶残了。", // Ravens grow fierce after being attacked.
+
+      "goodMorale": "高昂的士气让@mon@再一次进攻。",
+      
+      // Artifacts
+      "mythicRareArt": "\n\n{~OrangeRed}秘稀宝物{~}",
+
+      "crownOfTheFireKing": "{烈焰王冠}点燃了地面。",
+      //"ringOfNegativity": "@mon@被{电神指环}释放的闪电击晕了！",
+
+      "sacredWarHammer0": "神圣战锤：20%",
+      "sacredWarHammer1": "@mon@的灵魂被放逐了！", //exile
+
+      "shieldOfTheAncients": "{先祖之盾}使所有魔法杀伤力提高了@bonus@%。",
+
+      "fieldMartialsRing": "战争戒指：20%",
+
+      "atmaSwordHint": "阿特玛长剑：@bonusDmg@点伤害",
+      "atmaSword": "{阿特玛长剑}在手，@atkMon@即将杀死@rate@%的@defMon@！",
+
+      "atmaRobe": "身披{阿特玛长袍}，@mon@抵御了@spell@一半的伤害！",
+
+      "garbOfTheForestLord": "在{森林领主之袍}的力量下，一些仰慕者加入了@heroName@的军队。",
+      "mastersScroll": "在{大师卷轴}的帮助下，@hero@掌握了@oppHero@的冒险魔法。",
+      "armorOfTheAncientLizardman": "{远古蜥蜴人战甲}鼓舞了周围的部队对@mon@发动反击！",
+
+      "sleepkeeper0": "{净梦秘符}使@mon@获得100%的抵抗力。",
+      "sleepkeeper1": "{净梦秘符}驱除了@mon@的负面魔法。",
+      "sleepkeeper2": "{净梦秘符}驱除了@mon@的负面魔法，并给予100%的抵抗力。",
+
+      "armageddonsAndFrost": "@art1@和@art2@发生碰撞！\n\n先是一阵炫目的白光，然后是剧烈的爆炸。\n\n整个星球在这巨大的冲击中颤动着...",
+      //"iceBlast": "冰晶爆轰造成@damage@点损伤。",
+      "swordOfFrost": "{寒冰之剑}将对方的部队冻结了！",
+
+      "triColourScepter": "\n\n你想转换三色权杖的形态吗？",
+      "triColourScepterUndead": "\n三色权杖 +1"
+    }
+  } // tumr
+}

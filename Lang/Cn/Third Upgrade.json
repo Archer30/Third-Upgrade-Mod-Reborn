@@ -1,0 +1,108 @@
+{
+
+ 	"Third_Upgrade_Mod": {
+
+ 		"outOfDate": 						"{ERA版本太低！}\n\n三阶升级mod需要在ERA @version@以上的版本运行！请到WoG中文论坛获取最新的ERA 3整合版后再进行游戏。\n\n下载地址：https://www.h3wog.com/thread-76170-1-1.html",
+ 		"brokenMpSupport":					"{不完全支持多人游戏}\n\n三阶升级mod不完全支持多人游戏。在人类玩家之间对战的时候，游戏很可能会出错。请尝试将人类玩家设置为同一队伍后再进行游戏。",
+ 		"restartRequired": 					"{必须重新启动游戏}\n\n关闭三阶升级mod的第八生物选项后，必须完全关闭游戏，再重新启动。",
+
+ 		"Creature_Specialist_Title":		"{~r}生物特长{~}\n\n",
+		"Creature_Specialist_Body": 		"随等级提高@Crea1@、@Crea2@或@Crea3@的属性。当前：\n攻击力：{+@attack@}\n防御力：{+@defense@}\n杀伤力：{+@damage@}\n生命值：{+@health@%}\n速度：+1",
+
+		"his": 								"他的",
+
+		"her": 								"她的",
+
+		"spec146":							"可以将十字军或裁决者升级为剑术大师。",
+
+		"antichrist0":						"{@antichrist@陷入了狂怒！}",
+		"antichrist1":						"{@antichrist@陷入了狂怒！}",	
+
+		"assassin":							"对鲜血的渴望让@cutthroat@再一次进攻！",
+
+		"ghoul":							"@flesheater@吞噬了敌人的尸体并恢复了@hp@点生命值！",
+
+		"dragonEvolve":						"{~r}@hero@{~}\n\n@mon@在战斗中获得了足够的经验值，成长为成年的龙。",
+
+		"dragonCastle": 					"你望着这空中巨大而华丽的城堡，好奇心已经完全把你占据。你很清楚，要一探究竟的话，只能想办法{飞}上去了。",
+
+		"berserkerFlies": 					"敌人无法反击。使敌人发狂。",
+
+		"hota0": 							"在号角的呼唤下，海之灵现身。@num@个@mon@加入了@hero@的军队。",
+		"hota1": 							"在号角的呼唤下，海之灵现身。@num@个@mon@加入了@hero@的军队。",
+
+		"orbOfInhibition": 					"@art@使所有魔法都失效了",
+		
+	},
+			
+	"AC_Artifacts": {
+		
+		"ACM_Set_Table_Name": 				"进阶职业Mod宝物套装",			
+		
+		"Set_Name_0": 						"幸运四件",
+		
+		"Set_Name_1": 						"抗魔三件",
+		
+		"Set_Name_2": 						"龙之炎",
+
+		"Set_Name_3": 						"四系灵球",
+
+		"Set_Name_4": 						"鹰之视野",
+
+		"Set_Name_5": 						"天使联盟",
+
+		"Set_Name_6": 						"士气四件",
+
+		"Set_Name_7": 						"外交组件",
+
+		"Set_Name_8": 						"主教之光",
+
+		"Set_Name_9": 						"四系魔法书",
+
+		"Set_Name_10": 						"加速三件",
+
+		"Set_Name_11": 						"达佐格之甲",
+
+		"Set_Name_12": 						"蛇神毒牙",
+
+		"Set_Name_13": 						"魔法师职业套装",
+
+		"Set_Name_14": 						"冒险家职业套装",
+
+		"Set_Name_15": 						"战斗师职业套装",
+
+		"Set_Name_16": 						"战斗法师套装",
+
+		"Set_Name_17": 						"恶魔套装",
+
+		"Set_Name_18": 						"望远镜&窥镜",
+		
+		"TUM_Set_Table_Name": 				"三阶升级Mod组合宝物",			
+
+		"TUM_Set_Name_0": 					"混沌灵球",
+
+		"TUM_Set_Name_1": 					"天启之刃",
+
+		"TUM_Set_Name_2": 					"魔法概要",
+
+		"TUM_Set_Name_3": 					"九头女王之盔",
+
+		"TUM_Set_Name_4": 					"暗骑士铁拳",
+
+		"TUM_Set_Name_5": 					"地狱男爵手套",
+
+		"TUM_Set_Name_6": 					"外交官斗篷",
+
+		"TUM_Set_Name_7": 					"金鹅",
+
+		"TUM_Set_Name_8": 					"抗魔吊坠"			
+
+  	},
+
+	"wog_options": {        
+        "page0": {
+            "name": "游戏增强、硬编码\n与三阶升级Mod选项",
+            }
+        }
+    }
+}
