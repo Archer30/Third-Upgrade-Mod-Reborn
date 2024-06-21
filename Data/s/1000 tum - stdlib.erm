@@ -189,7 +189,7 @@ ZVSE2
 !!SN:E(setHook)/1/4462998/(tum_HOOK_AfterAttackMainFunc); [Trigger after melee attack, before retaliation] 441996
 !!SN:E(setHook)/1/4455129/(tum_HOOK_AfterAttackMainFunc); [Trigger after shooting]
 
-!!SN:E(setHook)/1/4445639/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield] 43D5C7
+!!SN:E(setHook)/1/4445929/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield]
 !!SN:E(setHook)/1/4454655/(tum_OnCalcMonsterDamage); [trigger on calculating monster damage] 43F8FF
 !!SN:E(setHook)/1/4461377/(tum_HOOK_BeforeMeleeMainFunc); [Trigger before melee attack, works for retaliation. Won't triggered if the target is killed]
 !!SN:E(setHook)/1/4461657/(tum_OnBeforeBreathAttack); [Trigger before breath attack] 441459
@@ -266,7 +266,7 @@ ZVSE2
   *!SN:E(setHook)/1/7722330/(tum_OnBehemothReduceDefenseProc); [Trigger on determine whether to reduce enemy defense to 0] 75D55A
 
   !!SN:E(setHook)/1/4489948/(tum_OnCalcAngelResurrectionPower); 4482DC
-  !!SN:E(setHook)/1/4458842/(tum_OnDrainLife);
+  !!SN:E(setHook)/1/4458842/(tum_OnDrainLife); 44095A
 
   !!SN:E(setHook)/1/7725329/(tum_OnPhoenixResurrectionProc); [Trigger on determine whether to resurrect like Phoenix] 75E111
   !!SN:E(setHook)/1/4624553/(tum_HOOK_PhoenixResurrection); [Trigger on Phoenix about to resurrect] 4690A9
@@ -322,7 +322,7 @@ ZVSE2
 *!SN:E(setHook)/1/7780489/(tum_OnNpcPlacesWarMachine); [for tents with npc]
 *!SN:E(setHook)/1/7780731/(tum_OnNpcPlacesWarMachine); [for ballistas with npc]
 
-!?FU(tum_HOOK_PrepareTownScreen);
+!?FU(tum_HOOK_PrepareTownScreen)&1000;
 !#VA(hook:x);
 
 !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ECX)/(UNC_INT)/?(townStruct:y);
@@ -357,7 +357,7 @@ ZVSE2
 !?FU(tum_HOOK_AfterStackInitParams);    [by daemon_n]
 !#VA(hook:x);
 
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBX)/4/?(stackStruct:y) C(stackStruct)/244/(UNC_INT)/?(side:y) C(stackStruct)/248/(UNC_INT)/?(stackPerSide:y);
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stackStruct:y) C(stackStruct)/244/(UNC_INT)/?(side:y) C(stackStruct)/248/(UNC_INT)/?(stackPerSide:y);
 !!VR(stackId:y):S(side) *(BATTLE_STACKS_PER_SIDE) +(stackPerSide);
 !!FU(tum_BattleStack_InitParams):P(stackId)/(side);
 
@@ -2513,17 +2513,16 @@ Death Ripple? 005A106A (5902442)
 *****************************************************
 
 !?FU(tum_GetStackOrMonLivingType);
-!#VA(firstArg:x);                       [stack Id or monster Id]
-!#VA(mode:x);                           [0 - the first arg is a stack Id. 1 - the first arg is a monster Id]
+!#VA(firstArg:x);                       [stack Id or negative monster Id]
 !#VA(result:x);                         [0 - Living, 1 - Undead, 2 - Construct, 3 - Elementals, 4 - others (Gorynyches, Nightmares)]
 
 ; Get the flag of ths stack/monster
 ; Check if the monster is Construct or Elemental based on creature type
-!!if&(mode)=0;
+!!if&(firstArg)>=0;
   !!BM(firstArg):T?(mon:y);
   !!BM(firstArg):F?(flags:y);
 !!el;
-  !!VR(mon):S(firstArg);
+  !!VR(mon):S(firstArg) +1 *-1;
   !!MA:X(mon)/?(flags);
 !!en;
 
@@ -2531,7 +2530,7 @@ Death Ripple? 005A106A (5902442)
 !!VR(isAlive:y):S(flags) &(MON_FLAG_ALIVE);
 
 !!if&(isAlive);
-  !!VR(result):S0;
+  !!VR(result):S(MON_TYPE_ALIVE);
   !!FU:E;
 !!en;
 
@@ -2539,25 +2538,25 @@ Death Ripple? 005A106A (5902442)
 !!VR(isUndead:y):S(flags) &(MON_FLAG_UNDEAD);
 
 !!if&(isUndead);
-  !!VR(result):S1;
+  !!VR(result):S(MON_TYPE_UNDEAD);
   !!FU:E;
 !!en;
 
 ; If not living nor undead, check which specific type of non-living it is
 !!if|(mon)=(MON_GOLD_GOLEM)/(mon)=(MON_DIAMOND_GOLEM);
-  !!VR(result):S2;
+  !!VR(result):S(MON_TYPE_GOLEM);
 !!el|(mon)=(MON_FIRE_MESSENGER)/(mon)=(MON_EARTH_MESSENGER)/(mon)=(MON_AIR_MESSENGER)/(mon)=(MON_WATER_MESSENGER)/(mon)=(MON_DARK_ELEMENTAL);
-  !!VR(result):S3;
+  !!VR(result):S(MON_TYPE_ELEMENTAL);
 !!el;
   !!MA:O(mon)/?(town:y);
 
   !!if&(town)=(TOWN_TOWER);
-    !!VR(result):S2;
+    !!VR(result):S(MON_TYPE_GOLEM);
   !!el&(town)=(TOWN_CONFLUX);
-    !!VR(result):S3;
+    !!VR(result):S(MON_TYPE_ELEMENTAL);
   ; Others: Gorynyches, Nightmares
   !!el;
-    !!VR(result):S4;
+    !!VR(result):S(MON_TYPE_OTHER_NON_LIVING);
   !!en;
 !!en;
 

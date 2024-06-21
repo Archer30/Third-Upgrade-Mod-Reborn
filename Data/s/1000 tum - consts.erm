@@ -302,6 +302,18 @@ ZVSE2
 ; ============  END ARTIFACTS  =============
 
 
+; =========  MONSTERS LIVING TYPE ==========
+!#DC(NO_MON_TYPE)                  = -1;
+!#DC(MON_TYPE_ALIVE)               = 0;
+!#DC(MON_TYPE_UNDEAD)              = 1;
+!#DC(MON_TYPE_GOLEM)               = 2;
+!#DC(MON_TYPE_NON_LIVING_FIRST)    = (MON_TYPE_GOLEM);
+!#DC(MON_TYPE_ELEMENTAL)           = 3;
+!#DC(MON_TYPE_OTHER_NON_LIVING)    = 4;
+!#DC(MON_TYPE_NON_LIVING_LAST)     = (MON_TYPE_OTHER_NON_LIVING);
+; =======  END MONSTERS LIVING TYPE  =======
+
+
 ; ===========  OBJECT SUBTYPES  ============
 !#DC(OBJ_SUB_CATHEDRAL)            = 110;
 !#DC(OBJ_SUB_TREEHOUSE)            = 111;

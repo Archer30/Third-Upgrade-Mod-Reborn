@@ -1210,7 +1210,7 @@ At the end of the mod search for Check_Forbidden_Artifacts and remove the code t
 
 !#VA(x:x) (y:x) (z:x) (objType:x) (objSubtype:x);
 
-!?FU(OnAdvMapTileHint);
+!?FU(OnAdventureMapTileHint);
 
 !!SN:X?y1/?y2/?y3/?y4/?y5;
 !!VRy10:Si^CB_097_Type_Number^;

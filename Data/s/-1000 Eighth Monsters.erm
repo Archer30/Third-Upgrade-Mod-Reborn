@@ -213,6 +213,7 @@ ZVSE2
 !!VR(statueBonus):S0;
 !!VR(castleUpgBonus):S0;
 !!VR(dwellBonus):S0;
+!!VR(citadelBonus):S0;
 
 !!CA0/(townId):B3/9;                    [check for Castle]
 
@@ -308,7 +309,7 @@ ZVSE2
   !!CA0/(townId):B3/8;
 
   !!if&1;
-    !!VR(citadelBonus):+1;
+    !!VR(citadelBonus):S1;
     !!VR(totalGrowth):+(citadelBonus);
   !!en;
 !!en;
@@ -611,7 +612,12 @@ ZVSE2
 ; Fix Fort screen
 !?FU(OnTownMouseClick)&i^mouse_item^>=7/i^mouse_item^<=9/i^mouse_action^=(MOUSE_LMB_PRESSED);
 ; Set up dwelling frame - Must be here otherwise it's too late
-!!CA(CURRENT_TOWN):U?(townId:y);
+!!CA(CURRENT_TOWN):U?(townId:y) T?(townType:y);
+
+!!if&(townType)=(TOWN_DUNGEON)/i^eighth_8thDwell_%(townId)^=(FALSE);
+  !!UN:C6135068/1/22;
+  !!FU:E;
+!!en;
 
 !!if&i^tum_upgGuild_%(townId)^;
   !!UN:C6135068/1/45;
@@ -987,6 +993,7 @@ ZVSE2
     !!VR(growthDetails):+^%(growthCastleUpg)^;
   !!en;
 
+  ; For Castle only
   !!if&(citadelBonus)>0;
     !!SN:T^tumr.str.castleCitadel^/?(growthCitadel:z)/^number^/(citadelBonus);
     !!VR(growthDetails):+^%(growthCitadel)^;

@@ -703,6 +703,7 @@ ZVSE2
 !!VRy1:&524288;
 !!VRy5:Sy11;    [Check for Extended Attack]
 !!VRy5:&8;
+!!VRy30:S0;
 !!FU(WOG_44_CheckIfMonDrainsLife):Pj/?y30;
 !!SN&y1=0/y5=0:T^ep.newabil_box_m3^/?z4;
 !!VRz4&y1=524288:S^^;

@@ -1187,7 +1187,7 @@ Random Artifacts can also be generated in a certain range x1-x2. If you want to 
 
 !#VA(x:x) (y:x) (z:x) (objType:x) (objSubtype:x);
 
-!?FU(OnAdvMapTileHint);
+!?FU(OnAdventureMapTileHint);
 
 !!SN:X?y1/?y2/?y3/?y4/?y5;
 !!VRy10:Si^CB_006_Type_Number^;

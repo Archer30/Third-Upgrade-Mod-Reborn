@@ -2384,7 +2384,7 @@ Updated by Archer30 (25.04.24)
   !!HEi^battle_hero_%(side)^:A2/(ART_PENDANT_OF_REFLECTION)/?(has:y)/?(equipped:y);
 
   ; Increase spell immunity by 20
-  !!if&i>(ART_BOOTS_OF_POLARITY);
+  !!if&(equipped)>0;
     !!MR:F?(resist:y);
 
     !!if&(resist)<100;

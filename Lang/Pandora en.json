@@ -22,6 +22,7 @@
     "curse_view_m": "Hero {visibility} {limited} for {@durat@} days!", 
     "curse_move_m": "Hero {loses} {movepoints} every day for {@durat@} days!",  
     "curse_rad_m": "Hero {cannot} {explore} {new} {territory} for {@durat@} days!",
+    "curse_details": "\n{~>wogcurse.def:0:@curse@ block}\n\nClick this button from hero screen to view the curren curses. \n{~>zgodbon.def:0:5 block}",
     "battle_box_q": "As you reach out a hand to the box, you\n {feel} {ominous} {power}\n within it.\n\n Would you continue despite having a bad feeling?", 
     "battle_box_m": "You are immediately pulled inside the box.\n\n It looks like {without} {a} {fight} you {won't} {get} {out}!", 
     "necro_box_m": "{necromancy}",     

@@ -93,7 +93,7 @@ x1=player 0-7, x2=Warehouse type 0-6, x3=resource amount, x4=PO-number (never vi
 ****************************************************************************************************
 When hovering the mouse over the objects set hint description
 
-!?FU(OnAdvMapTileHint);
+!?FU(OnAdventureMapTileHint);
 
 !!SN:X?y1/?y2/?y3/?y4/?y5;
 !!VRy10:Si^Warehouse_Type^;

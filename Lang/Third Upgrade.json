@@ -7,7 +7,7 @@
  		"restartRequired": 					"{Restart Required}\n\nTo run the game correclty, it's required to restart your ERA after turning off Eighth Monsters option of Third Upgrade Mod.",
 
  		"Creature_Specialist_Title": 		"{~r}Creature Specialist{~}\n\n",
-		"Creature_Specialist_Body": 		"{~r}Creature Specialist{~}\n\nIncreases the stats of any @Crea1@, @Crea2@ or @Crea3@ for each level attained:\nAtt: {+@attack@}\nDef: {+@defense@}\nDamage: {+@damage@}\nHealth: {+@health@%}\nSpeed: +1",
+		"Creature_Specialist_Body": 		"Increases the stats of any @Crea1@, @Crea2@ or @Crea3@ for each level attained:\nAtt: {+@attack@}\nDef: {+@defense@}\nDamage: {+@damage@}\nHealth: {+@health@%}\nSpeed: +1",
 
 		"his": 								"his",
 

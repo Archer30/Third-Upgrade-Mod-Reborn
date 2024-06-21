@@ -172,6 +172,11 @@ ZVSE2
 ************************************************
 
 !?FU(OnEveryDay)&i^timerOnce^/i^timerDay^=1;
+; Fix upgrade chain
+!!MA:U(MON_RAT)/(MON_BATTLE_RAT);
+!!MA:U(MON_SPIRIT_SHAMAN)/(NO_MON);
+!!MA:U(MON_PLAGUE_DOCTOR)/(NO_MON);
+
 ; Mummy
 !!MA:O(MON_MUMMY)/?(faction:y);
 !!MA:O(MON_MAD_MUMMY)/(faction);
@@ -371,9 +376,10 @@ ZVSE2
   *!co&i>=(MON_EMISSARY_OF_WAR)/i<=(MON_EMISSARY_OF_LORE);
 
   ; Get the living type of creature and set description if they are non-living
-  !!FU(tum_GetStackOrMonLivingType):Pi/(TRUE)/?(result:y);
+  !!VR(negativeMonType:y):Si +1 *-1;
+  !!FU(tum_GetStackOrMonLivingType):P(negativeMonType)/?(result:y);
 
-  !!if&(result)>=2/(result)<=4;
+  !!if&(result)>=(MON_TYPE_NON_LIVING_FIRST)/(result)<=(MON_TYPE_NON_LIVING_LAST);
     !!SN:H^monname^/i/2/?(desc:z);
 
     !!if&(result)=2;
@@ -1148,7 +1154,7 @@ ZVSE2
 
 // Creature spell powers
 // Warning: This scirpt assumes that there won't be a second monster spell activaed after a monster spell is casted in action (BG:A)
-// All the spell definition here is either friendly spell or damaging spell. Power of other spells are undefined. 
+; All the spell definition here is either friendly spell or damaging spell. Power of other spells are undefined. 
 !?FU(tum_CreateERMHook);
 !#VA(setHook:x);
 
@@ -1385,14 +1391,13 @@ ZVSE2
     !!if&(victimType)=(NO_MON);
       !!FU(tum_GetRandomMonster):P?(victimType);
       !!MA:P(victimType)/?(victimHp);
-      !!VR(victimHp): *4 :5 F1/(INT_MAX);[80% HP]
     !!en;
 
     ; Exit if it is not possible to summon more stacks for the defender
     ; This is not needed as we wiped the victim's stack completely, there is always a vacancy
-    *!BM(defStack):I?(defSide:y);
-    *!FU(tum_CheckIfPossibleToSummonMoreStacks):P(defSide)/?(result:y);
-    *!FU&(result)<>(TRUE):E;
+    !!BM(defStack):I?(defSide:y);
+    !!FU(tum_CheckIfPossibleToSummonMoreStacks):P(defSide)/?(result:y);
+    !!FU&(result)<>(TRUE):E;
 
     ; Exit if the attacker and the defender is the same type
     !!FU&(atkMon)=(defMon):E;
@@ -1432,7 +1437,7 @@ ZVSE2
       !!VR(victimNum:y):S(totalHp) :(victimHp) F1/(INT_MAX);
 
       ; Gather info
-      !!BM(defStack):P?(pos:y) I?(defSide:y) O?(slot:y);
+      !!BM(defStack):P?(pos:y) O?(slot:y);
       !!VR(isActed:y):S(flags) &(MON_FLAG_ACTED);
       !!FU(NewIntArray):P?(buffsList:y);
 
@@ -1611,8 +1616,11 @@ ZVSE2
 ; Disable Dracoliches' Block and recreate here, as my script works better
 !?FU(OnGameEnter);
 !!UN:C7760528/(UNC_INT)/9999;
+; Check for era bin patch
+!!UN:C7456387/(UNC_INT8)/?(value:y);
+!!VRi^tum_blockDisabled^&(value)=235:S(TRUE);
 
-!?FU(OnStackToStackDamage);
+!?FU(OnStackToStackDamage)&i^tum_blockDisabled^<>(TRUE);
 !#VA(atkStack:x) (defStack:x) (finalDmgConst:x) (finalDmg:x) (basicDmg:x) (dmgBonus:x) (isDistant:x) (distanceArg:x) (isTheoretical:x);
 
 ; Skip theoretical (mouse hover)
@@ -2478,10 +2486,10 @@ ZVSE2
 !!en;
 
 ; Check if the target is a construct
-!!FU(tum_GetStackOrMonLivingType):P(targetStack)/(FALSE)/?(livingType:y);
+!!FU(tum_GetStackOrMonLivingType):P(targetStack)/?(livingType:y);
 
 ; If not a construct, exit
-!!if&(livingType)<>2;
+!!if&(livingType)<>(MON_TYPE_GOLEM);
   !!MM:M^%T(tumr.str.mendNotConstruct)^;
   !!FU:E;
 !!en;
@@ -2572,8 +2580,8 @@ ZVSE2
 !!FU&(result)<>(TRUE):E;
 
 ; Check if the target is a construct
-!!FU(tum_GetStackOrMonLivingType):P(targetStack)/(FALSE)/?(livingType:y);
-!!FU&(livingType)<>2:E;
+!!FU(tum_GetStackOrMonLivingType):P(targetStack)/?(livingType:y);
+!!FU&(livingType)<>(MON_TYPE_GOLEM):E;
 
 ; Check if the target is wide only when it's dead (assuming that's the only case two stacks in the some hex)
 !!if&(targetNum)<=0;
@@ -2863,7 +2871,7 @@ ZVSE2
 !!FU|(action)<>(BATTLE_ACTION_SHOOT)/(targetStack)<=(NO_STACK)/(actStack)<=(NO_STACK):E;
 
 ; Get the position of the target and the real side of the current stack (considering it may be changed by Hypnotize)
-!!BM(targetStack):P?(pos:y);
+!!BM(targetStack):P?(pos:y) I?(targetSide:y);
 !!BG:Q?(actSide:y);
 
 ; Look for team shooting creatures
@@ -2889,7 +2897,7 @@ ZVSE2
 
   ; Check if the stack belongs to the current acting side (would be reversed if the stack is hypnotized)
   !!FU(tum_GetActualStackSide):Pi/?(actualSide:y);
-  !!co&(actualSide)<>(actSide);
+  !!co|(actualSide)<>(actSide)/(actualSide)=(targetSide);
 
   ; Check if the stack is within a proper range
   ; Disable as AI won't be aware of this feature
@@ -3458,10 +3466,10 @@ ZVSE2
 !!UN:C(stackStruct)/52/4/?(type:y);
 
 !!if&(type)=(MON_RED_BONES_DRAGON);
-  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/4/?(eax:y);
-  !!UN:C(eax)/4/?(hpDrain:y);
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/4/?(edi:y);
+  !!UN:C(edi)/4/?(hpDrain:y);
   !!VR(hpDrain)::5 *4;
-  !!UN:C(eax)/4/(hpDrain);
+  !!UN:C(edi)/4/(hpDrain);
 !!en;
 
 
@@ -5105,7 +5113,7 @@ ZVSE2
 
 
 // Divine Phoenixes and Red Skeletons' Rebirth
-// Recreated these abilities to get rid of the crap of Amethyst
+// Recreated these abilities to get rid of the crap of Amethyst (messing up with stack exp)
 !?FU(tum_OnPhoenixResurrectionProc);
 !#VA(hook:x);
 
@@ -5122,6 +5130,7 @@ ZVSE2
 ; Creates an explosion before Phoenix resurrection
 ; Has no effect on Elementals (including water elemental) - This is because AI strategy is difficult to script, nothing is implemented
 ; Heals and revives Fire-type Elementals (including summoned ones)
+; Here we don't check Orb of Vulnerability to simplify and buff Elemental
 // Must not use OnBattleStackKilled as it would result in infinite explosion
 !?FU(tum_OnPhoenixResurrection);
 !#VA(stackId:x) (side:x);
@@ -5146,18 +5155,20 @@ ZVSE2
       !!SN:M(adjacentStacksList)/i/?(targetStack:y);
       !!BM(targetStack):F?(flags:y);
       !!VR(isFireImmune:y):S(flags) &(MON_FLAG_FIRE_IMMUNITY);
-      !!FU(tum_GetStackOrMonLivingType):P(targetStack)/(FALSE)/?(livingType:y); [Check if the stack is elemental]
+      !!FU(tum_GetStackOrMonLivingType):P(targetStack)/?(livingType:y); [Check if the stack is elemental]
 
       ; If the stack is a normal creauture (not elemental)
-      !!if&(isFireImmune)=(FALSE)/(livingType)<>3;
+      !!if&(isFireImmune)=(FALSE)/(livingType)<>(MON_TYPE_ELEMENTAL);
         !!FU(tum_Battle_CanStackReceiveSpell):P(targetStack)/(SPELL_SUMMON_BOAT)/(side)/?(result:y);
 
         !!FU(Array_Push)&(result):P(stacksToDamageList)/(targetStack);
 
       ; If the stack is Fire Elemental
-      !!el&(isFireImmune)/(livingType)=3;
+      !!el&(isFireImmune)/(livingType)=(MON_TYPE_ELEMENTAL);
         !!FU(Array_Push):P(stacksToRegenList)/(targetStack);
       !!en;
+
+      ; Non-fire elemental is not damaged or healed
     !!en;
 
     !!SS(SPELL_SUMMON_BOAT):L(origLevel) S(origSchool) F(origFlags);
@@ -5311,7 +5322,7 @@ ZVSE2
 !#VA(mon:x) (result:x);
 
 !!VR(result):S(FALSE);
-!!VR(result)&(MON_OAK_DRYAD):S(TRUE);
+!!VR(result)&(mon)=(MON_OAK_DRYAD):S(TRUE);
 
 
 // Illithids and Fangarms' Hypnotize Attack
@@ -6005,14 +6016,16 @@ ZVSE2
 !!VR(result)&(mon)=(MON_MERMAID):S(TRUE);
 
 
-// Ice Knights' Ice Cloak
+// Ice Knights and Tritons' Ice Cloak
 ; Casts Frost Ring when melee attacked once per round
+; The spell can be immune to elemental if it is casted by Tritons
+; Here we don't check Orb of Vulnerability to simplify and buff Elemental
 !?FU(tum_OnAfterMelee);
 !#VA(atkStack:x) (defStack:x);
 
 ; Check if the defedner has ice cloak
 !!BM(defStack):T?(defMon:y) N?(defNum:y);
-!!FU(tum_CheckMonIceCloakDamage):P(defMon)/?(iceCloakDmg:y);
+!!FU(tum_GetMonIceCloakDamageDetails):P(defMon)/?(iceCloakDmg:y)/?(protElem:y);
 
 ; Check if the ability has been used this turn
 !!if&(iceCloakDmg)>0/(defNum)>0/i^tum_abilityCounter_%(defStack)^=0;
@@ -6024,19 +6037,39 @@ ZVSE2
   *!en;
 
   !!BM(defStack):P?(pos:y);
+
+  !!VRi^tum_isElemImmuneIceCloak^&(protElem):S(TRUE);
   !!FU(tum_CastMonsterDamagingSpell):P(defStack)/(SPELL_FROST_RING)/(pos)/(iceCloakDmg);
+  !!VRi^tum_isElemImmuneIceCloak^:S(FALSE);
 
   ; Set the ability counter
   !!VRi^tum_abilityCounter_%(defStack)^:+1;
 !!en;
 
-!?FU(tum_CheckMonIceCloakDamage);
-!#VA(mon:x) (result:x);
+!?FU(tum_GetMonIceCloakDamageDetails);
+!#VA(mon:x) (damage:x) (protElem:x);
 
-!!VR(result):S0;
-!!VR(result)&(mon)=(MON_ICE_KNIGHT):S10;
-!!VR(result)&(mon)=(MON_TRITON):S6;
-!!VR(result)&(mon)=(MON_ABYSSAL_TRITON):S10;
+!!VR(damage):S0;
+!!VR(protElem):S(FALSE);
+!!VR(damage)&(mon)=(MON_ICE_KNIGHT):S10;
+
+!!if|(mon)=(MON_TRITON)/(mon)=(MON_ABYSSAL_TRITON);
+  !!VR(protElem):S(TRUE);
+  !!VR(damage)&(mon)=(MON_TRITON):S6;
+  !!VR(damage)&(mon)=(MON_ABYSSAL_TRITON):S10;
+!!en;
+
+; Manage elemental spell protection
+!?FU(OnDwarfMagicResistance)&i^tum_isElemImmuneIceCloak^;
+!!MR:S?(spell:y);
+!!FU&(spell)<>(SPELL_FROST_RING):E;
+
+!!MR:N?(stack:y);
+!!FU(tum_GetStackOrMonLivingType):P(stack)/?(type:y);
+
+!!if&(type)=(MON_TYPE_ELEMENTAL);
+  !!MR:F100;
+!!en;
 
 
 // Thunder Warrior's Lightning Rod
@@ -6418,8 +6451,12 @@ ZVSE2
 !!FU(tum_CheckIfMonHasTrueTeleportation):P(type)/?(result:y);
 
 !!if&(result);
-  !!BM(stack):Sd30;
-  !!VRi^tum_trueTeleportationStackPlusOne^:S(stack) +1;
+  !!BM(stack):S?(speed:y);
+
+  !!if&(speed)<30;
+    !!BM(stack):Sd30;
+    !!VRi^tum_trueTeleportationStackPlusOne^:S(stack) +1;
+  !!en;
 !!en;
 
 ; Restore the speed of True Teleporter
@@ -7295,7 +7332,7 @@ ZVSE2
 !!en;
 
 ; Manage piecing spell immunities
-!?FU(OnDwarfMagicResistance)&i^tum_fireWrathStackPlusOne^;
+!?FU(OnDwarfMagicResistance_Quit)&i^tum_fireWrathStackPlusOne^;
 !!MR:S?(spell:y);
 !!FU&(spell)<>(SPELL_INFERNO):E;
 
