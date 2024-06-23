@@ -250,7 +250,7 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 !!FU&(berserkerFlies)<>(TRUE):E;
 
 !!BM(atkStack):T?(type:y);
-!!FU(tum_CastSpellAfterAttack)&(type)=(MON_CHAOTIC_DRAGON_FLY):P(atkStack)/(defStack)/20/(SPELL_BERSERK)/(SKILL_NOT_LEARNED);
+!!FU(tum_CastPassiveMonsterSpell)&(type)=(MON_CHAOTIC_DRAGON_FLY):P(atkStack)/(defStack)/20/(SPELL_BERSERK)/(SKILL_NOT_LEARNED);
 
 // Death Chamber
 !?FU(WOG_70_GetUndeadKingMonType);

@@ -1598,7 +1598,7 @@ ZVSE2
     !!BM(atkStack):G(SPELL_FRENZY)/?(duration:y)/?(power:y);
 
     !!if&(duration)>0;
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/(chance)/(SPELL_FRENZY)/(power)/?(result:y);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/(chance)/(SPELL_FRENZY)/(power)/?(result:y);
       !!FU(tum_RemoveSpellFromStack)&(result):P(atkStack)/(SPELL_FRENZY);
     !!en;
   !!en;
@@ -1684,17 +1684,17 @@ ZVSE2
 !!BM(atkStack):T?(type:y);
 
 !!if&(type)=(MON_CHAOTIC_DRAGON_FLY);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/100/(SPELL_WEAKNESS)/(SKILL_ADVANCED);
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(SPELL_WEAKNESS)/(SKILL_ADVANCED);
 !!el|(type)=(MON_PLAGUE_DOCTOR);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/20/(SPELL_DEATH_RIPPLE)/10;
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/20/(SPELL_DEATH_RIPPLE)/10;
 !!el&(type)=(MON_FIRE_PALADIN);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/40/(SPELL_FIREBALL)/10;
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/40/(SPELL_FIREBALL)/10;
 !!el&(type)=(MON_VERMILLION_BIRD);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/100/(SPELL_FIREBALL)/10;
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(SPELL_FIREBALL)/10;
 *!el&(type)=(MON_FIRE_DRAGON);
-  *!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/100/(SPELL_INFERNO)/200/2;
+  *!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(SPELL_INFERNO)/200/2;
 !!el&(type)=(MON_ICE_DRAGON);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/100/(SPELL_ICE_BOLT)/100/1;
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(SPELL_ICE_BOLT)/100/1;
 !!en;
 
 
@@ -1706,11 +1706,11 @@ ZVSE2
 !!BM(atkStack):T?(type:y);
 
 !!if&(type)=(MON_ELITE_LIZARD);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/15/71/(SKILL_NOT_LEARNED);
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/15/71/(SKILL_NOT_LEARNED);
 !!el|(type)=(MON_TROLL_WITCH);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/100/(SPELL_SLOW)/(SKILL_ADVANCED);
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(SPELL_SLOW)/(SKILL_ADVANCED);
 !!el&(type)=(MON_RATMAN_GRENADIER);
-  !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/20/(SPELL_FIREBALL)/10;
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/20/(SPELL_FIREBALL)/10;
 !!en;
 
 
@@ -2418,7 +2418,7 @@ ZVSE2
       !!SN:Mi^tum_radiantBreathBlindList^/i/?(stack:y);
       !!BM(stack):I?(defSide:y);
 
-      !!FU(tum_CastSpellAfterAttack)&(actualAtkSide)<>(defSide):P(atkStack)/(stack)/20/(SPELL_BLIND)/(SKILL_NOT_LEARNED);
+      !!FU(tum_CastPassiveMonsterSpell)&(actualAtkSide)<>(defSide):P(atkStack)/(stack)/20/(SPELL_BLIND)/(SKILL_NOT_LEARNED);
     !!en;
   !!en;
 
@@ -3293,14 +3293,11 @@ ZVSE2
     !!en;
 
     !!if&(canReceive);
-      !!BM(defStack):P?(defPos:y);
-
       !!if|(spell)=(SPELL_WEAKNESS)/(spell)=(SPELL_DISRUPTING_RAY);
-        !!VR(level:y):S(SKILL_ADVANCED);
-        !!BM(atkStack):C(spell)/(defPos)/(level)/3/(TRUE);
+        !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(spell)/(SKILL_ADVANCED);
       ; Magic Arrow
       !!el;
-        !!FU(tum_CastMonsterDamagingSpell):P(atkStack)/(SPELL_MAGIC_ARROW)/(defPos)/3; [damage = num * 3]
+        !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(spell)/3; [damage = num * 3]
       !!en;
     !!en;
   !!en;
@@ -3900,7 +3897,7 @@ ZVSE2
   *!SN:E4461360/2/(atkStruct)/(defStruct)/2;
 
   ; Cast spell
-  *!FU(tum_CastSpellAfterAttack):Pi^battle_acting_stack^/(defStack)/100/(SPELL_CURSE)/10;
+  *!FU(tum_CastPassiveMonsterSpell):Pi^battle_acting_stack^/(defStack)/100/(SPELL_CURSE)/10;
 
   ; Disable the orignal action
   *!BG:A(BATTLE_ACTION_SKIP);
@@ -4017,9 +4014,9 @@ ZVSE2
 
   !!if&(num)>0;
     !!if&(isThirdTarget)=(FALSE);
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(targetStack)/(chance)/(SPELL_WEAKNESS)/(SKILL_ADVANCED);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(targetStack)/(chance)/(SPELL_WEAKNESS)/(SKILL_ADVANCED);
     !!el;
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(targetStack)/(chance)/(SPELL_DISRUPTING_RAY)/(SKILL_ADVANCED);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(targetStack)/(chance)/(SPELL_DISRUPTING_RAY)/(SKILL_ADVANCED);
     !!en;
   !!en;
 !!en;
@@ -5254,7 +5251,7 @@ ZVSE2
 !!VR(isUndead:y):S(flags) &(MON_FLAG_UNDEAD);
 !!FU&(isUndead)=0:E;
 
-!!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/(chance)/(SPELL_DESTROY_UNDEAD)/10;
+!!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/(chance)/(SPELL_DESTROY_UNDEAD)/10;
 
 !?FU(tum_GetMonCeletialPurgeChance);
 !#VA(mon:x) (result:x);
@@ -5424,7 +5421,7 @@ ZVSE2
     !!FU&(duration)>0:E;
 
     ; Casts
-    !!FU(tum_CastSpellAfterAttack)&(chance)>0:P(defStack)/i^battle_acting_stack^/(chance)/(SPELL_BERSERK)/(SKILL_NOT_LEARNED)/?(result:y);
+    !!FU(tum_CastPassiveMonsterSpell)&(chance)>0:P(defStack)/i^battle_acting_stack^/(chance)/(SPELL_BERSERK)/(SKILL_NOT_LEARNED)/?(result:y);
 
     ; Display msg
     !!if&i^battle_isVisible^/(result);
@@ -5644,17 +5641,17 @@ ZVSE2
 
     ; Air
     !!if&(counter)=0;
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(targetStack)/100/(SPELL_LIGHTNING_BOLT)/15/?(result:y);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(targetStack)/100/(SPELL_LIGHTNING_BOLT)/15/?(result:y);
     ; Water
     !!el&(counter)=1;
       !!FU(tum_GetFrostRingPos):P(atkStack)/(defStack)/?(pos:y);
-      !!FU(tum_CastMonsterDamagingSpell)&(pos)>-1:P(atkStack)/(SPELL_FROST_RING)/(pos)/10;
+      !!FU(tum_CastMonsterDamagingSpellOnPos)&(pos)>-1:P(atkStack)/(SPELL_FROST_RING)/(pos)/10;
     ; Fire
     !!el&(counter)=2;
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(targetStack)/100/(SPELL_FIREBALL)/15/?(result);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(targetStack)/100/(SPELL_FIREBALL)/15/?(result);
     ; Earth
     !!el&(counter)=3;
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(targetStack)/100/(SPELL_IMPLOSION)/30/?(result);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(targetStack)/100/(SPELL_IMPLOSION)/30/?(result);
     !!en;
 
     !!VRi^tum_abilityCounter2_%(atkStack)^:+1;
@@ -6039,7 +6036,7 @@ ZVSE2
   !!BM(defStack):P?(pos:y);
 
   !!VRi^tum_isElemImmuneIceCloak^&(protElem):S(TRUE);
-  !!FU(tum_CastMonsterDamagingSpell):P(defStack)/(SPELL_FROST_RING)/(pos)/(iceCloakDmg);
+  !!FU(tum_CastMonsterDamagingSpellOnPos):P(defStack)/(SPELL_FROST_RING)/(pos)/(iceCloakDmg);
   !!VRi^tum_isElemImmuneIceCloak^:S(FALSE);
 
   ; Set the ability counter
@@ -6129,7 +6126,7 @@ ZVSE2
       *!MM:S(battleLog);
     *!en;
 
-    !!FU(tum_CastMonsterDamagingSpell):P(stack)/(SPELL_LIGHTNING_BOLT)/(targetPos)/10;
+    !!FU(tum_CastPassiveMonsterSpell):P(stack)/(randomTarget)/100/(SPELL_LIGHTNING_BOLT)/10;
   !!en;
 !!en;
 
@@ -6239,9 +6236,9 @@ ZVSE2
     !!TRi^battle_x^/i^battle_y^/i^battle_z^:T?(terrainType:y)/?t/?t/?t/?t/?t/?t/?t;
 
     !!if&(terrainType)=0;               [Dirt]
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/100/(SPELL_SLOW)/(SKILL_ADVANCED);
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/100/(SPELL_SLOW)/(SKILL_ADVANCED);
     !!el&(terrainType)=3;               [Snow]
-      !!FU(tum_CastSpellAfterAttack):P(atkStack)/(defStack)/20/(SPELL_ICE_BOLT)/10;
+      !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/20/(SPELL_ICE_BOLT)/10;
     !!en;
   !!en;
 !!en;
@@ -7325,7 +7322,7 @@ ZVSE2
   !!FU(tum_GetActualStackSide):P(stack)/?i^tum_fireWrathSide^;
   !!VRi^tum_fireWrathStackPlusOne^:S(stack) +1;
 
-  !!FU(tum_CastMonsterDamagingSpell):P(stack)/(SPELL_INFERNO)/(pos)/(damage);
+  !!FU(tum_CastMonsterDamagingSpellOnPos):P(stack)/(SPELL_INFERNO)/(pos)/(damage);
 
   !!VRi^tum_fireWrathStackPlusOne^:S0;
   !!VRi^tum_fireWrathSide^:S0;

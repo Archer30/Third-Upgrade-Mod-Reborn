@@ -1435,7 +1435,7 @@ ZVSE2
 **** Cast spell after attack ****
 *********************************
 ; This sctipt relies on FU(tum_GetActualStackSide) to work!
-!?FU(tum_CastSpellAfterAttack);
+!?FU(tum_CastPassiveMonsterSpell);
 !#VA(castStack:x);                      [Caster]
 !#VA(targetStack:x);                    [Spell target]
 !#VA(chance:x);                         [Chance to cast the spell]
@@ -1484,7 +1484,7 @@ ZVSE2
 
 ; Exit if the targeting stack has been buffed with the same spell, when the spell has 100% chance to cast
 ; We want to disable casting in this case to avoid multiple spell animations
-!!if&(chance)>=100/(isDmgSpell)<>(TRUE);
+!!if&(chance)>=100/(isDmgSpell)<>(TRUE)/(spell)<>(SPELL_DISRUPTING_RAY);
   !!BM(targetStack):G(spell)/?(duration:y)/?(level:y);
   !!FU&(duration)>0:E;
 !!en;
@@ -1509,11 +1509,15 @@ ZVSE2
 !!BM(targetStack):P?(targetPos:y);
 
 !!if&(isDmgSpell);
-  !!FU(tum_CastMonsterDamagingSpell):P(castStack)/(spell)/(targetPos)/(powerCoef);
+  !!FU(tum_CastMonsterDamagingSpellOnPos):P(castStack)/(spell)/(targetPos)/(powerCoef);
 !!el;
+  ; Restrain spell level
+  !!VR(powerCoef):F(SKILL_NOT_LEARNED)/(SKILL_EXPERT);
+  ; Get the duration of spell
   !!VR(duration):S3;
   !!VR(duration)&(spell)=(SPELL_BERSERK)/(spell)=72:S255; [Berserk and Bind - 255 turns]
   !!VR(duration)&(spell)=(SPELL_FRENZY):S2; [Frenzy - 2 turns]
+  ; Cast the spell
   !!BM(castStack):C(spell)/(targetPos)/(powerCoef)/(duration)/(TRUE);
 !!en;
 
@@ -1556,7 +1560,7 @@ ZVSE2
 **** Cast monster damaging spells ****
 **************************************
 
-!?FU(tum_CastMonsterDamagingSpell);
+!?FU(tum_CastMonsterDamagingSpellOnPos);
 !#VA(stack:x);                          [Stack ID to cast the spell]
 !#VA(spell:x);                          [Spell for casting]
 !#VA(pos:x);                            [Position to cast the spell]
