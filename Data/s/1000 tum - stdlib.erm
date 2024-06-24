@@ -2555,7 +2555,15 @@ Death Ripple? 005A106A (5902442)
   !!MA:O(mon)/?(town:y);
 
   !!if&(town)=(TOWN_TOWER);
-    !!VR(result):S(MON_TYPE_GOLEM);
+    !!VR(hasNoMorale:y):S(flags) &(MON_FLAG_NO_MORALE);
+
+    ; Golems
+    !!if&(hasNoMorale);
+      !!VR(result):S(MON_TYPE_GOLEM);
+    ; Gargoyles
+    !!el;
+      !!VR(result):S(MON_TYPE_OTHER_NON_LIVING); [Bloodless]
+    !!en;
   !!el&(town)=(TOWN_CONFLUX);
     !!VR(result):S(MON_TYPE_ELEMENTAL);
   ; Others: Gorynyches, Nightmares

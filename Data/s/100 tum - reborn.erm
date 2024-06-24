@@ -5895,7 +5895,7 @@ ZVSE2
 
 
 // Smooth Criminal's White Disguise
-; Well...
+; 1/100 chance to spawn Assassins as Smooth Criminals, with new creature description and new 
 !?FU(tum_CreateERMHook);
 !#VA(setHook:x);
 
@@ -5907,6 +5907,7 @@ ZVSE2
 !!FU(NewStrArray):P4/?i^tum_smoothCriminalStrings^/(M_STORED);
 !!SN:Vi^tum_smoothCriminalStrings^/0/^smoo^/^smoothCr.def^/^%T(tumr.str.smoothCriminal0)^/^%T(tumr.str.smoothCriminal1)^;
 
+; Set up new creature sound and name
 !?FU(tum_BattleStack_InitParams);
 !#VA(stackId:x) (side:x);
 
@@ -5920,7 +5921,7 @@ ZVSE2
     !!SN:Mi^tum_smoothCriminalStrings^/?(ptr:y)/0;
     !!UN:C(stackStruct)/124/4/(ptr);
 
-    ; Creature name - not working at the moment
+    ; Set new singular and plural names - not working at the moment (as the game get names from creature structure instead of stack)
     !!SN:Mi^tum_smoothCriminalStrings^/?(ptr)/2;
     !!UN:C(stackStruct)/136/4/(ptr);
     !!SN:Mi^tum_smoothCriminalStrings^/?(ptr)/3;
@@ -5930,6 +5931,7 @@ ZVSE2
   !!en;
 !!en;
 
+; Set new creature sprite
 !?FU(tum_BattleStack_InitDefsAndWavs)&i^tum_smoothCriminalFound^;
 !#VA(hook:x);
 
@@ -5968,6 +5970,7 @@ ZVSE2
   !!en;
 !!en;
 
+; Restore creature portrait when the battle ends
 !?FU(OnAfterBattleUniversal);
 !!SN:R^twcrport.def:0_262.png^/^^;
 
@@ -5980,6 +5983,7 @@ ZVSE2
 !!UN:C(stackStruct)/124/4/?(ptr:y);
 !!SN:B(ptr)/d/?(soundName:z);
 
+; If it is, play the "Don't" sound
 !!SN&(soundName)=^smoo^:P^smooDONT^;
 
 
