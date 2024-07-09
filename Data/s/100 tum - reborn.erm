@@ -180,8 +180,7 @@ ZVSE2
 ; Mummy
 !!MA:O(MON_MUMMY)/?(faction:y);
 !!MA:O(MON_MAD_MUMMY)/(faction);
-
-!!MA:U(MON_MUMMY)/(MON_MAD_MUMMY);
+; Convert mad mummy to mummy
 !!MA:U(MON_MAD_MUMMY)/(MON_MUMMY);
 
 **********************************************************************
@@ -1716,7 +1715,10 @@ ZVSE2
 
 // Special magic damage resistance (Golem type)
 // Everlasting Dragons
+; Disable as they are strong enough
 !?FU(OnMagicCorrectedResistance);
+!!FU:E;
+
 !!MR:M?(type:y);
 
 ; Everlasting Dragons' Dragon Scale
@@ -3944,9 +3946,9 @@ ZVSE2
       !!if&(duration)<=0;
         ; Check if the target monster can receive the countering spell
         !!BM(atkStack):I?(side:y);
-        !!FU(tum_Battle_CanStackReceiveSpell):P(defStack)/(counterSpell)/(side)/?(canReceive:y);
+        !!FU(tum_Battle_CanStackBeAffectedBySpell):P(defStack)/(counterSpell)/(side)/?(result:y);
 
-        !!if&(canReceive);
+        !!if&(result);
           ; Get the info of the buff being countered
           !!BM(defStack):G(targetSpell)/?(duration)/?(level);
           ; Set max level for casting to Advanced
@@ -4625,7 +4627,7 @@ ZVSE2
 
       ; If there is any stack found with fewer than 3 turns of poison, check if they are immune to poison
       !!if&(duration)<3;
-        !!FU(tum_Battle_CanStackReceiveSpell):P(targetStack)/71/(side)/?(result);
+        !!FU(tum_Battle_CanStackBeAffectedBySpell):P(targetStack)/71/(side)/?(result);
 
         ; Push the found stack to array and poison it
         !!if&(result);
@@ -5231,7 +5233,7 @@ ZVSE2
 !#VA(mon:x) (result:x);
 
 !!VR(result):S(FALSE);
-!!VR(result)&(mon)=(MON_DIVINE_PHOENIX):S25;
+!!VR(result)&(mon)=(MON_DIVINE_PHOENIX):S20;
 
 
 // Light Paladins' Celestial Purge
@@ -5501,8 +5503,8 @@ ZVSE2
 
 ; Exit if immune to dispel
 !!BM(atkStack):I?(atkSide:y);
-!!FU(tum_Battle_CanStackReceiveSpell):P(defStack)/78/(atkSide)/?(canReceive:y); [Dispel friendly spell != Dispel!]
-!!FU&(canReceive)<>(TRUE):E;
+!!FU(tum_Battle_CanStackBeAffectedBySpell):P(defStack)/78/(atkSide)/?(result:y); [Dispel friendly spell != Dispel!]
+!!FU&(result)<>(TRUE):E;
 
 ; Count number of spells to dispel
 !!VR(spellNum:y):S0;
@@ -6106,9 +6108,9 @@ ZVSE2
 
         !!if&(side)<>(targetSide);
           ; Check spell immunity, only a stack without lightning immunity is valid
-          !!FU(tum_Battle_CanStackReceiveSpell):P(targetStack)/(SPELL_LIGHTNING_BOLT)/(side)/?(canReceive:y);
+          !!FU(tum_Battle_CanStackBeAffectedBySpell):P(targetStack)/(SPELL_LIGHTNING_BOLT)/(side)/?(result:y);
 
-          !!FU(Array_Push)&(canReceive):P(validStacks)/(targetStack);
+          !!FU(Array_Push)&(result):P(validStacks)/(targetStack);
         !!en;
       !!en;
     !!en;
@@ -6130,7 +6132,7 @@ ZVSE2
       *!MM:S(battleLog);
     *!en;
 
-    !!FU(tum_CastPassiveMonsterSpell):P(stack)/(randomTarget)/100/(SPELL_LIGHTNING_BOLT)/10;
+    !!FU(tum_CastMonsterDamagingSpellOnPos):P(stack)/(SPELL_LIGHTNING_BOLT)/(targetPos)/10;
   !!en;
 !!en;
 
@@ -6351,9 +6353,9 @@ ZVSE2
 
             !!if&(side)<>(targetSide);
               ; Check spell immunity, only a stack without Poision immunity is valid
-              !!FU(tum_Battle_CanStackReceiveSpell):P(targetStack)/71/(side)/?(canReceive:y);
+              !!FU(tum_Battle_CanStackBeAffectedBySpell):P(targetStack)/71/(side)/?(result:y);
 
-              !!FU(Array_Push)&(canReceive):P(validStacks)/(targetStack);
+              !!FU(Array_Push)&(result):P(validStacks)/(targetStack);
             !!en;
           !!en;
         !!en;
@@ -6445,7 +6447,10 @@ ZVSE2
 ; Access to any hex on the battlefield
 ; Does not affect the order of units
 ; Don't use i^battle_round^>=0 as condition here, it would skip the first Shadow Sneaker's bonus
+; Disable as it's been buggy
 !?FU(OnBeforeBattleStackTurn_Quit)&i^tum_tacticsIsEnded^;
+!!FU:E;
+
 !#VA(stack:x);
 
 !!BM(stack):T?(type:y);
@@ -6584,6 +6589,57 @@ ZVSE2
 !!VR(result)&(mon)=(MON_SHADOW_LORD):S17;
 
 
+// Wendigos' Chaotic Retaliation
+; Idea by Andruids
+; I planned a unique skill for Wendigo in one of my mods. Would you like to hear?
+; It's 'Chaotic Retaliation'. This creature has 50% chance of retaliation each time it's attacked, so it can retaliate every time, every other time, or at no time at all during the battle.
+; But here's the kicker - every time it does, it attacks with 200% damage (like Dread Knight's ability).
+; Or if it's too weird to your liking, there's a more straightforward ability - 'Karma retaliation':
+; Wendigo retaliates normally, once every turn, and every time it does, it attacks with 200% damage.
+; http://heroescommunity.com/viewthread.php3?TID=46024&PID=1524214#focus
+!?FU(tum_OnRetaliation);
+!#VA(hook:x);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stackStruct:y);
+
+; Exit if cannot Chaotic Retaliate
+!!UN:C(stackStruct)/52/4/?(type:y);
+!!FU(tum_CheckIfMonHasChaoticRetaliation):P(type)/?(result:y);
+!!FU&(result)<>(TRUE):E;
+
+; Check the luck
+!!VR(random:y):R0/1/1;                  [50% chance TEST]
+
+; If not lucky, skip retaliation
+!!if&(random)=0;
+  !!SN:X?t/0;
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/4463493;
+; Set global var for Death Strike if lucky
+!!el;
+  !!VRi^tum_chaoticRetaliationStackStruct^:S(stackStruct);
+!!en;
+
+!?FU(tum_OnDeathBlow)&i^tum_chaoticRetaliationStackStruct^;
+!#VA(hook:x);
+
+; Make sure the stack performing Death Blow is the stack stored
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EAX)/4/?(stackStruct:y);
+
+!!if&(stackStruct)=i^tum_chaoticRetaliationStackStruct^;
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EAX)/4/100; [100% chance to perform Death Blow]
+  !!SN:X?t/0;
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/7761160;
+!!en;
+
+!!VRi^tum_chaoticRetaliationStackStruct^:S(NULL);
+
+!?FU(tum_CheckIfMonHasChaoticRetaliation);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S(FALSE);
+!!VR(result)&(mon)=(MON_WENDIGO):S(TRUE);
+
+
 // Wendigos' Flesh-eater
 ; Eat the stack killed by attack and wipe it from the battlefield completely
 ; If the stack was killed not resulted by an attack dealt by Flesh-eaters, then it's no longer possible to be consumed
@@ -6594,19 +6650,7 @@ ZVSE2
 
 ; Get the attacker/defender stack
 !!MF:N?(defStack:y);
-
-; If it is a retaliation
-!!if&(defStack)=i^battle_acting_stack^;
-  !!BG:E?(atkStack:y);
-; If it is a normal attack, exit for secondary targets
-!!el;
-  !!BG:E?(targetStack:y);
-  !!FU&(defStack)<>(targetStack):E;
-
-  !!VR(atkStack):Si^battle_acting_stack^;
-!!en;
-
-!!FU|(atkStack)=(NO_STACK)/(defStack)=(NO_STACK):E;
+!!VR(atkStack:y):Si^tum_attackStack^;
 
 ; Check if the attacking monster is a flesh eater
 !!BM(atkStack):T?(type:y);
@@ -6626,6 +6670,8 @@ ZVSE2
 
     ; Store the hp of the def stack if it would be killed, set up flags for the victim to disappear 
     !!if&(finalDmg)>=(defCurrTotalHp);
+      !!IF:L^%(finalDmg) %(defCurrTotalHp)^;
+
       !!VRi^tum_flesheaterRegenHp^:S(defCurrTotalHp);
       !!BM(defStack):Fd|813694976 E0;    [Clone, Sacrified, No Colouring]
     !!en;
@@ -6751,7 +6797,7 @@ ZVSE2
 !!VR(individualHp):S0;
 
 !!if&(mon)=(MON_EVERLASTING_DRAGON);
-  !!VR(staticHp):S200;
+  !!VR(staticHp):S150;
   !!VR(individualHp):S30;
 !!en;
 
@@ -7639,6 +7685,19 @@ ZVSE2
 !!MA:U(MON_RUST_DRAGON)/(MON_SULFIDE_DRAGON);
 ; Convert Miracle Mages and Enchanters
 !!MA:U(MON_MIRACLE_MAGE)/(MON_ENCHANTER);
+****************************************************************************************************
+// Rebalance level 8s
+!?FU(OnAfterErmInstructions);
+; Angels
+; Remove No Retaliation, add Mind Immunity
+!!MA:X(MON_SUPREME_ARCHANGEL)/?(flags:y);
+!!VR(flags):|(MON_FLAG_MIND_IMMUNITY) ~(MON_FLAG_NO_RETALIATION);
+!!MA:X(MON_CHERUB)/?(flags:y);
+!!VR(flags):|(MON_FLAG_MIND_IMMUNITY) ~(MON_FLAG_NO_RETALIATION);
+; Behemoths
+; Remove Flyer
+!!MA:X(MON_GHOST_BEHEMOTH)/d~(MON_FLAG_FLYER);
+!!MA:X(MON_SPECTRAL_BEHEMOTH)/d~(MON_FLAG_FLYER);
 
 ***************************************************************************************
 **** New Artifacts * New Artifacts * New Artifacts * New Artifacts * New Artifacts ****
@@ -7759,20 +7818,20 @@ ZVSE2
 
 ; Check if any summuning artifact available
 !!BG:H?(hero:y);
-
-; Get level
 !!HE(hero):E?(exp:y)/?(level:y)/1;
+!!FU(GetMaxArtifactId):P?(lastArt:y);
 
-!!re i/(ART_SLOT_EQUIPPED_FIRST)/(ART_SLOT_EQUIPPED_LAST);
-  !!co&i>=(ART_SLOT_BALLISTA)/i<=(ART_SLOT_SPELL_BOOK);
-
+!!re (art:y)/171/(lastArt);             [For new artifacts only!]
   ; Next artifact if the targeted artifact is not defined with an auto spell
-  !!HE(hero):A1/?(art:y)/i;
   !!SN:T^tumr.art.autoSummon.%(art)^/?(autoSpellArtStr:z);
   !!co&(autoSpellArtStr)=^tumr.art.autoSummon.%(art)^;
 
   !!SN:K(autoSpellArtStr)/?(length:y);
   !!co&(length)=0;
+
+  ; Next if the artifact is not equipped
+  !!HE(hero):A2/(art)/?(has:y)/?(equipped:y);
+  !!co&(equipped)<=0;
 
   ; Check if the hero has artifact that auto summons on battle start
   !!FU(tum_ConvertStrToInts):P(autoSpellArtStr)/?(autoSummonList:y)/?(autoSummonQty:y);
@@ -7972,7 +8031,7 @@ ZVSE2
 !!VR(hero:y):Si^battle_hero_%i(battle_current_side)^;
 
 !!FU(tum_ManageHeroPowerOfSide):P(side)/?(power:y);
-!!VR(artPower:y):S(power) :5 +25;
+!!VR(artPower:y):S(power) :5 +20;
 
 ; Shield of the Dark Paladin - Death Ripple
 !!HE(hero):A2/(ART_SHIELD_OF_THE_DARK_PALADIN)/?(has:y)/?(equipped:y);
@@ -8019,8 +8078,6 @@ ZVSE2
 
 ; Check if commander is dead if enabled
 ; Disable as we also need a way to deal with henchmen, which is stupid using this way
-!!FU:E;
-
 !!UN:P(WOG_OPT_DISABLE_COMMANDERS)/?(commanderOff:y);
 !!FU&(commanderOff):E;
 
@@ -8343,7 +8400,7 @@ ZVSE2
   !!BM(stack):N?(num:y);
 
   !!if&(num)>0;
-    !!FU(tum_Battle_CanStackReceiveSpell):P(stack)/(SPELL_FIRE_WALL)/i^battle_acting_side^/?(result:y);
+    !!FU(tum_Battle_CanStackBeAffectedBySpell):P(stack)/(SPELL_FIRE_WALL)/i^battle_acting_side^/?(result:y);
 
     !!if&(result);
       !!BM(stack):P?(pos:y);

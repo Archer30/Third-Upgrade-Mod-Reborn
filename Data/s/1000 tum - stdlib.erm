@@ -185,13 +185,16 @@ ZVSE2
 !!SN:E(setHook)/1/4457003/(tum_OnAfterHitSpells); [Trigger when after hit speslls is about to cast] 44022B
 !!SN:E(setHook)/1/4458758/(tum_OnAfterAttackAbilities); [Trigger when after attack ability is about to initiate] 440906
 
+!!SN:E(setHook)/1/4461377/(tum_HOOK_BeforeAttackMainFunc); [Trigger before melee attack, works for retaliation] 441341
+!!SN:E(setHook)/1/4453930/(tum_HOOK_BeforeAttackMainFunc); [Trigger before shooting] 43F62A
+
 ; New after attack spells/abilites
 !!SN:E(setHook)/1/4462998/(tum_HOOK_AfterAttackMainFunc); [Trigger after melee attack, before retaliation] 441996
 !!SN:E(setHook)/1/4455129/(tum_HOOK_AfterAttackMainFunc); [Trigger after shooting]
 
 !!SN:E(setHook)/1/4445929/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield]
 !!SN:E(setHook)/1/4454655/(tum_OnCalcMonsterDamage); [trigger on calculating monster damage] 43F8FF
-!!SN:E(setHook)/1/4461377/(tum_HOOK_BeforeMeleeMainFunc); [Trigger before melee attack, works for retaliation. Won't triggered if the target is killed]
+
 !!SN:E(setHook)/1/4461657/(tum_OnBeforeBreathAttack); [Trigger before breath attack] 441459
 !!SN:E(setHook)/1/4461703/(tum_OnAfterGetBreathSecondaryTarget); [Trigger after the secondary breath attack target is found] 441487
 !!SN:E(setHook)/1/4463326/(tum_BeforeStackMeleeAttack); [Trigger right before melee attack, obviously before retaliation. It doesn't trigger for retaliation] 441ADE
@@ -214,10 +217,31 @@ ZVSE2
 !!SN:E(setHook)/1/7724547/(tum_OnHellBaronStoneGazeProc);
 !!SN:E(setHook)/1/7724587/(tum_OnBloodDragonAgeProc); 75DE2B
 
-; Bad Fix
-; These hooks are needed in order to fix Amethyst's problem
-; Disable for now, as it can be fixed by GEM updated by Archer
-*!SN:E(setHook)/1/4607483/(tum_OnFindNextStackTurn); [Trigger on determine the next stack in a battle (exclusing waiting stack and tactics phase)]
+; this hook doesn't trigger for some reason. 0075D551 results in wrong damage and crashes
+*!SN:E(setHook)/1/7722330/(tum_OnBehemothReduceDefenseProc); [Trigger on determine whether to reduce enemy defense to 0] 75D55A
+
+*!SN:E(setHook)/1/4489948/(tum_OnCalcAngelResurrectionPower); 4482DC - Disabled, not used for now, but it's really good
+!!SN:E(setHook)/1/4458842/(tum_OnDrainLife); 44095A
+
+!!SN:E(setHook)/1/7725329/(tum_OnPhoenixResurrectionProc); [Trigger on determine whether to resurrect like Phoenix] 75E111
+!!SN:E(setHook)/1/4624553/(tum_HOOK_PhoenixResurrection); [Trigger on Phoenix about to resurrect] 4690A9
+
+!!SN:E(setHook)/1/4488516/(tum_OnEnchanterCastsMassSpell); [Trigger on Enchanter casts mass spells]
+
+; Custom buffs
+!!SN:E(setHook)/1/4473430/(tum_OnResetSpellFromStack); [Trigger on reseting a spell - prevent custom buffs to be removed here] 444256
+!!SN:E(setHook)/1/5893401/(tum_OnBeforeSpellBookDlgCreate); [Trigger on spell book dlg create in battle]
+!!SN:E(setHook)/1/5893444/(tum_OnAfterSpellBookDlgDestroy); [Trigger on spell book dlg destroy in battle]
+
+; Whirlpool
+!!SN:E(setHook)/1/4900801/(tum_OnEnterWhirlpool); [Trigger on entering Whirlpool] 004AC7C1
+
+; Scouting
+!!SN:E(setHook)/1/5129161/(tum_OnGetScoutingRadius); [Trigger on getting the radius of Scouting] 004E43C9
+
+; Chaotic Retaliation
+!!SN:E(setHook)/1/4463397/(tum_OnRetaliation); 441B25
+!!SN:E(setHook)/1/7761128/(tum_OnDeathBlow);
 
 ; Unused
 *!SN:E(setHook)/1/4472251/(tum_OnDoDamage); [Trigger when any damage inflicts, a bit overkill]
@@ -259,63 +283,33 @@ ZVSE2
 
   ; Atma Robe
   !!SN:E(setHook)/1/5930059/(tum_OnAfterCalcSpellDamage); [Trigger right after calculating spell damage]
-!!en;
 
-!!if&i^tum_reborn_on^;
-  ; this hook doesn't trigger for some reason. 0075D551 results in wrong damage and crashes
-  *!SN:E(setHook)/1/7722330/(tum_OnBehemothReduceDefenseProc); [Trigger on determine whether to reduce enemy defense to 0] 75D55A
+  ; Ring of Anti-Magic
+  !!SN:E(setHook)/1/5932368/(tum_OnCheckStackReceiveSpell); [Trigger on checking the resistance of a stack, about to set it to negative when it has Anti-Magic spell]
 
-  !!SN:E(setHook)/1/4489948/(tum_OnCalcAngelResurrectionPower); 4482DC
-  !!SN:E(setHook)/1/4458842/(tum_OnDrainLife); 44095A
+  ; Binoculars
+  !!SN:E(setHook)/1/5136562/(tum_OnGetVisionPowerPre); [Trigger on getting the vision power of a hero] 4E60B2
+  !!SN:E(setHook)/1/5136507/(tum_OnGetVisionPower); 5136507
 
-  !!SN:E(setHook)/1/7725329/(tum_OnPhoenixResurrectionProc); [Trigger on determine whether to resurrect like Phoenix] 75E111
-  !!SN:E(setHook)/1/4624553/(tum_HOOK_PhoenixResurrection); [Trigger on Phoenix about to resurrect] 4690A9
-
-  !!SN:E(setHook)/1/4488516/(tum_OnEnchanterCastsMassSpell); [Trigger on Enchanter casts mass spells]
- 
-  ; Custom buffs
-  !!SN:E(setHook)/1/4473430/(tum_OnResetSpellFromStack); [Trigger on reseting a spell - prevent custom buffs to be removed here] 444256
-  !!SN:E(setHook)/1/5893401/(tum_OnBeforeSpellBookDlgCreate); [Trigger on spell book dlg create in battle]
-  !!SN:E(setHook)/1/5893444/(tum_OnAfterSpellBookDlgDestroy); [Trigger on spell book dlg destroy in battle]
-
-  ; Whirlpool
-  !!SN:E(setHook)/1/4900801/(tum_OnEnterWhirlpool); [Trigger on entering Whirlpool] 004AC7C1
-
-  ; Scouting
-  !!SN:E(setHook)/1/5129161/(tum_OnGetScoutingRadius); [Trigger on getting the radius of Scouting] 004E43C9
-
-  !!if&i^tum_emerald_on^;
-    ; Ring of Anti-Magic
-    !!SN:E(setHook)/1/5932368/(tum_OnCheckStackReceiveSpell); [Trigger on checking the resistance of a stack, about to set it to negative when it has Anti-Magic spell]
-  
-    ; Binoculars
-    !!SN:E(setHook)/1/5136562/(tum_OnGetVisionPowerPre); [Trigger on getting the vision power of a hero] 4E60B2
-    !!SN:E(setHook)/1/5136507/(tum_OnGetVisionPower); 5136507
-
-    ; 3-Colour Scepter
-    ; Non-living
-    !!SN:E(setHook)/1/5915321/(tum_OnAnimateUndeadFlagCheckA); 5A42B9
-    !!SN:E(setHook)/1/5915471/(tum_OnAnimateUndeadFlagCheckB); 5A434F
-    !!SN:E(setHook)/1/5914665/(tum_OnResurrectionAliveFlagCheckA); 5A4029
-    !!SN:E(setHook)/1/5914817/(tum_OnResurrectionAliveFlagCheckB); 5A40C1
-    !!SN:E(setHook)/1/5930043/(tum_OnBeforeGolemResistanceCheck); 5A7C3B - A general fix - skip golem resistance check for reviving spells (for spell description mod)
-    *!SN:E(setHook)/1/4501889/(tum_OnGolemResistanceTypeCheck); 44B181 - daemon's solution not working
-    ; Living
-    !!SN:E(setHook)/1/4457135/(tum_OnPostAttackSpellsAndAbilities); 4402AF
-    !!SN:E(setHook)/1/4461227/(tum_OnPostAttackSpellsAndAbilities); 4412AB
-    ; Undead
-    ; Morale value in battle
-    !!SN:E(setHook)/1/4447594/(tum_OnReduceMoraleDueToUndead_Battle);
-    ; Morale value in non-battle
-    !!SN:E(setHook)/1/4501000/(tum_OnSkipMoraleCheckOnHeroScreen); 44AE08
-    !!SN:E(setHook)/1/4500690/(tum_OnReduceMoraleDueToUndead); 44ACD2 - not needed as the moral would be correctd in (tum_OnConcludeMoraleResult) anyway
-    *!SN:E(setHook)/1/4501283/(tum_OnConcludeMoraleResult); 44AF23
-    ; Morale desc
-    !!SN:E(setHook)/1/4503222/(tum_OnSetMonNotAffectedByMorale_Desc); 44B6B6
-    !!SN:E(setHook)/1/4504096/(tum_OnReduceMoraleDueToUndead_Desc); 44BA20
-    *!SN:E(setHook)/1/4504902/(tum_OnConcludeMoraleResult_Desc); 44BD46
-    *!SN:E(setHook)/1/4505157/(tum_OnPostCreateMoraleDec);
-  !!en;
+  ; 3-Colour Scepter
+  ; Non-living
+  !!SN:E(setHook)/1/5915321/(tum_OnAnimateUndeadFlagCheckA); 5A42B9
+  !!SN:E(setHook)/1/5915471/(tum_OnAnimateUndeadFlagCheckB); 5A434F
+  !!SN:E(setHook)/1/5914665/(tum_OnResurrectionAliveFlagCheckA); 5A4029
+  !!SN:E(setHook)/1/5914817/(tum_OnResurrectionAliveFlagCheckB); 5A40C1
+  !!SN:E(setHook)/1/5930043/(tum_OnBeforeGolemResistanceCheck); 5A7C3B - A general fix - skip golem resistance check for reviving spells (for spell description mod)
+  ; Living
+  !!SN:E(setHook)/1/4457135/(tum_OnPostAttackSpellsAndAbilities); 4402AF
+  !!SN:E(setHook)/1/4461227/(tum_OnPostAttackSpellsAndAbilities); 4412AB
+  ; Undead
+  ; Morale value in battle
+  !!SN:E(setHook)/1/4447594/(tum_OnReduceMoraleDueToUndead_Battle);
+  ; Morale value in non-battle
+  !!SN:E(setHook)/1/4501000/(tum_OnSkipMoraleCheckOnHeroScreen); 44AE08
+  !!SN:E(setHook)/1/4500690/(tum_OnReduceMoraleDueToUndead); 44ACD2 - not needed as the moral would be correctd in (tum_OnConcludeMoraleResult) anyway
+  ; Morale desc
+  !!SN:E(setHook)/1/4503222/(tum_OnSetMonNotAffectedByMorale_Desc); 44B6B6
+  !!SN:E(setHook)/1/4504096/(tum_OnReduceMoraleDueToUndead_Desc); 44BA20
 !!en;
 
 ; Disable War Machines in CB
@@ -329,44 +323,12 @@ ZVSE2
 !!UN:C(townStruct)/1/?(townId:y);
 !!FU(tum_OnPrepareTownScreen):P(townId);
 
-!?FU(tum_HOOK_AfterAttackMainFunc);      [by igrik]
-!#VA(hook:x);
-
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/(UNC_INT)/?(stackStructDefender:y);  
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/(UNC_INT)/?(stackStructAttacker:y); 
-!!BG:A?(typeAttack:y);
-!!VR(stackAttackerID:y):S(NO_STACK);
-!!VR(stackDefenderID:y):S(NO_STACK);
-
-!!if&(stackStructAttacker);
-  !!UN:C(stackStructAttacker)/244/(UNC_INT)/?(attakerSide:y);
-  !!UN:C(stackStructAttacker)/248/(UNC_INT)/?(attakerStackIdInSide:y);
-  !!VR(stackAttackerID):S(attakerSide) *(BATTLE_STACKS_PER_SIDE) +(attakerStackIdInSide);
-!!en;
-
-!!if&(stackStructDefender);
-  !!UN:C(stackStructDefender)/244/(UNC_INT)/?(defenderSide:y);
-  !!UN:C(stackStructDefender)/248/(UNC_INT)/?(defenderStackIdInSide:y);
-  !!VR(stackDefenderID):S(defenderSide) *(BATTLE_STACKS_PER_SIDE) +(defenderStackIdInSide);
-!!en;
-
-!!FU(tum_OnAfterMelee)&(typeAttack)=(BATTLE_ACTION_WALK_AND_ATTACK):P(stackAttackerID)/(stackDefenderID);
-!!FU(tum_OnAfterShoot)&(typeAttack)=(BATTLE_ACTION_SHOOT):P(stackAttackerID)/(stackDefenderID);
-!!FU(tum_OnAfterAttack)|(typeAttack)=(BATTLE_ACTION_WALK_AND_ATTACK)/(typeAttack)=(BATTLE_ACTION_SHOOT):P(stackAttackerID)/(stackDefenderID);
-
-!?FU(tum_HOOK_AfterStackInitParams);    [by daemon_n]
-!#VA(hook:x);
-
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stackStruct:y) C(stackStruct)/244/(UNC_INT)/?(side:y) C(stackStruct)/248/(UNC_INT)/?(stackPerSide:y);
-!!VR(stackId:y):S(side) *(BATTLE_STACKS_PER_SIDE) +(stackPerSide);
-!!FU(tum_BattleStack_InitParams):P(stackId)/(side);
-
-!?FU(tum_HOOK_BeforeMeleeMainFunc);
+!?FU(tum_HOOK_BeforeAttackMainFunc);
 !#VA(hook:x);
 
 !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/(UNC_INT)/?(stackStrucktAttacker:y);
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/(UNC_INT)/?(ptr:y);
-!!UN:C(ptr)/8/(UNC_INT)/?(stackStrucktDefender:y);
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/(UNC_INT)/?(ebp:y);
+!!UN:C(ebp)/8/(UNC_INT)/?(stackStrucktDefender:y);
 
 !!VR(stackAttackerID:y):S(NO_STACK); 
 !!VR(stackDefenderID:y):S(NO_STACK); 
@@ -383,14 +345,52 @@ ZVSE2
   !!VR(stackDefenderID):S(defenderSide) *(BATTLE_STACKS_PER_SIDE) +(defenderStackIdInSide);
 !!en;
 
-; Get the direction of attack
-; The value would be wrong if Gnoll Marauder's Stirke First triggers (direction would become -1)!
-*!UN:C(ptr)/12/(UNC_INT)/?(direction:y);
-*!VR(offset:y):S(STRUCT_HOOK_CONTEXT_ESP) +60;
-*!UN:C(hook)/(offset)/(UNC_INT)/?(direction:y);
-*!VR(direction)|(direction)<0/(direction)>7:S-1;
+!!VRi^tum_attackStack^:S(stackAttackerID);
+!!VRi^tum_defendStack^:S(stackDefenderID);
 
-!!FU(tum_OnBeforeMelee):P(stackAttackerID)/(stackDefenderID);
+!!if&(hook)=4461377;
+  !!FU(tum_OnBeforeMelee):P(stackAttackerID)/(stackDefenderID);
+!!el;
+  !!FU(tum_OnBeforeShoot):P(stackAttackerID)/(stackDefenderID);
+!!en;
+
+!!FU(tum_OnBeforeAttack):P(stackAttackerID)/(stackDefenderID);
+
+!?FU(tum_HOOK_AfterAttackMainFunc);     [by igrik]
+!#VA(hook:x);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/(UNC_INT)/?(stackStructDefender:y);  
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/(UNC_INT)/?(stackStructAttacker:y); 
+
+!!VR(stackAttackerID:y):S(NO_STACK);
+!!VR(stackDefenderID:y):S(NO_STACK);
+
+!!if&(stackStructAttacker);
+  !!UN:C(stackStructAttacker)/244/(UNC_INT)/?(attakerSide:y);
+  !!UN:C(stackStructAttacker)/248/(UNC_INT)/?(attakerStackIdInSide:y);
+  !!VR(stackAttackerID):S(attakerSide) *(BATTLE_STACKS_PER_SIDE) +(attakerStackIdInSide);
+!!en;
+
+!!if&(stackStructDefender);
+  !!UN:C(stackStructDefender)/244/(UNC_INT)/?(defenderSide:y);
+  !!UN:C(stackStructDefender)/248/(UNC_INT)/?(defenderStackIdInSide:y);
+  !!VR(stackDefenderID):S(defenderSide) *(BATTLE_STACKS_PER_SIDE) +(defenderStackIdInSide);
+!!en;
+
+!!if&(hook)=4462998;
+  !!FU(tum_OnAfterMelee):P(stackAttackerID)/(stackDefenderID);
+!!el;
+  !!FU(tum_OnAfterShoot):P(stackAttackerID)/(stackDefenderID);
+!!en;
+
+!!FU(tum_OnAfterAttack):P(stackAttackerID)/(stackDefenderID);
+
+!?FU(tum_HOOK_AfterStackInitParams);    [by daemon_n]
+!#VA(hook:x);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(stackStruct:y) C(stackStruct)/244/(UNC_INT)/?(side:y) C(stackStruct)/248/(UNC_INT)/?(stackPerSide:y);
+!!VR(stackId:y):S(side) *(BATTLE_STACKS_PER_SIDE) +(stackPerSide);
+!!FU(tum_BattleStack_InitParams):P(stackId)/(side);
 
 !?FU(tum_HOOK_BattleStackKilled);
 !#VA(hook:x);

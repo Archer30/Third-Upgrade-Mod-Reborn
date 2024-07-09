@@ -16,20 +16,31 @@ VMaiko：作者、创意及图像
 PerryR：ERM作者、脚本
 Berserker：脚本
 Majaczek：插件（Amethyst与Emerald）
+Andruids：图像
+Fiorin：图像
 Moriarty89：图像
 FanOfHeroes：图像
 Dalion：图像
 Toriko：图像
 Avatar：声音以及图像素材
 FirePaladin：图像
-Andruids：图像
 ElfbI：新潘多拉之盒
 听风雨稀：汉化
 
 使用了以下资料片的图像和声音素材：
 
 深渊号角
+Hota团队（详见Hota制作组名单）
+
 战争之潮
+Witchking - 项目主导者和3d图像
+Hobbicus - 2d/3d图像及音乐
+Trith - 3d图像
+Nephretes - 3d图像
+Sower - 2d/3d图像
+Drwal - 2d图像
+Khemiel - 2d图像
+avatar - json
 
 这个mod使用了Fred79的物体补丁，一些新的地图物体会在随机地图中生成。
 
