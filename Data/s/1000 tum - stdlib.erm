@@ -185,12 +185,12 @@ ZVSE2
 !!SN:E(setHook)/1/4457003/(tum_OnAfterHitSpells); [Trigger when after hit speslls is about to cast] 44022B
 !!SN:E(setHook)/1/4458758/(tum_OnAfterAttackAbilities); [Trigger when after attack ability is about to initiate] 440906
 
-!!SN:E(setHook)/1/4461377/(tum_HOOK_BeforeAttackMainFunc); [Trigger before melee attack, works for retaliation] 441341
-!!SN:E(setHook)/1/4453930/(tum_HOOK_BeforeAttackMainFunc); [Trigger before shooting] 43F62A
+!!SN:E(setHook)/1/4461377/(tum_HOOK_BeforeMeleeMainFunc); [Trigger before melee attack, works for retaliation] 441341
+!!SN:E(setHook)/1/4453930/(tum_HOOK_BeforeShootMainFunc); [Trigger before shooting] 43F62A
 
 ; New after attack spells/abilites
-!!SN:E(setHook)/1/4462998/(tum_HOOK_AfterAttackMainFunc); [Trigger after melee attack, before retaliation] 441996
-!!SN:E(setHook)/1/4455129/(tum_HOOK_AfterAttackMainFunc); [Trigger after shooting]
+!!SN:E(setHook)/1/4462998/(tum_HOOK_AfterMeleeMainFunc); [Trigger after melee attack, before retaliation] 441996
+!!SN:E(setHook)/1/4455129/(tum_HOOK_AfterShootMainFunc); [Trigger after shooting]
 
 !!SN:E(setHook)/1/4445929/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield]
 !!SN:E(setHook)/1/4454655/(tum_OnCalcMonsterDamage); [trigger on calculating monster damage] 43F8FF
@@ -323,49 +323,27 @@ ZVSE2
 !!UN:C(townStruct)/1/?(townId:y);
 !!FU(tum_OnPrepareTownScreen):P(townId);
 
-!?FU(tum_HOOK_BeforeAttackMainFunc);
+!?FU(tum_HOOK_BeforeMeleeMainFunc);
 !#VA(hook:x);
 
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/(UNC_INT)/?(stackStrucktAttacker:y);
+!!FU(tum_HOOK_BeforeAttackMainFunc):P(hook)/0;
+
+!?FU(tum_HOOK_BeforeShootMainFunc);
+!#VA(hook:x);
+
+!!FU(tum_HOOK_BeforeAttackMainFunc):P(hook)/1;
+
+!?FU(tum_HOOK_BeforeAttackMainFunc);
+!#VA(hook:x) (mode:x);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/(UNC_INT)/?(stackStructAttacker:y);
 !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/(UNC_INT)/?(ebp:y);
-!!UN:C(ebp)/8/(UNC_INT)/?(stackStrucktDefender:y);
+!!UN:C(ebp)/8/(UNC_INT)/?(stackStructDefender:y);
 
 !!VR(stackAttackerID:y):S(NO_STACK); 
 !!VR(stackDefenderID:y):S(NO_STACK); 
 
-!!if&(stackStrucktAttacker); 
-  !!UN:C(stackStrucktAttacker)/244/(UNC_INT)/?(attakerSide:y);
-  !!UN:C(stackStrucktAttacker)/248/(UNC_INT)/?(attakerStackIdInSide:y);
-  !!VR(stackAttackerID):S(attakerSide) *(BATTLE_STACKS_PER_SIDE) +(attakerStackIdInSide);
-!!en;
-
-!!if&(stackStrucktDefender);
-  !!UN:C(stackStrucktDefender)/244/(UNC_INT)/?(defenderSide:y);
-  !!UN:C(stackStrucktDefender)/248/(UNC_INT)/?(defenderStackIdInSide:y);
-  !!VR(stackDefenderID):S(defenderSide) *(BATTLE_STACKS_PER_SIDE) +(defenderStackIdInSide);
-!!en;
-
-!!VRi^tum_attackStack^:S(stackAttackerID);
-!!VRi^tum_defendStack^:S(stackDefenderID);
-
-!!if&(hook)=4461377;
-  !!FU(tum_OnBeforeMelee):P(stackAttackerID)/(stackDefenderID);
-!!el;
-  !!FU(tum_OnBeforeShoot):P(stackAttackerID)/(stackDefenderID);
-!!en;
-
-!!FU(tum_OnBeforeAttack):P(stackAttackerID)/(stackDefenderID);
-
-!?FU(tum_HOOK_AfterAttackMainFunc);     [by igrik]
-!#VA(hook:x);
-
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/(UNC_INT)/?(stackStructDefender:y);  
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/(UNC_INT)/?(stackStructAttacker:y); 
-
-!!VR(stackAttackerID:y):S(NO_STACK);
-!!VR(stackDefenderID:y):S(NO_STACK);
-
-!!if&(stackStructAttacker);
+!!if&(stackStructAttacker); 
   !!UN:C(stackStructAttacker)/244/(UNC_INT)/?(attakerSide:y);
   !!UN:C(stackStructAttacker)/248/(UNC_INT)/?(attakerStackIdInSide:y);
   !!VR(stackAttackerID):S(attakerSide) *(BATTLE_STACKS_PER_SIDE) +(attakerStackIdInSide);
@@ -377,7 +355,49 @@ ZVSE2
   !!VR(stackDefenderID):S(defenderSide) *(BATTLE_STACKS_PER_SIDE) +(defenderStackIdInSide);
 !!en;
 
-!!if&(hook)=4462998;
+!!VRi^tum_attackStack^:S(stackAttackerID);
+!!VRi^tum_defendStack^:S(stackDefenderID);
+
+!!if&(mode)=0;
+  !!FU(tum_OnBeforeMelee):P(stackAttackerID)/(stackDefenderID);
+!!el;
+  !!FU(tum_OnBeforeShoot):P(stackAttackerID)/(stackDefenderID);
+!!en;
+
+!!FU(tum_OnBeforeAttack):P(stackAttackerID)/(stackDefenderID);
+
+!?FU(tum_HOOK_AfterMeleeMainFunc);
+!#VA(hook:x);
+
+!!FU(tum_HOOK_BeforeAttackMainFunc):P(hook)/0;
+
+!?FU(tum_HOOK_AfterShootMainFunc);
+!#VA(hook:x);
+
+!!FU(tum_HOOK_BeforeAttackMainFunc):P(hook)/1;
+
+!?FU(tum_HOOK_AfterAttackMainFunc);
+!#VA(hook:x) (mode:x);
+
+!!UN:C(hook)/0/(UNC_INT)/?(stackStructDefender:y);   
+!!UN:C(hook)/4/(UNC_INT)/?(stackStructAttacker:y);  
+
+!!VR(stackAttackerID:y):S(NO_STACK); 
+!!VR(stackDefenderID:y):S(NO_STACK); 
+
+!!if&(stackStructAttacker); 
+  !!UN:C(stackStructAttacker)/244/(UNC_INT)/?(attakerSide:y); 
+  !!UN:C(stackStructAttacker)/248/(UNC_INT)/?(attakerStackIdInSide:y);
+  !!VR(stackAttackerID):S(attakerSide) *(BATTLE_STACKS_PER_SIDE) +(attakerStackIdInSide); 
+!!en;
+
+!!if&(stackStructDefender);
+  !!UN:C(stackStructDefender)/244/(UNC_INT)/?(defenderSide:y);
+  !!UN:C(stackStructDefender)/248/(UNC_INT)/?(defenderStackIdInSide:y);
+  !!VR(stackDefenderID):S(defenderSide) *(BATTLE_STACKS_PER_SIDE) +(defenderStackIdInSide);
+!!en;
+
+!!if&(mode)=0;
   !!FU(tum_OnAfterMelee):P(stackAttackerID)/(stackDefenderID);
 !!el;
   !!FU(tum_OnAfterShoot):P(stackAttackerID)/(stackDefenderID);

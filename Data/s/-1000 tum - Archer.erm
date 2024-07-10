@@ -511,6 +511,13 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 !!HE(hero):A2/(ART_PENDANT_OF_REFLECTION)/?(has:y)/?(equipped:y);
 !!VR(bonus)&(equipped):+6;
 
+// Peons
+!?FU(ES_785_GetPeonPower);
+!#VA(mon:x) (result:x);
+
+!!VR(result)&(mon)=(MON_CONSCRIPT):S5;  [The upgrade of Peasants]
+!!VR(result)&(mon)=(MON_PEON):S5;
+
 // Diplomatic Bargain
 !?FU(ES_786_GetDiscountLevel);
 !#VA(discount:x);
