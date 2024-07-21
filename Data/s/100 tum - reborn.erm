@@ -3149,7 +3149,6 @@ ZVSE2
 
   !!if&(result);
     !!FU(tum_GetStackHeadPosition):P(atkStack)/?(castPos:y);
-    *!IF:L^%()%(castPos)^;
     !!BU:O(castPos)/?(obstacleFlags:y);
 
     !!if&(obstacleFlags)=0;
@@ -6670,8 +6669,6 @@ ZVSE2
 
     ; Store the hp of the def stack if it would be killed, set up flags for the victim to disappear 
     !!if&(finalDmg)>=(defCurrTotalHp);
-      !!IF:L^%(finalDmg) %(defCurrTotalHp)^;
-
       !!VRi^tum_flesheaterRegenHp^:S(defCurrTotalHp);
       !!BM(defStack):Fd|813694976 E0;    [Clone, Sacrified, No Colouring]
     !!en;
@@ -6826,7 +6823,6 @@ ZVSE2
   !!BM(defStack):T?(defMon:y) E?(spells:y);
 
   ; Skip if the monster can rebirth
-  ; Disable as it's difficult to tell whether Rebirth is the only spell the monster has
   *!FU(tum_GetMonRebirthType):P(defMon)/?(rebirthType:y);
 
   *!if&(rebirthType)=0;
@@ -7507,10 +7503,10 @@ ZVSE2
       !!VR(result:y):S(FALSE);
       !!VR(result)&i=(MON_MANA_SKELETON):S(TRUE);
       !!VR(result)|i=(MON_MONK)/i=(MON_ZEALOT)/i=(MON_WAR_ZEALOT)/i=(MON_HIGH_PRIEST):S(TRUE);
-      !!VR(result)|i=(MON_MAGE)/i=(MON_ARCHANGEL)/i=(MON_SUPREME_ARCH_MAGE):S(TRUE);
+      !!VR(result)|i=(MON_MAGE)/i=(MON_ARCH_MAGE)/i=(MON_SUPREME_ARCH_MAGE):S(TRUE);
       !!VR(result)|i=(MON_LICH)/i=(MON_POWER_LICH)/i=(MON_LICH_KING):S(TRUE);
       !!VR(result)|i=(MON_PSYCHIC_ELEMENTAL)/i=(MON_MAGIC_ELEMENTAL)/i=(MON_VOID_ELEMENTAL):S(TRUE);
-      !!VR(result)|i=(MON_ENCHANTER)/i=(MON_SORCERESS)/i=(MON_SPELLWEAVER):S(TRUE);
+      !!VR(result)|i=(MON_ENCHANTER)/i=(MON_SORCERESS)/i=(MON_MIRACLE_MAGE):S(TRUE);
       !!VR(result)|i=(MON_CULTIST)/i=(MON_CULTIST_LEADER):S(TRUE);
 
       !!if&(result)=(FALSE)/(level)>=3;
@@ -10170,8 +10166,10 @@ ZVSE2
   !!co&(art)=(ART_VIAL_OF_DRAGON_BLOOD)/(dragonBloodBanned);
   !!co&(art)=(ART_ARMAGEDDONS_BLADE)/(armageddonsBladeBanned);
 
-  ; Skip Prismatic Eye of the God Dragon if the CB is Ultimate Dragon Utopia and it enabling
-  !!co&(art)=(ART_PRISMATIC_EYE_OF_THE_GOD_DRAGON)/(cbType)=0/(isEnabling);
+  ; Skip Prismatic Eye of the God Dragon/Horn of the Abyss if the CB is Ultimate Dragon Utopia and it enabling
+  !!if&(cbType)=0/(isEnabling);
+    !!co&(art)=(ART_PRISMATIC_EYE_OF_THE_GOD_DRAGON)/(art)=(ART_HORN_OF_THE_ABYSS);
+  !!en;
 
   ; Special treatment for Tri-colour Scepter, we skip here first
   !!co|(art)=(ART_TRI_COLOUR_SCEPTER_NON_LIVING)/(art)=(ART_TRI_COLOUR_SCEPTER_LIVING)/(art)=(ART_TRI_COLOUR_SCEPTER_UNDEAD);

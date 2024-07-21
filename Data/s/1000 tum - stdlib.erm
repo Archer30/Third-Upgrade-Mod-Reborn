@@ -369,12 +369,12 @@ ZVSE2
 !?FU(tum_HOOK_AfterMeleeMainFunc);
 !#VA(hook:x);
 
-!!FU(tum_HOOK_BeforeAttackMainFunc):P(hook)/0;
+!!FU(tum_HOOK_AfterAttackMainFunc):P(hook)/0;
 
 !?FU(tum_HOOK_AfterShootMainFunc);
 !#VA(hook:x);
 
-!!FU(tum_HOOK_BeforeAttackMainFunc):P(hook)/1;
+!!FU(tum_HOOK_AfterAttackMainFunc):P(hook)/1;
 
 !?FU(tum_HOOK_AfterAttackMainFunc);
 !#VA(hook:x) (mode:x);

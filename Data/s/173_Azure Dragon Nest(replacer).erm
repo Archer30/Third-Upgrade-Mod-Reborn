@@ -35,10 +35,10 @@ Parameter Settings:
 !#VRi^CB_173_Replace_0_Percentage^:S20; (The chance in % by which each object is replaced by the new Creature Bank. Input 0-100)
 !#VRi^CB_173_Replace_0_X_Offset^:S1; (Offset for the yellow entrance +-)
 
-!#VRi^CB_173_Replace_1_Type_Number^:S16;
-!#VRi^CB_173_Replace_1_SubType_Number^:S6;
-!#VRi^CB_173_Replace_1_Percentage^:S5;
-!#VRi^CB_173_Replace_1_X_Offset^:S1;
+!#VRi^CB_173_Replace_1_Type_Number^:S-1;
+!#VRi^CB_173_Replace_1_SubType_Number^:S-1;
+!#VRi^CB_173_Replace_1_Percentage^:S0;
+!#VRi^CB_173_Replace_1_X_Offset^:S0;
 
 !#VRi^CB_173_Replace_2_Type_Number^:S-1;
 !#VRi^CB_173_Replace_2_SubType_Number^:S-1;
