@@ -1,4 +1,6 @@
-# Third-Upgrade-Mod-Reborn
+# Third Upgrade Mod Reborn
+
+## Please do not add this mod to the ERA Mod Browser, as it is still under development, and English language support is incomplete!
 
 ATTENTION: Third Upgrades Mod requires "Visual Studio Redistributable" download it in official Microsoft page.
 
