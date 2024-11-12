@@ -160,6 +160,8 @@ ZVSE2
 !!VRi^wog_195_objReplaceMult^:S66;      [Reduce the WoG replacements to 66% of the original percentage]
 !!VRi^wog_195_howlingHollow_on^&i^tum_reborn_on^<>(TRUE):S(FALSE);   [DISABLE the generation of Howling Hollow - must be executed sooner than 78 wog - wogify]
 
+!!VRi^es_994_enabled^:S(FALSE); [DISABLE the original Millitary Duty and recreate it]
+
 **************************
 **** Create TUM Hooks ****
 **************************

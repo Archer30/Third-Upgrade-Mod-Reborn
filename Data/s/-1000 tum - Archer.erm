@@ -609,7 +609,84 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 !!VR(result)&(mon)=(MON_SHARPSHOOTER_ELF):S(TRUE);
 
 // Military Duty
-; to be added?
+!?FU(OnEveryDay)&i^timerWeekday^=7;
+!!UN:P994/?(wogOption:y);
+!!FU&(wogOption)<>(TRUE):E;                                            [exit when option is not active]
+
+!!FU(tum_ES_994_CheckForAllDwellings):P(OBJ_CREATURE_GENERATOR_1) P(OBJ_CREATURE_GENERATOR_4);
+
+!?FU(tum_ES_994_CheckForAllDwellings);
+!#VA(objType:x);
+
+!!MA:F(MON_BLOOD_DRAGON)/?(bloodDragonFv:y);
+!!OW:Wi^timerOwner^/?(townQty:y);
+!!VR(lastTown:y):S(townQty) -1;
+
+!!VR(x:y):S-1;
+
+; loop through all the dwellings
+!!re k;
+  !!UN:U(objType)/(ANY_OBJ)/-1/(x)/(y:y)/(z:y);
+  !!br&(x)<0;
+
+  !!DW(x)/(y)/(z):O?(owner:y);
+  !!co&(owner)<>i^timerOwner^;
+
+  ; Loop through all the slots
+  !!re i/0/3;
+    !!DW(x)/(y)/(z):Mi/?(mon:y)/?(num:y); [тип и кол-во доступных существ в 1м слоте жилища]
+
+    !!if&(mon)>(NO_MON)/(num)>0;      [если в слоте жилища есть существа]
+      !!MA:O(mon)/?(townType:y) L(mon)/?(level:y) F(mon)/?(fv:y); [тип города, которому принадлежит существо / уровень существа]
+
+      !!if&(townType)>(NO_TOWN)/(fv)<(bloodDragonFv);
+        !!FU(tum_GetMonstersInTown):P(townType)/(level)/?(nonUpgMon:y)/?(upgMon:y)/?(thirdUpgMon:y);
+
+        !!if|(nonUpgMon)=(mon)/(upgMon)=(mon)/(thirdUpgMon)=(mon);
+          !!if&(nonUpgMon)=(mon);
+            !!VR(dwell:y):S(level) +30;
+          !!el&(upgMon)=(mon);
+            !!VR(dwell):S(level) +37;
+          !!el&(thirdUpgMon)=(mon);
+            ; When new towns plugin is disabled, the dwelling id is the same as he second upgrade (will have extra check later)
+            !!if&i^tum_newTowns_on^<>(TRUE);
+              !!VR(dwell):S(level) +37;
+            ; When new towns plugin is enabled
+            !!el;
+              !!VR(dwell):S(level) +64;
+            !!en;
+          !!en;
+
+          !!re j/0/(lastTown);
+            !!OW:W(owner)/j/?(townId:y);
+            !!CA0/(townId):T?(loopTownType:y) B3/(dwell);
+
+            !!if&(loopTownType)=(townType)/1;
+              ; Skip if new towns plugin is disabled and the town doesn't have the third upgrade guild built, if the monster is a third upgrade
+              !!co&(thirdUpgMon)=(mon)/i^tum_newTowns_on^<>(TRUE)/i^tum_upgGuild_%(townId)^<>(TRUE);
+
+              !!br;
+            !!en;
+          !!en;
+
+          !!if&j<=(lastTown);         [если город найден]
+            !!VR(dwell)&(dwell)<37:+7;
+            !!CA0/(townId):B3/(dwell);[f1=1, если отстроено улучшенное жилище]
+
+            ; Increase the quantity of available creatures depending on upgraded or degraded building is built
+            !!if&1;                   [если отстроено улучшенное жилище]
+              !!CA0/(townId):M1/(level)/d/d(num); [увеличиваем кол-во доступных улучшенных существ]
+            !!el;                     [иначе]
+              !!CA0/(townId):M1/(level)/d(num)/d; [увеличиваем кол-во доступных неулучшенных существ]
+            !!en;
+
+            !!DW(x)/(y)/(z):Mi/d/0;   [удаляем существ из слота внешнего жилища]
+          !!en;
+        !!en;
+      !!en;
+    !!en;
+  !!en;
+!!en;
 
 **********************************************
 **** Advanced Classes Mod Compatibilities ****
