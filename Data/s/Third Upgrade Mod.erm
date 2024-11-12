@@ -1470,12 +1470,11 @@ script by Perry R and Archer30
 
 !#FU(Third_Upgrade_2)&i^Advanced_Classes_Mod_Active^<>(TRUE):P;           [Set Conflux Heroes to normal Creature_Specialist]
 
+; Execute later to be fully compatible with ACM (specialty icon must be correct)
 ; Catherine Upgrade Specialty
-!?FU(Third_Upgrade_3);
+!?FU(OnAfterErmInited);
 !!HE(HERO_CATHERINE):X6/(MON_CRUSADER)/(MON_INQUISITOR)/(MON_SWORDMASTER); (Upgrade Crusader and Inquisitor into Swordmaster)
 !!SN:H^spec^/(HERO_CATHERINE)/2/^%T(Third_Upgrade_Mod.spec146)^;
-
-!#FU(Third_Upgrade_3):P;
 
 ***********************************************************************************
 ***********************************************************************************
@@ -2011,7 +2010,7 @@ if no the bonus is removed.
 **** Dragonheart ****
 *********************
 // Script by daemon_n and Archer30
-//  Now it is possible to summon any dragon on the battlefield
+// Now it is possible to summon any dragon on the battlefield
 !?FU(OnGameEnter);
 ; we remove the dependence: by chance or from the type of soil.
 ; set: always random
@@ -2051,31 +2050,9 @@ if no the bonus is removed.
   !!UN:C8002264/4/(randId);             [specify the number of the monster to call]
 !!en;
 
-********************************************
-**** Legacy Artifact Scripts Collection ****
-********************************************
-Scripts by Archer30
-+50% spell damage for Orb of Chaos
-; Note that the native Orb mechenism works before MR0 (modifies MR:D value).
-; This implementation may not the best as it interacts with other scripted bonuses.
-!?FU(OnMagicBasicResistance)&i^tum_emerald_on^;
-!!BG:A?(action:y);
-
-!!if&(action)=(BATTLE_ACTION_HERO_CAST);
-  !!HEi^battle_hero_%i(battle_acting_side)^:A2/(ART_ORB_OF_CHAOS)/?(has:y)/?(equipped:y);
-
-  !!if&(equipped)>0;
-    !!MR:D?(basicDmg:y);
-
-    !!VR(newDmg:y):S(basicDmg) :2 +(basicDmg);
-    !!MR&(newDmg)>(basicDmg):D(newDmg);
-  !!en;
-!!en;
-
 ****************************************************************************************************
 Scripts by Perry 2020
 for Third Upgrade Mod by VMaiko
-
 
  171 (Hammer of Doom),
  172 (Helmet of Fallen Paladin),
@@ -2108,7 +2085,30 @@ for Third Upgrade Mod by VMaiko
 
 !#FU(tum_SetUpNewComnbiArts):P;
 
+**********************
+**** Orb of Chaos ****
+**********************
+// Script by Archer30
+// +50% spell damage
+; Note that the native Orb mechenism works before MR0 (modifies MR:D value).
+; This implementation may not the best as it interacts with other scripted bonuses.
+!?FU(OnMagicBasicResistance)&i^tum_emerald_on^;
+!!BG:A?(action:y);
+
+!!if&(action)=(BATTLE_ACTION_HERO_CAST);
+  !!HEi^battle_hero_%i(battle_acting_side)^:A2/(ART_ORB_OF_CHAOS)/?(has:y)/?(equipped:y);
+
+  !!if&(equipped)>0;
+    !!MR:D?(basicDmg:y);
+
+    !!VR(newDmg:y):S(basicDmg) :2 +(basicDmg);
+    !!MR&(newDmg)>(basicDmg):D(newDmg);
+  !!en;
+!!en;
+
 ****************************************************************************************************
+// Combination Artifact Table
+
 !?FU(OnHeroScreenMouseClick)&i^Typhon_Third_Upgrade_Mod_Active^/i^mouse_item^=8000/i^mouse_action^=(MOUSE_RMB_PRESSED);
 !!DL571:N^TUM_Arts.txt^;
 
@@ -2315,6 +2315,8 @@ Updated by Archer30 (25.04.24)
 !#VA(hook:x);
 
 !!UN:P727/?(backpackArt:y);             [Check Backpack Artifact option of Era Scripts]
+; Treat the option as enabled if Advanced Classes Mod is enabled
+!!VR(backpackArt)&i^Advanced_Classes_Mod_Active^:S(TRUE);
 
 !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y);
 !!UN:C(ebp)/8/4/?(player:y);
@@ -2326,13 +2328,16 @@ Updated by Archer30 (25.04.24)
     !!HEi:A2/(ART_GOLDEN_GOOSE)/?(has:y)/?(equipped:y);
     !!co&(has)=0;
 
+    !!VR(bonusGold:y):S0;
+
     !!if&(backpackArt)=(FALSE);
-      !!VR(bonusGold:y):S(equipped) *7000;
+      !!VR(bonusGold):S(equipped) *7000;
     !!el;
       !!VR(bonusGold):S(has) *7000;
     !!en;
 
-    !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ECX)/4/d(bonusGold);
+    !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y);
+    !!UN:C(ebp)/-4/4/d(bonusGold);
   !!en;
 !!en;
 
@@ -2820,6 +2825,10 @@ Updated by Archer30 (25.04.24)
 
 // Must be executed later than anything else
 !?FU(OnDwarfMagicResistance_Quit)&i^tum_emerald_on^;
+; For hero casting only
+*!BG:A?(action:y);
+*!FU&(action)<>(BATTLE_ACTION_HERO_CAST):E;
+
 ; Check if the spell is a lightning spell
 !!MR:S?(spell:y);
 
@@ -2830,6 +2839,9 @@ Updated by Archer30 (25.04.24)
   ; Exit if the target stack has any artifact that is immune to 
   !!if&i^battle_hero_%(side)^>(NO_HERO);
     !!HE&i^battle_hero_%(side)^:A2/(ART_PENDANT_OF_NEGATIVITY)/?(has:y)/?(equipped:y);
+    !!FU&(equipped)>0:E;
+
+    !!HE&i^battle_hero_%(side)^:A2/(ART_POWER_OF_THE_DRAGON_FATHER)/?(has)/?(equipped);
     !!FU&(equipped)>0:E;
 
     !!HE&i^battle_hero_%(side)^:A2/(ART_IONIZED_ARMOR)/?(has)/?(equipped);
@@ -3085,7 +3097,7 @@ Updated by Archer30 (25.04.24)
 !?FU(tum_OnDlg_HeroPreview_SpellPowerWrite)|i^tum_trueHeroPower_0^>0/i^tum_trueHeroPower_1^>0;
 !#VA(hook:x);
 
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/8/4/?(heroStruct:y) C(heroStruct)/26/2/?(heroId:y);
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/8/4/?(heroStruct:y) C(heroStruct)/26/4/?(heroId:y);
 
 !!re i/(BATTLE_LEFT)/(BATTLE_RIGHT);
   !!if&i^battle_hero_%i^=(heroId)/i^tum_trueHeroPower_%i^>0;

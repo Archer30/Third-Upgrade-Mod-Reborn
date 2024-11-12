@@ -11,6 +11,9 @@ Note: TUM - Reborn Edition is currently being actively developed. Please report 
 
 --------------------------------------------------------------------------------------------------
 
+TUM can only be used in single player games or co-op multiplayer games.
+--------------------------------------------------------------------------------------------------
+
 Credits:
 
 Archer30: Author, idea and scripting.

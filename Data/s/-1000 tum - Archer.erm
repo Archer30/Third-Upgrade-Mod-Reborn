@@ -183,6 +183,19 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 **** WoG Scripts Compatibilities ****
 *************************************
 // The following lines must be executed later than WoG Scripts
+// Altar of Transformation
+!?FU(WOG_14_GetNeutralMon)&i^tum_reborn_on^;
+!#VA(mon:x) (level:x) (isUpgr:x) (result:x);
+
+; Convert the creature to level 8
+!!VR(result)&(level)=7:S324; [Shadow Lord]        - Level 8
+
+// Masters of Life
+!?FU(WOG_19_UpgradeMonsters);
+!#VA(hero:x) (upgMon:x);
+
+!!HE(hero):C1/(MON_CONSCRIPT)/(upgMon)/d/d/0/5; [upg peasants's upg form]
+
 !?FU(OnAfterErmInstructions);
 // Week of Monsters
 !!FU(FileExists):P^data\wog scripts.pac^/?(result:y); [Checking WoG Scripts mod is required! Othesewise there would be error about array]
@@ -272,8 +285,41 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 !!HE(hero):A2/(ART_PENDANT_OF_REFLECTION)/?(has:y)/?(equipped:y);
 !!VR(artBonus)&(equipped)>0:S1;
 
-// Universal Upgrades
-!?FU(OnDetermineMonInfoDlgUpgrade_Quit)&i^tum_newTowns_on^<>(TRUE);
+// Universal Upgrades WITHOUT single TUM building for all TUM Upgrades
+; by SadnessPower
+!?FU(OnDetermineMonInfoDlgUpgrade_Quit)&i^tum_newTowns_on^;
+!#VA(monType:x) (upgType:x) (town:x) (hero:x);
+
+!!UN:P174/?(wogOption:y);
+!!FU&(wogOption)<>(TRUE):E;
+
+; Exit if there is an existing upgrade or is not in a town
+!!FU|(upgType)>(NO_MON)/(town)=(NO_TOWN):E;
+
+!!MA:L(monType)/?(level:y) O(monType)/?(townType:y);
+
+!!UN:T(townType)/(level)/0/?(basicMon:y);
+!!UN:T(townType)/(level)/1/?(upgMon:y);
+
+!*IF:M^monType = %(monType) - upgType = %(upgType) - town = %(town) - hero = %(hero) - level = %(level)
+- basicMon = %(basicMon) - upgMon = %(upgMon)^;
+
+!!FU&(monType)<>(basicMon)/(monType)<>(upgMon):E;
+
+!!VR(buildingConstant:y)&(monType)=(basicMon):S37;           [37-43 upgraded dwellings]
+!!VR(buildingConstant)&(monType)=(upgMon):S64;               [64-70 TUM upgraded dwellings]
+
+!!VR(buildingId:y):S(level) +(buildingConstant);        
+!!CA0/(town):B3/(buildingId);           [check if built into flag 1]
+
+!!if&1;
+  !!FU(GetUpgradedMonster):P(monType)/?(upgraded:y);
+  !!VR(upgType)&(upgraded)>(NO_MON):S(upgraded);
+!!en;
+
+// Universal Upgrades FOR single TUM building for all TUM Upgrades
+; by Archer30
+!?FU(OnDetermineMonInfoDlgUpgrade_Quit)&i^tum_newTowns_on^=(FALSE);
 !#VA(monType:x) (upgType:x) (town:x) (hero:x);
 
 !!UN:P174/?(wogOption:y);
@@ -565,9 +611,9 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 // Military Duty
 ; to be added?
 
-*****************************
-**** ACM Compatibilities ****
-*****************************
+**********************************************
+**** Advanced Classes Mod Compatibilities ****
+**********************************************
 // Show additional spell points regeneration in ACM spell points description
 !?FU(AC_Function_8)&x3=1/x4=1;
 !#VA(hero:x) (result:x);
@@ -1367,24 +1413,25 @@ C(ebp)/16/4/d-i^tum_MonPlusLuckPower^ C(ebp)/20/4/di^tum_MonPlusLuckPower^;
 *?FU(ES_759_GetAiVictim);
 *!VRx3:S(NO_STACK);
 
-***********************************************************************************
-**** Bad fix: Fix Winged Magogs getting super high Fight Value for some reason ****
-***********************************************************************************
-; Restore Winged Magog's fight value every day
+*********************************************************************
+**** Bad fix: Fix Winged Magogs' stats messed up for some reason ****
+*********************************************************************
+; Restore Winged Magog's fight value and shooting flag every day
 ; The reason is yet to be found...but we all know it's Majaczek's crap :)
 !?FU(OnAfterErmInited);
 !!MA:F(MON_WINGED_MAGOG)/?i^tum_wingedMagogFightValue^;
 
 !?FU(OnEveryDay)&i^timerOnce^/i^timerDay^>1;
-!!VRi^tum_wingedMagogFightValue^&i^tum_wingedMagogFightValue^=0:S343;
-!!MA:F(MON_WINGED_MAGOG)/i^tum_wingedMagogFightValue^;
+!!VRi^tum_wingedMagogFightValue^&i^tum_wingedMagogFightValue^=0:S393; [fail safe]
+!!MA:F(MON_WINGED_MAGOG)/i^tum_wingedMagogFightValue^ X(MON_WINGED_MAGOG)/d|(MON_FLAG_SHOOTER);
 
 *****************************************************
 **** Bad fix: Fix calling invalid creature sound ****
 *****************************************************
-; Fix sometimes Amethyst calls invalid creature sound (#122/126/128) by redirecting bad sound to slient sound
-; Fix sometimes calling invalid war machine sound
-; The script is disabled as it does not work at all. Yuji, when to fix?
+; Fix in MP Amethyst calls invalid creature sound (#122/126/128) by redirecting bad sound to slient sound
+; Fix in MP calling invalid war machine sound
+; The script is disabled as it does not work at all. 
+; Yuji, when to fix?
 !?FU(OnAfterErmInstructions);
 !!FU:E;
 
@@ -1412,7 +1459,6 @@ C(ebp)/16/4/d-i^tum_MonPlusLuckPower^ C(ebp)/20/4/di^tum_MonPlusLuckPower^;
 
 *******************************
 **** Manage Creature Stats ****
-*******************************
 ; Managing creature stats for gameplay or mod compatibility reasons
 !?FU(OnEveryDay)&i^timerDay^=1/i^timerOnce^;
 !!UN:P(WOG_OPT_STACK_EXPERIENCE)/?(stackExp:y);
@@ -1432,6 +1478,13 @@ C(ebp)/16/4/d-i^tum_MonPlusLuckPower^ C(ebp)/20/4/di^tum_MonPlusLuckPower^;
 !!EA(MON_ICE_ELEMENTAL):B(slot)/1/74/(SPELL_FORGETFULNESS)/0/2/4/6/8/10/12/14/16/18/20;
 !!EA(MON_LIFE_ELEMENTAL):F112/?(slot:y);
 !!EA(MON_LIFE_ELEMENTAL):B(slot)/1/74/(SPELL_FORGETFULNESS)/0/2/4/6/8/10/12/14/16/18/20;
+
+*******************************
+**** Manage Artifact Stats ****
+*******************************
+; Change the price/level of Badge of Courage if ACM is not enabled (since it disbales the mind immunity effect of Badge of Courage)
+!?FU(OnAfterErmInstructions)&i^Advanced_Classes_Mod_Active^<>(TRUE);
+!!UN:A(ART_BADGE_OF_COURAGE)/1/8000 A(ART_BADGE_OF_COURAGE)/3/(ART_LEVEL_MAJOR);
 
 **********************************************************
 **** Bad Fix: Fix first stack turn on the battlefield ****

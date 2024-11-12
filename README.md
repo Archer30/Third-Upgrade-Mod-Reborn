@@ -13,6 +13,9 @@ Note: TUM - Reborn Edition is currently being actively developed. Please report 
 
 --------------------------------------------------------------------------------------------------
 
+TUM can only be used in single player games or co-op multiplayer games.
+--------------------------------------------------------------------------------------------------
+
 Credits:
 
 Archer30: Author, idea and scripting.
@@ -20,14 +23,19 @@ VMaiko: Author, idea and graphics.
 PerryR: ERM author and scripting.
 Berserker: Scripting.
 Majaczek: Plugins (Amethyst and Emerald).
+Andruids: Graphics.
+Fiorin: Graphics.
 Moriarty89: Graphics.
 FanOfHeroes: Graphics.
 Dalion: Graphics.
-Toriko£ºGraphics.
+Toriko:Graphics.
 Avatar: Sounds and Graphics resources.
 FirePaladin: Graphics.
-Andruids: Graphics.
 ElfbI: New Pandora Boxes.
+
+Original authors of Horn of the Abyss mod which their assets were used to do this mod:
+
+Hota Crews (check out "Credits" in Hota for details)
 
 Original authors of Tides of War mod which their assets were used to do this mod:
 

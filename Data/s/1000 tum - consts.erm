@@ -332,9 +332,3 @@ ZVSE2
 !#DC(WOG_OPT_8TH_MONSTERS)         = 301;
 !#DC(WOG_OPT_DWELLING_BANKS)       = 302;
 ; ===========  END WOG OPTIONS  ============
-
-
-; ==========  EIGHTH CREATURES  ============
-!#DC(EIGHTH_BTN_DEFAULT_X_COORD)   = 183;
-!#DC(EIGHTH_BTN_DEFAULT_Y_COORD)   = 542;
-; ========  END EIGHTH CREATURES  ==========

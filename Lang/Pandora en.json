@@ -62,6 +62,7 @@
     "eaglei_box_m2": "Additionally, your {Eagle} {Eye} skill allowed you to discover @eye1@, @eye2@ and @eye3@!",
     "eaglei_box_m3": "You have found @eye1@, @eye2@ и @eye3@ inside the box!",  
     "eaglei_box_m4": "Your soldiers have been rewarded with the Commander's Banner.",
-    "eaglei_box_m5": "You have found @eye1@, @eye2@ и @eye3@ inside the box!"
+    "eaglei_box_m5": "You have found @eye1@, @eye2@ и @eye3@ inside the box!",
+    "guardian": "{Pandora's Guardian.}"
   }
 }

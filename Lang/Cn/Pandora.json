@@ -62,6 +62,7 @@
     "eaglei_box_m2": "由于你拥有{鹰眼术}技能，你发现了@eye1@、@eye2@和@eye3@！",
     "eaglei_box_m3": "你在盒子里发现了@eye1@、@eye2@和@eye3@！",  
     "eaglei_box_m4": "你的士兵获得了战神旗帜。",
-    "eaglei_box_m5": "你在盒子里发现了@eye1@、@eye2@和@eye3@！"
+    "eaglei_box_m5": "你在盒子里发现了@eye1@、@eye2@和@eye3@！",
+    "guardian": "{潘多拉守卫。}"
   }
 }

@@ -718,9 +718,6 @@ ZVSE2
 **********************************************************************************************************************
 ; This script blocks the same script from GEM
 !?FU(fastai_DivideAllAIValues);
-; The script is currently disabeld
-!!FU:E;
-
 ; Divide AI values only when Peasant's AI value is original (15)
 !!MA:I(MON_PEASANT)/?(aiValuePeasant:y);
 
@@ -747,9 +744,6 @@ ZVSE2
 
 !?FU(fastai_ManageAIValues)&i^fastai_aiValuesDivided^/i^fastai_aiValueDivider^>0;
 !#VA(mode:x);                           [0 - restoration, 1 - division]
-
-; The script is currently disabeld
-!!FU:E;
 
 !!FU(GetMaxMonsterId):P?(lastMon:y);
 

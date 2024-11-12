@@ -14,8 +14,8 @@ ZVSE2
 !!UN:V?(wogVer:y)/?(eraVer:y)/?(hasHumanPlayer:y)/?(isNetworkGame:y)/?(networkType:y);
 
 ; Show msg if the ERA version is outdated
-!!VR(version:y):S3912;
-!!VR(versionStr:z):S^3.9.12^;
+!!VR(version:y):S3915;
+!!VR(versionStr:z):S^3.9.15^;
 
 !!if&(eraVer)<(version);
   !!SN:H^art^/(ART_PENDANT_OF_DEATH)/0/?(artName:z) H^art^/(ART_PENDANT_OF_DEATH)/0/^^;
@@ -156,7 +156,7 @@ ZVSE2
 !?FU(OnAfterErmInstructions);
 !!VRi^wog_39_monsterSpecialtiesEnabled^:S(FALSE); [DISABLE monster specialties from Hero Spec Booost]
 !!VRi^wog_71_newCombiArtEnabled^:S(FALSE); [DISABLE new combination artifacts from Enhanced Artifact II]
-!!VRi^wog_174_enabled^&i^tum_newTowns_on^<>(TRUE):S(FALSE); [DISABLE the original Universal Upgrades and recreate it]
+!!VRi^wog_174_enabled^:S(FALSE); [DISABLE the original Universal Upgrades and recreate it]
 !!VRi^wog_195_objReplaceMult^:S66;      [Reduce the WoG replacements to 66% of the original percentage]
 !!VRi^wog_195_howlingHollow_on^&i^tum_reborn_on^<>(TRUE):S(FALSE);   [DISABLE the generation of Howling Hollow - must be executed sooner than 78 wog - wogify]
 
@@ -179,10 +179,12 @@ ZVSE2
 !!SN:E(setHook)/1/5137685/(tum_Hero_GetSpecMonster); [Manage addtional monster if TUM is enabled]
 
 ; This is a replacement of FU(OnPreTownScreen)
-!!SN&i^tum_newTowns_on^<>(TRUE):E(setHook)/1/6058213/(tum_HOOK_PrepareTownScreen); [For TUM Full only - manage TUM/8th creatures/virtural dwelling/upgrade guild.] 5C70E5
+!!if&i^tum_newTowns_on^=(FALSE);
+  !!SN:E(setHook)/1/6058213/(tum_HOOK_PrepareTownScreen); [For TUM Full only - manage TUM creatures/virtural dwelling/upgrade guild] 5C70E5
+!!en;
 
 ; Native after attack spells/abilities
-!!SN:E(setHook)/1/4457003/(tum_OnAfterHitSpells); [Trigger when after hit speslls is about to cast] 44022B
+!!SN:E(setHook)/1/4457003/(tum_OnAfterHitSpells); [Trigger when "after hit" (after attack) speslls are about to cast] 44022B
 !!SN:E(setHook)/1/4458758/(tum_OnAfterAttackAbilities); [Trigger when after attack ability is about to initiate] 440906
 
 !!SN:E(setHook)/1/4461377/(tum_HOOK_BeforeMeleeMainFunc); [Trigger before melee attack, works for retaliation] 441341
@@ -190,7 +192,7 @@ ZVSE2
 
 ; New after attack spells/abilites
 !!SN:E(setHook)/1/4462998/(tum_HOOK_AfterMeleeMainFunc); [Trigger after melee attack, before retaliation] 441996
-!!SN:E(setHook)/1/4455129/(tum_HOOK_AfterShootMainFunc); [Trigger after shooting]
+!!SN:E(setHook)/1/4455129/(tum_HOOK_AfterShootMainFunc); [Trigger after shooting] 43FAD9
 
 !!SN:E(setHook)/1/4445929/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield]
 !!SN:E(setHook)/1/4454655/(tum_OnCalcMonsterDamage); [trigger on calculating monster damage] 43F8FF
@@ -243,6 +245,11 @@ ZVSE2
 !!SN:E(setHook)/1/4463397/(tum_OnRetaliation); 441B25
 !!SN:E(setHook)/1/7761128/(tum_OnDeathBlow);
 
+; Fearless
+; The hook is here for Amethyst compatibility
+; Not working at the moment WIPWIPWIP
+!!SN:E(setHook)/1/7734401/(tum_OnCheckFearless); 760481
+
 ; Unused
 *!SN:E(setHook)/1/4472251/(tum_OnDoDamage); [Trigger when any damage inflicts, a bit overkill]
 *!SN:E(setHook)/1/7427990/(tum_HOOK_BMKDamage); [Trigger on BM:K inflicting damage] - Disabled for now as we don't need it 715796
@@ -267,14 +274,14 @@ ZVSE2
   !!SN:E(setHook)/1/4638788/(tum_OnDlg_HeroPreview_SpellPowerWrite); [Trigger on setting hero's power on the battlefield]
 
   ; Golden Goose
-  !!SN:E(setHook)/1/5011261/(tum_OnCalcArtGoldIncome); [Trigger when calculating daily income from artifacts]
+  !!SN:E(setHook)/1/5011269/(tum_OnCalcArtGoldIncome); [Trigger when calculating daily income from artifacts] 004C7745
 
   ; Diplomat's Cloak
   !!SN:E(setHook)/1/4355710/(tum_OnGetArmyDiplomacyValue); [Trigger on getting a hero's diplomacy value (for neutral armies and Thieves' Guild)]
   !!SN:E(setHook)/1/4685669/(tum_OnAfterSetRetreatSurrenderButtons); [Trigger after Retreat/Surrender buttons got set] 477F65
 
   ; Ring of Elements
-  !!SN:E(setHook)/1/5928150/(tum_OnSummonElememtals); [Trigger when about to summon elementals and set the type of already summoned]
+  !!SN:E(setHook)/1/5928150/(tum_OnSummonElememtals); [Trigger when about to summon elementals and set the type of already summoned] 5A74D6
 
   ; Ring of Oblivion
   !!SN:E(setHook)/1/4472337/(tum_OnAfterDoPhysicalDamage);
@@ -533,7 +540,7 @@ ZVSE2
 !?FU(OnAfterTacticsPhase);
 !!VRi^tum_tacticsIsEnded^:S(TRUE);
 
-!?FU(OnBeforeBattleReplay);
+!?FU(OnBeforeBattleReplay);             [This is important, it is the earliest timing to reset i^tum_tacticsIsEnded^ once replay is confirmed]
 !!VRi^tum_tacticsIsEnded^:S(FALSE);
 
 !?FU(OnAfterBattleUniversal);
@@ -863,7 +870,7 @@ ZVSE2
 !?FU(OnBeforeBattleUniversal);
 !!HEi^battle_hero_0^:R4/?i^tum_cb_tacticStatus^;
 
-!?FU(OnAfterBattleUniversal);
+!?FU(OnAfterBattleUniversal_Quit);
 !!HEi^battle_hero_0^:R4/i^tum_cb_tacticStatus^;
 
 **************************************************************
@@ -982,15 +989,16 @@ ZVSE2
 !#VA(minLevel:x);                       [Optional. Min Monster level, including the level specified]
 !#VA(maxLevel:x);                       [Optional. Man Monster level, including the level specified]
 !#VA(maxFightValue:x);                  [Optional. Max fight value allowed, including the value specified]
+!#VA(fifthParam:x);                     [Optional. Monsters to be excluded. Support up to 12 monsters]
 
 !!FU:A?(numArgs:y);
 
-!!if&(numArgs)<3;
+!!if&(numArgs)<(@maxLevel);
   !!VR(minLevel):S(MON_MIN_LEVEL);
   !!VR(maxLevel):S(MON_MAX_LEVEL);
 !!en;
 
-!!MA&(numArgs)<4:F(MON_AZURE_DRAGON)/?(maxFightValue); [by default the max fight value is not greater than Azure Dragon's]
+!!MA&(numArgs)<(@maxFightValue):F(MON_AZURE_DRAGON)/?(maxFightValue); [by default the max fight value is not greater than Azure Dragon's]
 
 !!VR(mon):S(NO_MON);
 !!FU(GetMaxMonsterId):P?(lastMon:y);
@@ -1002,6 +1010,17 @@ ZVSE2
   !!co&(randMon)>=(MON_CATAPULT)/(randMon)<=(MON_ARROW_TOWERS);
   !!co&(randMon)>=(MON_EMISSARY_OF_WAR)/(randMon)<=(MON_EMISSARY_OF_LORE);
   !!co&(randMon)>=(MON_COMMANDER_FIRST_A)/(randMon)<=(MON_COMMANDER_LAST_D);
+
+  ; Skip excluded monsters
+  !!if&(numArgs)>=(@fifthParam);
+    !!re i/(@fifthParam)/(numArgs);
+      !!co&(randMon)=xi;
+    !!en;
+  !!en;
+
+  ; Check if the monster is allowed to spawn
+  !!MA:H(randMon)/?(advMapHigh:y);
+  !!co&(advMapHigh)<=0;
 
   ; Check if the level and fight value are ideal
   !!MA:L(randMon)/?(level:y);
@@ -1706,9 +1725,9 @@ ZVSE2
 !!VRy7::2;
 !!VRx3:Sy7;
 
-**************************************
-**** Get the coordinates of a hex ****
-**************************************
+*****************************************************
+**** Force a stack to melee attack another stack ****
+*****************************************************
 
 !?FU(tum_MakeStackMeleeAttackStack);
 !#VA(atkStack:x) (defStack:x);

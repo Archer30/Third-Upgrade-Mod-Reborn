@@ -208,16 +208,12 @@ ZVSE2
   !!SN:R^twcrport.def:0_196.png^/^data\defs\twcrport.def\0_196b.png^;
   !!FU(arch_Battle_SetMonsterAnimation):P(MON_WEREWOLF)/^zm194b.def^;
   !!FU(arch_AdvMap_SetMonsterAnimation):P(MON_WEREWOLF)/^zmm194m.def^;
-  !!SN:R^zm194z.def^/^data\defs\cprsmall.def\0_196s.png^;
-  !!SN:R^zmm194z.def^/^data\defs\twcrport.def\0_196b.png^;
 ; Set the graphcis to the original version
 !!el&i^timerMonthDay^=17;
   !!SN:R^cprsmall.def:0_196.png^/^^;
   !!SN:R^twcrport.def:0_196.png^/^^;
   !!FU(arch_Battle_SetMonsterAnimation):P(MON_WEREWOLF)/^zm194z.def^;
   !!FU(arch_AdvMap_SetMonsterAnimation):P(MON_WEREWOLF)/^zmm194z.def^;
-  !!SN:R^zm194z.def^/^^;
-  !!SN:R^zmm194z.def^/^^;
 !!en;
 
 !?FU(arch_Battle_SetMonsterAnimation);
@@ -226,7 +222,8 @@ ZVSE2
 !!UN:C4697553/4/?(monInfoTable:y);
 !!VR(animPtr:y):S116 *(mon) +(monInfoTable) +12;
 !!UN:C(animPtr)/4/?(value:y);
-!!SN:K10/z(filename)/(value)/1;
+!!VRz(filename):M4/?(size:y);
+!!SN:K(size)/z(filename)/(value)/1;
 
 ; Functions
 !?FU(arch_SetShooterProjectile);
@@ -364,7 +361,7 @@ ZVSE2
 ***********************************************************************************
 **** Precise creature description for Golems, Elementals and other Non-livings ****
 ***********************************************************************************
-; Must be OnAfterErmInited to be compatible with Elemental Balance (Era Scripts)
+; Must be OnAfterErmInited to be compatible with Conflux Balance (Era Scripts)
 !?FU(OnAfterErmInited);
 !!FU(GetMaxMonsterId):P?(lastMon:y);
 
@@ -1268,7 +1265,7 @@ ZVSE2
   !!en;
 
   ; Display battle log (even if the damage wan't applied due to overflow)
-  !!if&(isTheoretical)<>(TRUE);
+  !!if&(isTheoretical)<>(TRUE)/i^battle_isVisible^;
     !!BM(defStack):N?(defNum:y);
     !!VR(isPlural:y):S(defNum) -1 B;
     !!SN:H^monname^/(defMon)/(isPlural)/?(defMonName:z);
@@ -1298,8 +1295,64 @@ ZVSE2
 !!en;
 
 
+// Azure Dragons' Greater Fear
+; Reduce the Fear resistance for all the enemies
+; Not working at the moment WIPWIPWIP
+; The efficiency isn't good anyway
+!?FU(tum_OnCheckFearless);
+!#VA(hook:x);
+
+!!FU:E;
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/4/?(stackStruct:y);
+
+; Exit if the current stack has Greater Fear
+!!UN:C(stackStruct)/52/4/?(currType:y);
+!!FU(tum_CheckIfMonHasGreaterFear):P(currType)/?(result:y);
+!!FU&(result):E;
+
+!!UN:C(stackStruct)/244/4/?(side:y);
+
+; Check if the enemy has Greater Fear
+!!VR(oppSide:y):S(side) X(TRUE);
+
+!!VR(startStack:y):S(oppSide) *(BATTLE_DEFENDER_STACK_FIRST);
+!!VR(endStack:y):S(startStack) +20;
+
+!!re i/(startStack)/(endStack);
+  !!BMi:N?(num:y);
+  !!co&(num)<=0;
+
+  !!BMi:T?(type:y);
+  !!FU(tum_CheckIfMonHasGreaterFear):P(type)/?(result:y);
+  !!br&(result);
+!!en;
+
+; Exit if no Greater Fear found
+!!FU&i>(endStack):E;
+
+!!IF:L^123^;
+
+; Exit if lucky
+*!VR(random:y)R0/0/99;
+*!FU&(random)>50:E;
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EAX)/4/(currType); [Any non-zero value will work]
+
+!!SN:X?t/0;
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/7734482; 7604D2
+
+
+!?FU(tum_CheckIfMonHasGreaterFear);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S(FALSE);
+!!VR(result)|(mon)=(MON_AZURE_DRAGON)/(mon)=(MON_ICE_DRAGON):S(TRUE);
+
+
 // Ghosts' loss after battle - for human only
 ; Attract Dead Souls users lose 50% of quantity increase (if they got any) at the end of battle
+; Not applicable for AI as they don't know how powerful Ghosts can be anyway
 !?FU(OnSetupBattlefield)&(ERM_FLAG_IS_HUMAN);
 !!SN:Mi^tum_soulAttractersList^;
 !!FU(NewIntArray):P42/?i^tum_soulAttractersList^/(M_TEMP);
@@ -1449,8 +1502,19 @@ ZVSE2
       !!VR(combiFlags:y):S(MON_FLAG_CLONE) +(MON_FLAG_NO_COLORING) +(MON_FLAG_SUMMONED);
       *!BM(defStack):T(victimType);
       !!BM(defStack):Fd|(combiFlags);
+
+      ; For some reason, BM:M/F/R results in broken sound here. Thus we set the volume to 0 temporarily
+      !!if&i^battle_isVisible^;
+        !!UN:C6916020/4/?(volume:y);
+        !!UN:C6916020/4/0;
+      !!en;
+
       !!BM(defStack):E0 K1;             [E0 prevent revival]
-      !!SN&i^battle_isVisible^:D;
+
+      !!if&i^battle_isVisible^;
+        !!SN:D;
+        !!UN:C6916020/4/(volume);
+      !!en;
 
       ; Exit if the victim hasn't been killed for some reason
       !!BM(defStack):N?(defNumNew:y);
@@ -1502,26 +1566,16 @@ ZVSE2
 
         ; For Sphinxes only
         !!if|(atkMon)=(MON_ENTOMBED_SPHINX)/(atkMon)=(MON_ASHEN_SPHINX);
-          ; For some reason, BM:M/F/R results in broken sound here. Thus we set the volume to 0 temporarily
-          !!if&i^battle_isVisible^;
-            !!UN:C6916020/4/?(volume:y);
-            !!UN:C6916020/4/0;
-          !!en;
-
           ; Additional spell
           !!BM(victimStack):M(SPELL_FRENZY)/2/(SKILL_NOT_LEARNED);
 
           ; Stun the target if it is <= level 3
-
           !!if&(victimLv)<=2;
             !!BM(victimStack):Fd|(MON_FLAG_ACTED) R0;
             
             !!if&i^battle_isVisible^;
               !!SN:T^tumr.str.stun%(defIsPlural)^/?(battleLog:z)/^mon^/(victimName);
               !!MM:S(battleLog);
-
-              !!UN:C6916020/4/(volume);
-
               !!SN:P^SPELLSTUN^;
               !!FU(tum_PlayCustomAnimationOnStack):P(victimStack)/^Stun^;
             !!en;
@@ -1698,7 +1752,7 @@ ZVSE2
 
 
 // Spell after Shooting
-// Elite Lizards
+// Elite Lizards, Troll Witches and Ratman Grenadiers
 !?FU(tum_OnAfterShoot);
 !#VA(atkStack:x) (defStack:x);
 
@@ -2440,7 +2494,7 @@ ZVSE2
 
 
 // Grandmaster Gremlins' Mend
-; Resurrect constructs like Archangels resurrecting fallen allies
+; Resurrect constructs like Archangels resurrecting fallen living allies
 ; Change the cursor to casting when a target is not full comparing with its initial status
 !?FU(OnBattleMouseHint)&i^tum_customSpellActive^;
 ; Check monster position
@@ -2871,6 +2925,10 @@ ZVSE2
 ; Check if it is shooting and also the target isn't killed
 !!BG:A?(action:y) E?(targetStack:y) N?(actStack:y);
 !!FU|(action)<>(BATTLE_ACTION_SHOOT)/(targetStack)<=(NO_STACK)/(actStack)<=(NO_STACK):E;
+
+; Check if it is a war machine shooting
+!!BMi^battle_acting_stack^:T?(monType:y);
+!!FU&(monType)>=(MON_CATAPULT)/(monType)<=(MON_ARROW_TOWERS):E;
 
 ; Get the position of the target and the real side of the current stack (considering it may be changed by Hypnotize)
 !!BM(targetStack):P?(pos:y) I?(targetSide:y);
@@ -4163,7 +4221,7 @@ ZVSE2
 // Orc Leaders' Axe Rampage
 ; Damage of Orc Leaders (throwing axes) depends quadratically on the distance to the target.
 ; Bersy's original Formula: Base damage * (19 - distance) ^ 2 / 100%.
-; New Formula: New damage = original damage * (19 - distance) / 10. The new damage cannot be lower than the original
+; New Formula: New damage = original damage * (11 - distance) * 4. The new damage cannot be lower than the original
 !?FU(OnStackToStackDamage);
 !#VA(atkStack:x) (defStack:x) (finalDmgConst:x) (finalDmg:x) (basicDmg:x) (dmgBonus:x) (isDistant:x) (distanceArg:x) (isTheoretical:x);
 
@@ -4175,7 +4233,7 @@ ZVSE2
 
 !!if&(result);
   ; Calculate the damage based on distance. Apply the new damage only when the new damage is greater
-  !!VR(bonus:y):S11 -(distanceArg) *5 F0/100;
+  !!VR(bonus:y):S11 -(distanceArg) *4 F0/100;
 
   !!if&(bonus)>0;
     !!VR(finalDmgNew:y):S(finalDmgConst) *(bonus) :100 +(finalDmg);
@@ -4471,7 +4529,7 @@ ZVSE2
 
   ; Calculate the Spectral Echo damage if it would be killed
   !!if&(finalDmg)>=(defCurrTotalHp);
-    !!VR(echoDmg:y):S(finalDmg) -(defCurrTotalHp) *(rate) :4; [3/4]
+    !!VR(echoDmg:y):S(finalDmg) -(defCurrTotalHp) *(rate) :3; [2/3]
     !!VRi^tum_spectralEchoDamage^&(echoDmg)>0:S(echoDmg);
   !!en;
 !!en;
@@ -4531,13 +4589,13 @@ ZVSE2
 
 !!VRi^tum_spectralEchoDamage^:S0;
 
-; Would be divided by 4
+; Would be divided by 3
 ; The number is a bit weird to avoid overflowing as much as possible
 !?FU(tum_GetMonSpectralEchoRate);
 !#VA(mon:x) (result:x);
 
 !!VR(result):S0;
-!!VR(result)&(mon)=(MON_SPECTRAL_BEHEMOTH):S3;
+!!VR(result)&(mon)=(MON_SPECTRAL_BEHEMOTH):S2;
 
 
 // Venomspike Wyverns' Venomweave Seizure
@@ -5269,6 +5327,7 @@ ZVSE2
 
 !!BMi^battle_acting_stack^:T?(actType:y);
 !!FU(tum_CheckIfMonHasNaturesPurification):P(actType)/?(result:y);
+!!FU&(result)<>(TRUE):E;
 
 !!BG:D?(pos:y);
 !!FU(tum_GetAdjacentStacksOfPosition):P(pos)/?(adjacentStacksList:y)/1/(FALSE); [x3 = friendly units only, x4 = allow dead units]
@@ -7693,7 +7752,7 @@ ZVSE2
 ; Behemoths
 ; Remove Flyer
 !!MA:X(MON_GHOST_BEHEMOTH)/d~(MON_FLAG_FLYER);
-!!MA:X(MON_SPECTRAL_BEHEMOTH)/d~(MON_FLAG_FLYER);
+*!MA:X(MON_SPECTRAL_BEHEMOTH)/d~(MON_FLAG_FLYER);
 
 ***************************************************************************************
 **** New Artifacts * New Artifacts * New Artifacts * New Artifacts * New Artifacts ****
@@ -7716,7 +7775,7 @@ ZVSE2
 !!SN:Mi^tum_artifactImmunity_0^ Mi^tum_artifactImmunity_1^;
 
 !!re i/(BATTLE_LEFT)/(BATTLE_RIGHT);
-  !!FU(NewIntArray):P83/?i^tum_artifactImmunity_%i^/(M_TEMP);
+  !!FU(NewIntArray):P83/?i^tum_artifactImmunity_%i^/(M_TEMP); [83 - should be extended if New Spells mod is used]
   !!co&i^battle_hero_%i^=(NO_HERO);
 
   !!re (spell:y)/10/82;
@@ -7755,6 +7814,8 @@ ZVSE2
 
 ; Exit if the targeted spell is not defined with any artifact immunity
 !!MR:S?(spell:y);
+!!FU&(spell)>82:E;                      [fail safe when New Spells mod is used]
+
 !!SN:Mi^tum_artifactImmunity_%(side)^/(spell)/?(isImmune:y);
 !!MR&(isImmune):F100;
 
@@ -7921,6 +7982,12 @@ ZVSE2
     !!en;
   !!en;
 !!en;
+
+; Compatibility with ACM
+!#SN:H^art^/(ART_POWER_OF_THE_DRAGON_FATHER)/1/?s^tum_powerOfTheDragonFatherDesc^;
+
+!?FU(OnGameEnter)&i^Advanced_Classes_Mod_Active^;
+!!SN:H^art^/(ART_POWER_OF_THE_DRAGON_FATHER)/1/s^tum_powerOfTheDragonFatherDesc^;
 
 ****************************************************************************************************
 // Buckler of the Beelzebub (258), Sun Emperor Chainmail (235) and Bucket Helmet (241)
@@ -9199,6 +9266,7 @@ ZVSE2
 
 !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(heroStruct:y);
 !!UN:C(heroStruct)/26/4/?(heroId:y);
+!!FU&(heroId)<=(NO_HERO):E;
 
 !!HE(heroId):A2/(ART_BINOCULARS)/?(has:y)/?(equipped:y);
 
@@ -9211,6 +9279,7 @@ ZVSE2
 
 !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(heroStruct:y);
 !!UN:C(heroStruct)/26/4/?(heroId:y);
+!!FU&(heroId)<=(NO_HERO):E;
 
 !!HE(heroId):A2/(ART_BINOCULARS)/?(has:y)/?(equipped:y);
 
@@ -10088,7 +10157,7 @@ ZVSE2
 *******************************************
 **** Set up text for special artifacts ****
 *******************************************
-!?FU(OnAfterErmInstructions);
+!?FU(OnAfterErmInstructions)&i^tum_emerald_on^;
 ; Exit if no artifact has been defined
 !!SN:T^tumr.art.special.any^/?(specialArtStr:z);
 !!FU&(specialArtStr)=^tumr.art.special.any^:E;

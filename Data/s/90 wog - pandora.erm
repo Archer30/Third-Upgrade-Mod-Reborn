@@ -39,7 +39,7 @@ ZVSE2
    !!FU(PackedCoords):Py10/y11/0/?y2;   [pack vars]
    !!SN:W^%V2_%V3_%V4_pandora90^/y2;    [write vars]
 
-   !!if&y10>=6;                        [настраиваем "призрачное" содержание ящика для ИИ, только сингл или хот-сит, команда нестабильна по сети]
+   !!if&y10>=6;                         [настраиваем "призрачное" содержание ящика для ИИ, только сингл или хот-сит, команда нестабильна по сети]
 
     !!if|y10<=10/y10=16;
      !!PA2:E200000;                     [если в ящике что-то полезное, ИИ "подсмотрит" 200к опыта]
@@ -74,7 +74,8 @@ ZVSE2
 *****************************значение y34=6, игрок получает ресурсы каждого вида
 !?FU(Pandora90_main);
 // For testing. Comment it before release!
-*!VRi^Box_variant_90^:S6;
+WIPWIPWIP
+*!VRi^Box_variant_90^:S12;
 
 !!SN:W^opt_149_mythril^/?y1 W^Box_variant_90^/?y34 W^Bless_variant_90^/?y35;
 
@@ -434,6 +435,13 @@ ZVSE2
 !!SN:W^Box_variant_90^/?y34 W^Bless_variant_90^/?y35 W^Hero_level_90^/?y36;
 
 !!if&y34=12;
+  ; Set new commander descriptions
+  !!if&i^battle_isVisible^;
+    !!re j/(MON_COMMANDER_FIRST_D)/(MON_COMMANDER_LAST_D);
+      !!SN:H^monname^/j/2/^%T(ep.guardian)^;
+    !!en;
+  !!en;
+
   !!BU:S183/1/159/1/-1/0;         set pal
   !!BU:E159/?y61;
   !!if&y35=0;
@@ -534,8 +542,8 @@ ZVSE2
   !!VRi:+4883476; +4 +16 +1024 +32768 +131072 +524288 +4194304;
   !!BMy61:Fi;
 *******set shama
-!!BU:S190/1/115/1/-1/0;
-!!BU:E115/?y61;
+  !!BU:S190/1/115/1/-1/0;
+  !!BU:E115/?y61;
   !!if&y35=0;
    !!BMy61:A45 D45 E3 H2750 S10 U1/160 U2/160 U3/0;
    !!BMy61&y36<25:A40 D40 E3 H1550 S10 U1/130 U2/130 U3/0;

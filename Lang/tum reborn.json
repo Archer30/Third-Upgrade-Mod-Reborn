@@ -84,17 +84,11 @@
             },
       
             // Please specify artifact + new upgrade to the given creature IDs here
-            "upgrade": {
-              "2": "202 198", // Archer
-              "3": "202 198",
-      
+            "upgrade": {      
               "8": "223 64", // Monk
               "9": "223 65",
       
               "10": "202 318", // Cavalier
-      
-              "18": "218 19", // Wood Elf
-              "19": "218 256",
       
               "26": "278 27", // Grean Dragon
               "27": "278 151",
@@ -119,9 +113,11 @@
       
               "155": "278 346", // Darkness Dragon
       
-              "196": "275 134 276 135 277 132", // Dracolisch
+              "196": "275 258 276 339 277 132", // Dracolisch
       
               "257": "223 222", // Supreme Arch Mage
+
+              "295": "218 299", // Skeleton Archer
       
               "320": "223 222", // High Priest
       
@@ -134,7 +130,7 @@
       
             // Please specify artifact + auto summoning creature IDs + percentage of hero level as summuning quantity here
             "autoSummon": {
-              "219": "247 248 249 250, 100",
+              "219": "247 248 249 250, 50",
               "227": "286, 50",
               "228": "286, 100",
               "229": "286, 150",
@@ -145,7 +141,7 @@
       
             // Please specify special artifacts that would only be enabled in particular creature banks
             "special": {
-              "any": "127 128 182 220 231 232 259 261 262 263 266 278 283 284 285 286 287"
+              "any": "127 128 182 220 226 231 232 259 261 262 263 266 278 283 284 285 286 287"
             }
           } // art
     }
