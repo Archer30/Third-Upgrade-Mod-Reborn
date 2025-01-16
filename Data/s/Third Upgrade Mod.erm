@@ -22,9 +22,8 @@ visit www.heroescommunity.com for updates and news
 ****************************************************************
 // Script by Archer30
 // Manage Creature upgrades
-
 !?FU(OnDetermineMonInfoDlgUpgrade);
-!#VA(monType:x) (upgType:x) (town:x) (hero:x);
+!#VA(monType:x) (upgType:x) (townId:x) (hero:x);
 
 !!if&(hero)>(NO_HERO);
   ; Set upgrading to the specialty creature from the third upgrade of lower creatures, if they are included in the specialty definition
@@ -78,39 +77,45 @@ visit www.heroescommunity.com for updates and news
 !!en;
 
 ; Check for third upgrades in town - only when there is no creature upgrade specialty or artifact upgrade
-!!FU(tum_GetUpgMonInTown)&i^tum_upgGuild_%(town)^:P(monType)/(town)/?(upgType);
+!!FU(tum_GetUpgMonInTown)&i^tum_upgGuild_%(townId)^:P(monType)/(townId)/?(upgType);
 
 !?FU(tum_GetUpgMonInTown);
-!#VA(monType:x) (town:x) (upgType:x);
+!#VA(monType:x) (townId:x) (upgType:x);
 
 ; Initialization
 !!VR(upgType):S(NO_MON);
 
 ; Get town type of the monster of the town and see if they match
-!!MA:O(monType)/?(ownerType:y);
-!!CA0/(town):T?(townType:y);
-!!FU&(townType)<>(ownerType):E;
+!!MA:O(monType)/?(monTownType:y);
+
+; Check if the town types are matching if Universal Upgrade option isn't enabled
+!!UN:P174/?(universalUpg:y);
+
+!!if&(universalUpg)<>(TRUE);
+  !!CA0/(townId):T?(townType:y);
+  !!FU&(townType)<>(monTownType):E;
+!!en;
 
 ; Get monster's level and get upgrade chain of the level
 !!MA:L(monType)/?(level:y);
-!!FU(tum_GetMonstersInTown):P(townType)/(level)/?(basicMon:y)/?(upgMon:y)/?(thirdUpgMon:y);
+!!FU(tum_GetMonstersInTown):P(monTownType)/(level)/?(basicMon:y)/?(upgMon:y)/?(thirdUpgMon:y);
 
 ; Exit if upgraded dwelling is not built - might not be compatible with extended ugrades (is disabled anyway)
 !!VR(upgDwelling:y):S37 +(level);
-!!CA0/(town):B3/(upgDwelling);
+!!CA0/(townId):B3/(upgDwelling);
 !!FU&-1:E;
 
 ; Set up monster's upgrades
 !!if&(monType)=(basicMon);
   !!VR(upgType):S(upgMon);
 !!el&(monType)=(upgMon);
-  !!VR(upgType)&i^tum_upgGuild_%(town)^:S(thirdUpgMon);
+  !!VR(upgType)&i^tum_upgGuild_%(townId)^:S(thirdUpgMon);
 !!en;
 
 ; If the monster is a 3rd upgrade, get 4th upgrades if 4th upgrade option is enabled/monster is levle 7/upgraded level 7 dwelling, upgrade guild is built
 !!UN:P(WOG_OPT_4TH_UPGRADES)/?(fourthUpgOn:y);
 
-!!if&(fourthUpgOn)/(monType)=(thirdUpgMon)/(level)=6/i^tum_upgGuild_%(town)^;
+!!if&(fourthUpgOn)/(monType)=(thirdUpgMon)/(level)=6/i^tum_upgGuild_%(townId)^;
   !!FU(GetUpgradedMonster):P(monType)/?(upgType);
 !!en;
 
@@ -129,16 +134,13 @@ visit www.heroescommunity.com for updates and news
 
 // Adapt fast upgrades with holding A + mouse click
 !?FU(OnTownMouseClick)&i^mouse_action^=(MOUSE_LMB_PRESSED)/i^key_a^/999;
-; Exit if the third building is not built - Well, looks like the original igrik's way has problem too, so we disable it
-!!CA(CURRENT_TOWN):U?(townId:y);
-!!FU&i^tum_upgGuild_%(townId)^<>(TRUE):E;
-
 !!CM:I?(item:y);
 !!CA(CURRENT_TOWN):H1/?(visitHero:y);
 
 !!VR(startItem:y):S0;
 !!VR(endItem:y):S0;
 
+; If clicking on a town slot (whether there is a hero or not)
 !!if&(item)>=115/(item)<=121;
   !!VR(startItem):S(item);
   !!VR(endItem):S(item);
@@ -158,6 +160,14 @@ visit www.heroescommunity.com for updates and news
 
 ; Exit if not clicking on a valid slot
 !!FU&(startItem)=0:E;
+
+!!CA(CURRENT_TOWN):U?(townId:y);
+
+; Exit if the third building is not built
+; No longer exiting as we need to recreate the whole behaviour in order to deal with Universal Upgrades compatibility
+; Source of Fast Upgrade Toops in Town: 
+; https://github.com/igrikRS/HoMM3-Plugins/blob/master/fast%20upgrade%20stacks%20in%20town/fast%20upgrade%20stacks%20in%20town/fast%20upgrade%20stacks%20in%20town.cpp
+*!FU&i^tum_upgGuild_%(townId)^<>(TRUE):E;
 
 !!CM:R0;
 
@@ -231,8 +241,10 @@ visit www.heroescommunity.com for updates and news
   !!en;
 !!en;
 
+
 ************************* set new upgrades ***********************************
-!?FU(tum_SetUpNewUpgrades);
+!?FU(tum_SetUpThirdUpgrades);
+; Castle
 !!MA:U01/197;                           [Halberdiers to Templar] *Castle*]
 !!MA:U03/198;
 !!MA:U05/199;
@@ -240,7 +252,10 @@ visit www.heroescommunity.com for updates and news
 !!MA:U09/320;                           [Zealots to High Priest] *Castle*]
 !!MA:U011/201;
 !!MA:U13/150;                           [Archangels to Supreme Archangels] *Castle Level 8*]
+
 !!MA:U269/278;
+
+; Rampart
 !!MA:U15/293;
 !!MA:U17/203;
 !!MA:U19/256;                           [Grand Elves to Sharpshooter] *Rampart*]
@@ -248,7 +263,10 @@ visit www.heroescommunity.com for updates and news
 !!MA:U23/205;
 !!MA:U25/206;
 !!MA:U27/151;                           [Gold Dragons to Diamond Dragons] *Rampart Level 8*]
+
 !!MA:U270/279;
+
+; Tower
 !!MA:U29/255;                           [Master Gremlins to Santa Gremlins] *Tower*]
 !!MA:U31/208;
 !!MA:U33/209;                           [Iron Golems to Steel Golem] *Tower*]
@@ -256,7 +274,10 @@ visit www.heroescommunity.com for updates and news
 !!MA:U37/210;
 !!MA:U39/211;
 !!MA:U41/152;                           [Titans to Lords of Thunder] *Tower Level 8*]
+
 !!MA:U271/280;
+
+; Inferno
 !!MA:U43/213;
 !!MA:U45/214;
 !!MA:U47/215;
@@ -264,7 +285,10 @@ visit www.heroescommunity.com for updates and news
 !!MA:U51/217;
 !!MA:U53/218;                           [Efreet Sultans to Efreet Rajah] *Inferno*]
 !!MA:U55/153;                           [Arch Devils to Hell Baron] *Inferno Level 8*]
+
 !!MA:U272/281;
+
+; Necropolis
 !!MA:U57/220;
 !!MA:U59/329;                           [Zombies to Mummies] *Necropolis*]
 !!MA:U61/261;                           [Wraiths to Ghosts] *Necropolis*]
@@ -272,7 +296,10 @@ visit www.heroescommunity.com for updates and news
 !!MA:U65/222;
 !!MA:U67/223;
 !!MA:U69/154;                           [Ghost Dragons to Blood Dragons] *Necropolis Level 8*]
+
 !!MA:U273/194;
+
+; Dungeon
 !!MA:U71/225;
 !!MA:U73/227;
 !!MA:U75/226;
@@ -280,16 +307,21 @@ visit www.heroescommunity.com for updates and news
 !!MA:U79/229;                           [Minotaur Kings to Black Minotaur] *Dungeon*]
 !!MA:U81/230;
 !!MA:U83/155;                           [Black Dragons to Darkness Dragons] *Dungeon Level 8*]
+
 !!MA:U274/282;
-!!MA:U85/231;                           [Hobgoblins to Hobgoblins Overlord] *Stronghold*]
-!!MA:U85/232;
+
+; Stronghold    
+!!MA:U85/232;                           [Hobgoblins to Hobgoblins Overlord] *Stronghold*]
 !!MA:U87/233;
 !!MA:U89/234;
 !!MA:U91/235;                           [Ogre Magi to Elder Ogre] *Stronghold*]
 !!MA:U93/236;
 !!MA:U95/237;
 !!MA:U97/156;                           [Ancient Behemoths to Ghost Behemoths] *Stronghold Level 8*]
+
 !!MA:U275/283;
+
+; Fortress
 !!MA:U99/321;                           [Upg. Gnolls to Centagnoll] *Fortress*]
 !!MA:U101/240;
 !!MA:U103/244;
@@ -297,7 +329,10 @@ visit www.heroescommunity.com for updates and news
 !!MA:U107/242;                          [Greater Basilisks to Lava Basilisks] *Fortress*]
 !!MA:U109/243;
 !!MA:U111/157;                          [Chaos Hydras to Hell Hydras] *Fortress Level 8*]
+
 !!MA:U276/284;
+
+; Conflux
 !!MA:U119/246;
 !!MA:U121/251;
 !!MA:U123/248;
@@ -305,7 +340,11 @@ visit www.heroescommunity.com for updates and news
 !!MA:U127/247;
 !!MA:U129/249;                          [Energy Elementals to Flux Elementals] *Conflux*]
 !!MA:U131/158;                          [Phoenixes to Sacred Phoenixes] *Conflux Level 8*]
+
 !!MA:U277/285;
+
+!?FU(tum_SetUpNewUpgrades);
+!!FU(tum_SetUpThirdUpgrades):P;
 
  [The following can only be upgraded at Hill Forts]
 ; fourth upgrades
@@ -390,6 +429,7 @@ script by Archer30 and daemon_n
 !#VA(townId:x);
 
 !!FU(tum_SetUpTownMons):P(townId);
+*!FU(tum_ManageTownUpgrades)&i^tum_newTowns_on^<>(TRUE):P(townId);
 
 ; If fort is demolished, the building id is 11 (instead of 7)
 ; &i^tum_onTownScreen^ - assuming that AI will never do this
@@ -435,7 +475,7 @@ script by Archer30 and daemon_n
   !!en;
 // Restore UN:T if third upgrade building is not built
 !!el;
-  !!FU(tum_ResetTownMons):P(townId);
+  !!FU(tum_ResetTownMons):P(townType);
 !!en;
 
 // Manage town dwellings slots
@@ -445,20 +485,47 @@ script by Archer30 and daemon_n
   !!FU(tum_ResetTownDwellings):P(townId)/(townType);
 !!en;
 
+// Manage the upgrade in town depending on whether it's possible to do the third upgrade
+; Must execute for all town types for the compatibility with Universal Upgrades
+*?FU(tum_ManageTownUpgrades);
+*#VA(townId:x);
+
+*!if&i^tum_upgGuild_%(townId)^;
+  *!FU(tum_SetUpThirdUpgrades):P;
+*!el;
+  *!re i/(TOWN_FIRST)/(TOWN_LAST_WOG);
+    *!VR(counter:y):S14 *i +7;   [Upgrade mon only]
+
+    *!re j/(MON_MIN_LEVEL)/(MON_MAX_LEVEL);
+      *!SN:Mi^tum_NativeTownCreaturesIds^/(counter:y)/?(monId:y);
+      *!MA:U(monId)/(NO_MON);
+      *!VR(counter):+1;
+    *!en;
+  *!en;
+*!en;
+
+
 // Restore UN:T values on closing town screen so that they are the original values when called by other functions
 !?FU(OnCloseTownScreen);
 !#VA(townId:x);
 
-!!FU(tum_ResetTownMons):P(townId);      [Here we use a function for it to be called in other triggers]
+!!FU(tum_ResetTownMons):P;      [Here we use a function for it to be called in other triggers]
+*!FU(tum_SetUpThirdUpgrades)&i^tum_newTowns_on^<>(TRUE):P;
 
 ; Function for restoring UN:T
 !?FU(tum_ResetTownMons);
-!!re (townType:y)/(TOWN_FIRST)/(TOWN_LAST_WOG);
-  !!VR(counter:y):S14 *(townType) +7;   [Upgrade mon only]
+!#VA(townType:x);
+
+!!FU?(numArgs:y);
+
+!!re i/(TOWN_FIRST)/(TOWN_LAST_WOG);
+  !!co&(numArgs)>0/i<>(townType);
+
+  !!VR(counter:y):S14 *i +7;   [Upgrade mon only]
 
   !!re j/(MON_MIN_LEVEL)/(MON_MAX_LEVEL);
     !!SN:Mi^tum_NativeTownCreaturesIds^/(counter:y)/?(monId:y);
-    !!UN:T(townType)/j/1/(monId);
+    !!UN:Ti/j/1/(monId);
     !!VR(counter):+1;
   !!en;
 !!en;
@@ -1313,12 +1380,7 @@ script by Perry R and Archer30
   !!UN:N3/z6/y17/1;                      [Second Upgrade]
 
   !!MA:Ly12/?y14;                         [Get creature level]
-  !!FU(tum_GetSpecMonsterStats):Py6/y14/?y50/?y53/?y51/?y52;
-
-  ; Add in native bonuses
-  !!FU(tum_GetNativeMonSpecBonus):Py48/y12/?y30/?y31;
-  !!VRy50:+y30;
-  !!VRy53:+y31;
+  !!FU(tum_GetSpecMonsterStats):Py6/y12/?y50/?y53/?y51/?y52;
 
   !!SN:T^Third_Upgrade_Mod.Creature_Specialist_Title^/?z7;
   !!SN:T^Third_Upgrade_Mod.Creature_Specialist_Body^/?z8/^level^/y14/^attack^/y50/^defense^/y53/^damage^/y51/^health^/y52/^Crea1^/z3/^Crea2^/z4/^Crea3^/z6/^Hero^/z1;
@@ -1385,8 +1447,9 @@ script by Perry R and Archer30
 !!en;
 
 !?FU(tum_GetSpecMonsterStats);
-!#VA(heroId:x) (monLvl:x) (attack:x) (defense:x) (damage:x) (bonusHp:x);
+!#VA(heroId:x) (monId:x) (attack:x) (defense:x) (damage:x) (bonusHp:x);
 
+!!MA:L(monId)/?(monLvl:y);
 !!HE(heroId):E?t/?(level:y)/1;          [Check hero Level]
 !!VR(level):F1/(INT_MAX);               [Fix the value fetched in case it's buggy]
 
@@ -1403,6 +1466,15 @@ script by Perry R and Archer30
 !!VR(damage):S(level):(divider);        [Damage per Level]
 !!VR(bonusHp):S(level)+9;               [+1% per Health per Level +9%]
 
+; Add in native bonuses (approximate calculation) if Hero Specialty Boost is enabled (since it gives big buff to many specialties)
+!!UN:P39/?(heroSpecBoost:y);
+
+!!if&(heroSpecBoost);
+  !!FU(tum_GetNativeMonSpecBonus):P(level)/(monId)/?(bonusAtk:y)/?(bonusDef:y);
+  !!VR(attack):+(bonusAtk);
+  !!VR(defense):+(bonusDef);
+!!en;
+
 !?FU(tum_Hero_GetSpecMonster);
 !#VA(hook:x);
 
@@ -1410,15 +1482,19 @@ script by Perry R and Archer30
 !!HE(heroId):X?t/?(monId:y);
 
 !!if&(monId)<>(MON_BALLISTA);
-  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(monPtr:y) C(monPtr)/4/4/?(monLvl:y);
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(monPtr:y);
   !!UN:C(monPtr)/76/4/?(currHp:y);
-  !!FU(tum_GetSpecMonsterStats):P(heroId)/(monLvl)/?(attack:y)/?(defense:y)/?(damage:y)/?(bonusHp:y);
+  !!FU(tum_GetSpecMonsterStats):P(heroId)/(monId)/?(attack:y)/?(defense:y)/?(damage:y)/?(bonusHp:y);
   !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y) C(ebp)/8/4/?(monId:y);
   !!UN:C(monPtr)/84/4/d(attack) C(monPtr)/88/4/d(defense); [edit min/max damage]
   !!VR(newHp:e):S(currHp) :100 *(bonusHp);
   !!VR(hp:y):S(newHp);
   !!UN:C(monPtr)/76/4/d(hp); edit hp
   !!UN:C(monPtr)/92/4/d(damage) C(monPtr)/96/4/d(damage); [edit min/max damage]
+
+  ; Skip all the native bonuses except for speed
+  !!SN:X?t/0;
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/5137895; 4E65E7
 !!en;
 
 !?FU(OnSetupBattlefield)&i^Advanced_Classes_Mod_Active^<>(TRUE);
@@ -1538,10 +1614,10 @@ script by Perry R and Archer30
 
 !!FU|(isTheoretical)/(isDistant)<>(TRUE):E;
 
-; Check if the attacker is Succubus
+; Check if the attacker is Succubi
 !!BM(atkStack):T?(type:y);
 
-!!if|(type)=(MON_SUCCUBUS)/(type)=(MON_LILIM);
+!!if|(type)=(MON_SUCCUBI)/(type)=(MON_LILIM);
   !!SN&i^tum_reborn_on^:P^HATESPIKE^;
   !!FU(tum_PlayCustomAnimationOnStack):P(defStack)/^hatespike.def^;
 !!en;
@@ -1780,6 +1856,7 @@ script by Archer30
   !!BM(defStack):F?(monFlags:y);
   !!VR(isAlive:y):S(monFlags) &(MON_FLAG_ALIVE);
   !!VR(isClone:y):S(monFlags) &(MON_FLAG_CLONE);
+  !!VRi^tum_ghoul_isSummoned^:S(monFlags) &(MON_FLAG_SUMMONED);
 
   !!if&(isAlive)/(isClone)=(FALSE);
     ; Check if the defending monster would be be killed by the flesh eater
@@ -1806,6 +1883,7 @@ script by Archer30
 !!if&(atkNum)>0/(defNum)<=0;
   ; Remove the clone flag from the defender
   !!BM(defStack):Fd~(MON_FLAG_CLONE);
+  !!BM(defStack)&i^tum_ghoul_isSummoned^=(FALSE):Fd~(MON_FLAG_SUMMONED);
   
   ; Calculate the new HP and number of the flesheater
   !!VR(noHpLost:y):S(FALSE);
@@ -1845,6 +1923,7 @@ script by Archer30
 
 ; Restore the global variable
 !!VRi^tum_ghoul_regenHp^:S0;
+!!VRi^tum_ghoul_isSummoned^:S0;
 
 ****************************************************************************************************
 *Script by PerryR and Archer30
@@ -2495,7 +2574,7 @@ Updated by Archer30 (25.04.24)
 
 !!if&(equipped);
   !!SN:X?t/0;
-  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/5928157;
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/5928157; 5A74DD
 !!en;
 
 ***************************
@@ -2539,14 +2618,14 @@ Updated by Archer30 (25.04.24)
 !!VR(summSide:y):S(side) X(TRUE);
 !!FU&i^tum_%(ART_HORN_OF_THE_ABYSS)_equipped_%(summSide)^<=0:E;
 
-!!FU(tum_CheckIfPossibleToSummonMoreStacks):P(summSide)/?(result:y)/(stacksToSummon);
+!!FU(tum_CheckIfPossibleToCreateMoreStacks):P(summSide)/?(result:y)/(stacksToSummon);
 
 !!if&(result)<>(TRUE);
   !!FU:E;
 
   ; If the proposed side to summon cannot summon more stacks, check the opponent instead! (Is this what HotA in HotA behave?)
   *!VR(summSide):X(TRUE);
-  *!FU(tum_CheckIfPossibleToSummonMoreStacks):P(summSide)/?(result:y);
+  *!FU(tum_CheckIfPossibleToCreateMoreStacks):P(summSide)/?(result:y);
   *!FU&(result)<>(TRUE):E;
 !!en;
 
@@ -2590,7 +2669,7 @@ Updated by Archer30 (25.04.24)
 
     ; Next if not possible to summon for the side
     ; Here we don't break the loop as there could be valid side later in the loop
-    !!FU(tum_CheckIfPossibleToSummonMoreStacks):P(summSide)/?(result:y);
+    !!FU(tum_CheckIfPossibleToCreateMoreStacks):P(summSide)/?(result:y);
     !!co&(result)<>(TRUE);
 
     !!if&i^battle_isVisible^;

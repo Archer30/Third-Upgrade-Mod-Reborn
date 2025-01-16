@@ -3,7 +3,8 @@
  	"Third_Upgrade_Mod": {
 
  		"outOfDate": 						"{ERA版本太低！}\n\n三阶升级mod需要在ERA @version@以上的版本运行！请到WoG中文论坛获取最新的ERA 3整合版后再进行游戏。\n\n下载地址：https://www.h3wog.com/thread-76170-1-1.html",
- 		"brokenMpSupport":					"{不完全支持多人游戏}\n\n三阶升级mod不完全支持多人游戏。在人类玩家之间对战的时候，游戏很可能会出错。请尝试将人类玩家设置为同一队伍后再进行游戏。",
+ 		"brokenMpSupport0":					"{不完全支持多人游戏}\n\n三阶升级mod不完全支持多人游戏。在人类玩家之间对战的时候，生物的能力会出现异常。请退出游戏，将人类玩家设置为同一队伍后再进行游戏。",
+ 		"brokenMpSupport1":					"{不完全支持多人游戏}\n\n三阶升级mod不完全支持多人游戏。在人类玩家被电脑玩家攻击时，生物的能力会出现异常。请尽量主动攻击电脑以规避问题。",
  		"restartRequired": 					"{必须重新启动游戏}\n\n关闭三阶升级mod的第八生物选项后，必须完全关闭游戏，再重新启动。",
 
  		"Creature_Specialist_Title":		"{~r}生物特长{~}\n\n",

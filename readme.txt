@@ -2,7 +2,7 @@ ATTENTION: Third Upgrades Mod requires "Visual Studio Redistributable" download 
 
 
                    ************** Third Upgrades Mod *****************
-                  *************** Version: v1.6.x ******************
+                  *************** Version: v1.7.x ******************
                      ***************** Reborn ******************
 
 Third Upgrade Mod: Reborn is a branch of TUM official, developed by Archer30 the erm author of TUM. The main improvement of TUM - Reborn Edition is that it partially resolves the issue of long AI turn and CTDs by rewriting a huge amount of code. Balance improvements and QoL changes are also included. 
@@ -19,7 +19,7 @@ Credits:
 Archer30: Author, idea and scripting.
 VMaiko: Author, idea and graphics.
 PerryR: ERM author and scripting.
-Berserker: Scripting.
+Berserker: Scripting, idea.
 Majaczek: Plugins (Amethyst and Emerald).
 Andruids: Graphics.
 Fiorin: Graphics.
@@ -29,7 +29,9 @@ Dalion: Graphics.
 Toriko：Graphics.
 Avatar: Sounds and Graphics resources.
 FirePaladin: Graphics.
+yogdush: Graphics.
 ElfbI: New Pandora Boxes.
+Ash&Amber: Tester.
 
 Original authors of Horn of the Abyss mod which their assets were used to do this mod:
 

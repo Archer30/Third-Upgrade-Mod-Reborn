@@ -11,7 +11,7 @@ ZVSE2
 ***************************
 
 !?FU(tum_CheckEnvironment);
-!!UN:V?(wogVer:y)/?(eraVer:y)/?(hasHumanPlayer:y)/?(isNetworkGame:y)/?(networkType:y);
+!!UN:V?(wogVer:y)/?(eraVer:y)/?(hasHumanPlayer:y)/?(gameType:y)/?(networkType:y);
 
 ; Show msg if the ERA version is outdated
 !!VR(version:y):S3915;
@@ -27,7 +27,7 @@ ZVSE2
 !!en;
 
 ; Check if there are two human players in different teams
-!!if&(isNetworkGame);
+!!if&(gameType)/(gameType)<>(GAME_TYPE_HOTSEAT);
   !!FU(NewIntArray):P?(humanTeams:y);
 
   ; Loop through all the players and see how many human teams in total
@@ -43,11 +43,18 @@ ZVSE2
   !!FU(Array_SortedUnique):P(humanTeams);
   !!SN:M(humanTeams)/?(size:y);
 
-  ; Show msg if there are at least two teams of human players
+  ; Show msg if there are at least two teams of human players and stop the game
   !!if&(size)>1;
     !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/?(artName:z) H^art^/(ART_BOOTS_OF_POLARITY)/0/^^;
     !!IF:Q1/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)
-      /(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(MSG_TYPE_MES)/^%T(Third_Upgrade_Mod.brokenMpSupport)^;
+      /(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(MSG_TYPE_CHOOSE_PIC)/^%T(Third_Upgrade_Mod.brokenMpSupport0)^;
+    !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/(artName);
+
+  ; Show msg if there are is only one team of human players
+  !!el;
+    !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/?(artName:z) H^art^/(ART_BOOTS_OF_POLARITY)/0/^^;
+    !!IF:Q1/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)
+      /(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(MSG_TYPE_CHOOSE_PIC)/^%T(Third_Upgrade_Mod.brokenMpSupport1)^;
     !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/(artName);
   !!en;
 !!en;
@@ -225,7 +232,8 @@ ZVSE2
 *!SN:E(setHook)/1/7722330/(tum_OnBehemothReduceDefenseProc); [Trigger on determine whether to reduce enemy defense to 0] 75D55A
 
 *!SN:E(setHook)/1/4489948/(tum_OnCalcAngelResurrectionPower); 4482DC - Disabled, not used for now, but it's really good
-!!SN:E(setHook)/1/4458842/(tum_OnDrainLife); 44095A
+!!SN:E(setHook)/1/4458794/(tum_OnDrainLifeCheckTargetType); 44092A
+!!SN:E(setHook)/1/4458842/(tum_OnDrainLifeCalcHealingHp); 44095A
 
 !!SN:E(setHook)/1/7725329/(tum_OnPhoenixResurrectionProc); [Trigger on determine whether to resurrect like Phoenix] 75E111
 !!SN:E(setHook)/1/4624553/(tum_HOOK_PhoenixResurrection); [Trigger on Phoenix about to resurrect] 4690A9
@@ -237,6 +245,9 @@ ZVSE2
 !!SN:E(setHook)/1/5893401/(tum_OnBeforeSpellBookDlgCreate); [Trigger on spell book dlg create in battle]
 !!SN:E(setHook)/1/5893444/(tum_OnAfterSpellBookDlgDestroy); [Trigger on spell book dlg destroy in battle]
 
+; Symbiosis
+!!SN:E(setHook)/1/4481837/(tum_OnCureSetNewStackValue); 44632D
+
 ; Whirlpool
 !!SN:E(setHook)/1/4900801/(tum_OnEnterWhirlpool); [Trigger on entering Whirlpool] 004AC7C1
 
@@ -247,10 +258,15 @@ ZVSE2
 !!SN:E(setHook)/1/4463397/(tum_OnRetaliation); 441B25
 !!SN:E(setHook)/1/7761128/(tum_OnDeathBlow);
 
-; Fearless
-; The hook is here for Amethyst compatibility
-; Not working at the moment WIPWIPWIP
-!!SN:E(setHook)/1/7734401/(tum_OnCheckFearless); 760481
+; Frostbound Terror (Enhanced Fear)
+!!SN:E(setHook)/1/4606276/(tum_OnFear); 00464944
+
+; After all melee/shoot behaviours (after double/triple strikes)
+!!SN:E(setHook)/1/4463622/(tum_HOOK_AfterAllMeleeMainFunc); 441C06
+!!SN:E(setHook)/1/4456444/(tum_HOOK_AfterAllShootMainFunc); 43FFFC
+
+; Abyssal Gaze (Enhanced Death Stare)
+!!SN:E(setHook)/1/4459489/(tum_OnDeathStare); 440BE1
 
 ; Unused
 *!SN:E(setHook)/1/4472251/(tum_OnDoDamage); [Trigger when any damage inflicts, a bit overkill]
@@ -414,6 +430,22 @@ ZVSE2
 
 !!FU(tum_OnAfterAttack):P(stackAttackerID)/(stackDefenderID);
 
+!?FU(tum_HOOK_AfterAllMeleeMainFunc);
+!#VA(hook:x);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/4/?(atkStruct:y);
+!!UN:C(atkStruct)/244/4/?(atkSide:y) C(atkStruct)/248/4/?(atkStackIdInSide:y);
+!!VR(atkStack:y):S(atkSide) *(BATTLE_STACKS_PER_SIDE) +(atkStackIdInSide);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(defStruct:y);
+!!UN:C(defStruct)/244/4/?(defSide:y) C(defStruct)/248/4/?(defStackIdInSide:y);
+!!VR(defStack:y):S(defSide) *(BATTLE_STACKS_PER_SIDE) +(defStackIdInSide);
+
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/4/?(ebp:y);
+!!UN:C(ebp)/8/4/?(direction:y);
+
+!!FU(tum_OnAfterAllMelee):P(atkStack)/(defStack)/(direction);
+
 !?FU(tum_HOOK_AfterStackInitParams);    [by daemon_n]
 !#VA(hook:x);
 
@@ -555,16 +587,9 @@ ZVSE2
 !!BG:A?(actionType:y);
 
 !!if&(actionType)>=(BATTLE_ACTION_WALK_AND_ATTACK)/(actionType)<=(BATTLE_ACTION_TENT_HEAL)
-|(actionType)=(BATTLE_ACTION_WALK)/(actionType)=(BATTLE_ACTION_DEFEND);
+  |(actionType)=(BATTLE_ACTION_WALK)/(actionType)=(BATTLE_ACTION_DEFEND);
   !!VRi^tum_isBattleStackAction^:S(TRUE);  
 !!en;
-
-// Set up varible for stack action
-!?FU(OnBeforeBattleAction)&i^battle_round^>=0;
-!!VRi^tum_isOnAction^:S(TRUE);
-
-!?FU(OnBattleActionEnd)&i^battle_round^>=0;
-!!VRi^tum_isOnAction^:S(FALSE);
 
 // Set up special ability counter
 ; Reset special ability counter to 0 at the start of battle
@@ -572,6 +597,7 @@ ZVSE2
 !!re i/(BATTLE_STACK_FIRST)/(BATTLE_STACK_LAST);
   !!VRi^tum_abilityCounter_%i^:S0;
   !!VRi^tum_abilityCounter2_%i^:S0;
+  !!VRi^tum_abilityCounter3_%i^:S0;
 !!en;
 
 !?FU(tum_BattleStack_InitParams);
@@ -579,24 +605,31 @@ ZVSE2
 
 !!VRi^tum_abilityCounter_%(stackId)^:S0;
 !!VRi^tum_abilityCounter2_%(stackId)^:S0;
+!!VRi^tum_abilityCounter3_%i^:S0;
 
 ; Reduce i^tum_abilityCounter_%i^ by 1 every round
 ; i^tum_abilityCounter2_%i^ would only be reset for each battle
+; i^tum_abilityCounter3_%i^ would be reset each stack turn
 !?FU(OnBattleRound_Quit)&i^battle_round^>=1;
 !!re i/(BATTLE_STACK_FIRST)/(BATTLE_STACK_LAST);
   !!VRi^tum_abilityCounter_%i^:-1 F0/(INT_MAX);
 !!en;
 
+!?FU(OnBattleStackObtainsTurn);
+!#VA(stackSide:x) (stackInd:x);
+
+!!VRi^tum_abilityCounter3_%i(battle_current_stack)^:S0;
+
 !?FU(OnAfterBattleUniversal);
 !!re i/(BATTLE_STACK_FIRST)/(BATTLE_STACK_LAST);
   !!VRi^tum_abilityCounter_%i^:S0;
   !!VRi^tum_abilityCounter2_%i^:S0;
+  !!VRi^tum_abilityCounter3_%i^:S0;
 !!en;
 
 // EEF variable extended
 !?FU(OnSetupBattlefield);
 !!VRi^tum_targetStack^:S(NO_STACK);
-!!VRi^battle_acting_stack^:S(NO_STACK);
 
 // Set up target stack
 ; This is crucial for OnBattleActionEnd as the BG:E OnBattleActionEnd would become -1 when the target is killed
@@ -668,6 +701,22 @@ ZVSE2
 !!SN:Mi^tum_battleStrings^/?(strIndex:y);
 !!FU(Array_Push):Pi^tum_battleStrings^/z(textPtr);
 !!SN:Mi^tum_battleStrings^/?(result)/(strIndex);
+
+// Prevent hotkey combination to trigger the feature of the hotkey
+!?FU(OnKeyPressed_Battle);
+!#VA(key:x) (preventDefault:x);
+
+; Disable Ctrl+A/S/D to trigger the original A/S/D features
+!!if&i^key_ctrl^;
+  !!VR(preventDefault)|(key)=(KEY_S)/(key)=(KEY_A)/(key)=(KEY_D):S(TRUE);
+!!en;
+
+// Clear IF:L message when a battle ends
+!?FU(OnAfterBattleAction);
+!!BU:C?(battleEnded:y);
+!!FU&(battleEnded)<>(TRUE):E;
+
+!!FU(ClearScreenLog):P;
 
 ***************************************************
 **** Fix MA:G Growth for 3rd upgrade creatures ****
@@ -1144,7 +1193,7 @@ ZVSE2
 
 ; Play the animation
 !!if&(mode)=0;
-  !!SN:B6835288/d/(text);
+  !!SN:B6835288/d/(text); 684C58
   !!BM(stack):V82;
   !!SN:B6835288/d/^Poof.def^;
 !!el&(mode)=1;
@@ -1156,9 +1205,9 @@ ZVSE2
 ; Reset changes
 !!UN:C(cmbMgr)/78572/(UNC_INT)/-1;
 
-****************************************************
-**** Play a custom animation on multiple stacks ****
-****************************************************
+**********************************************
+**** Play an animation on multiple stacks ****
+**********************************************
 ; Play a SPELL animation on multiple stacks at the same time (@feanor and Archer30)
 !?FU(tum_PlayAnimationOnMultipleStacks);
 !#VA(stacksList:x);                     [Array of Stack numbers for animation]
@@ -1201,6 +1250,50 @@ ZVSE2
 ; third parameter - animation number
 ; fourth parameter - whether to animate the damage (0 - not necessary, 1 - necessary)
 !!SN:E5925584/2/(cmbMgr)/(arrayAddress)/(animation)/(playDamagedAnimation);     [play animation]
+
+****************************************************
+**** Play a custom animation on multiple stacks ****
+****************************************************
+; This script relies on FU(tum_PlayAnimationOnMultipleStacks) to work
+; Play a custom SPELL animation on multiple stacks at the same time
+!?FU(tum_PlayCustomAnimationOnMultipleStacks);
+!#VA(stacksList:x);                     [Array of Stack numbers for animation]
+!#VA(filenamePtr:x);                    [Filename of the animation]
+!#VA(mode:x);                           [Mode. 0 - play the animation from the bottom of the stack. 1 - from the centre]
+
+!!FU:A?(numArgs:y);
+!!VR(mode)&(numArgs)<=2:S0;
+
+!!VR(text:z):Sz(filenamePtr);
+
+; Add in filename extension (if missing)
+!!SN:K(text)/?(size:y);
+
+!!if&(size)<=4;
+  !!VR(text):S^%(text).def^;
+!!el;
+  !!VR(index:y):S(size) -4;
+  !!SN:K(text)/(index)/?(character:z);
+  !!VR(text)&(character)<>^.^:S^%(text).def^;
+!!en;
+
+; Set up animation
+!!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(cmbMgr:y);
+!!UN:C(cmbMgr)/78572/(UNC_INT)/-1;
+
+; Play the animation
+!!if&(mode)=0;
+  !!SN:B6835288/d/(text); 684C58
+  !!FU(tum_PlayAnimationOnMultipleStacks):P(stacksList)/82;
+  !!SN:B6835288/d/^Poof.def^;
+!!el&(mode)=1;
+  !!SN:B6837180/d/(text);
+  !!FU(tum_PlayAnimationOnMultipleStacks):P(stacksList)/9;
+  !!SN:B6837180/d/^C04SPF0.def^;
+!!en;
+
+; Reset changes
+!!UN:C(cmbMgr)/78572/(UNC_INT)/-1;
 
 *************************************************
 **** Remove a dead body from the battlefield ****
@@ -1727,10 +1820,31 @@ ZVSE2
 !!VRy7::2;
 !!VRx3:Sy7;
 
+**********************************************************
+**** Calculate the distance between a stack and a hex ****
+**********************************************************
+; This script relies on FU(tum_GetStackHeadPosition) and FU(tum_CalcHexesDistance) to work!
+!?FU(tum_CalcDistanceBetweenStackAndHex);
+!#VA(stack:x) (targetPos:x) (result:x);
+!#VA(pos[2]:y);
+
+!!VR(result):S(INT_MAX);
+!!BM(stack):P?(pos[0]);
+!!FU(tum_GetStackHeadPosition):P?(stack)/?(pos[1]);
+
+!!VR(isWide:y):S(FALSE);
+!!VR(isWide)&(pos[0])<>(pos[1]):S(TRUE);
+
+!!re i/0/(isWide);
+  !!FU(tum_CalcHexesDistance):P(pos[i])/(targetPos)/?(distance:y);
+  !!VR(result)&(result)>(distance):S(distance);
+!!en;
+
 *****************************************************
 **** Force a stack to melee attack another stack ****
 *****************************************************
-
+; Unlike FU(BattleStack_Shoot) There is no need to check/remove Attack Twice flag here.
+; Executing SN:E4461360 will only lead to one stike no matter whether the attacker has Attack Twice or not.
 !?FU(tum_MakeStackMeleeAttackStack);
 !#VA(atkStack:x) (defStack:x);
 
@@ -1765,8 +1879,10 @@ ZVSE2
 
 ; Turn around
 !!SN&(mustTurnAround):E4482112/(CALLCONV_THISCALL)/(atkStruct)/1;
+
 ; Melee attack
 !!SN:E4461360/(CALLCONV_THISCALL)/(atkStruct)/(defStruct)/(direction);
+
 ; Turn back
 !!SN&(mustTurnAround):E4482112/(CALLCONV_THISCALL)/(atkStruct)/1;
 
@@ -1880,24 +1996,24 @@ ZVSE2
 !!UN:C(COMBAT_MANAGER)/4/?(combatMgr:y);
 !!SN:E4621216/2/(combatMgr)/(stack)/(pos);
 ; BattleHex_ClearDeadStack
-!!VR(battleHex:y):S112*(pos) +452 +(combatMgr);
+!!VR(battleHex:y):S112 *(pos) +452 +(combatMgr);
 !!SN:E5928496/1/(battleHex)/(side)/(index);
 !!VR(isWide:y):S(flags) &(MON_FLAG_WIDE);
 
-!!if&(isWide)<>(FALSE):;
+!!if&(isWide)<>(FALSE);
   ; BattleStack_GetSecondOccupedGexID
   !!SN:E4481984/2/(stack);
   ; BattleHex_ClearDeadStack
   !!VR(pos2:y):Sv1;
   !!VR(battleHex2:y):S112*(pos2) +452 +(combatMgr);
-  !!SN:E5928496/1/(battleHex2)/(side)/(index);
+  !!SN:E5928496/1/(battleHex2)/(side)/(index); 5A7630
 !!en;
 
 !!FU(tum_BattleStack_PlayAnimation):P(stack)/5/1;
 ; set stack orientation
 !!UN:C(stack)/68/4/?(orientation:y);
 !!SN&(orientation)=(side):E4482112/2/(stack)/1;
-; и восстанавливаем исходное положение (стойка)
+; and restore the original position (stand)
 !!SN:E4482656/2/(stack)/2/1/0;
 
 ***********************************
@@ -1920,26 +2036,33 @@ ZVSE2
 !!UN:C(def)/28/4/?(ptrGroups:y);
 !!VR(ptrDesiredGroup:y):S(animGroupID) *4 +(ptrGroups);
 !!UN:C(ptrDesiredGroup)/4/?(desiredGroup:y);
+
 ; warning message
-!!IF&(desiredGroup)=(NULL):M^No find desired def group! ©igrik^;
-!!FU&(desiredGroup)=(NULL):E;
+!!if&(desiredGroup)=(NULL);
+  !!IF:M^No find desired def group! ©igrik^;
+  !!FU:E;
+!!en;
+
 !!UN:C(desiredGroup)/0/4/?(framesCount:y);
 !!FU&(framesCount)<1:E;
+
 !!UN:C(stack)/60/4/(animGroupID);
 !!VR(start:y):S0;
 !!VR(end:y):S(framesCount) -1;
 !!VR(step:y):S1;
-!!if&(isPlayAnimReverse)<>(NULL):;
+
+!!if&(isPlayAnimReverse)<>(NULL);
   !!VR(start):S(framesCount) -1;
   !!VR(end):S0;
   !!VR(step):S-1; 
 !!en;
+
 ; play animation
 !!re i/(start)/(end)/(step);
   ; set stack anim params  
   !!UN:C(stack)/64/4/i;
   ; BattleMgr_Draw
-  !!SN:E4800448/2/(combatMgr)/1/0/0/100/1/1;
+  !!SN:E4800448/2/(combatMgr)/1/0/0/100/1/1; 493FC0
 !!en;
 
 ***************************************
@@ -2000,12 +2123,12 @@ ZVSE2
 !?FU(tum_GetAdjacentStacksOfPosition);
 !#VA(pos:x);                            [Position to check]
 !#VA(adjacentStacksList:x);             [OUT. Adjacent stacks array]
-!#VA(type:x);                           [Optional. -1 for hostile units only, 0 for unlimited, 1 for friendly. Valid only when the position has a stack]
+!#VA(adjacentStackType:x);              [Optional. -1 for hostile units only, 0 for unlimited, 1 for friendly. Valid only when the position has a stack]
 !#VA(canBeDead:x);                      [Optional. Whether to included dead units]
 
 ; Initialization
 !!FU:A?(numArgs:y);
-!!VR(type)&(numArgs)<3:S0;
+!!VR(adjacentStackType)&(numArgs)<3:S0;
 !!VR(canBeDead)&(numArgs)<4:S(FALSE);
 
 !!BU:E(pos)/?(stack:y);
@@ -2046,10 +2169,10 @@ ZVSE2
 
   !!if&(loopStack)>(NO_STACK);
     ; Skip if the looped stack doesn't belong to the side requested
-    !!if&(type);
+    !!if&(adjacentStackType);
       !!BM(loopStack):I?(loopSide:y);
-      !!co&(type)=-1/(loopSide)=(side);
-      !!co&(type)=1/(loopSide)<>(side);
+      !!co&(adjacentStackType)=-1/(loopSide)=(side);
+      !!co&(adjacentStackType)=1/(loopSide)<>(side);
     !!en;
 
     !!FU(Array_Push):P(adjacentStacksList)/(loopStack);
@@ -2066,7 +2189,7 @@ ZVSE2
 !?FU(tum_GetAdjacentStacksOfStack);
 !#VA(stack:x);                          [Stack to check]
 !#VA(adjacentStacksList:x);             [OUT. Adjacent stacks array]
-!#VA(type:x);                           [Optional. -1 for hostile units only, 0 for all, 1 for friendly]
+!#VA(adjacentStackType:x);              [Optional. -1 for hostile units only, 0 for all, 1 for friendly]
 !#VA(canBeDead:x);                      [Optional. Whether to included dead units]
 !#VA(revertHypnotizedSide:x);           [Optional. If this is true, then the stacks around with Hypnotize spell would be considered belongs to the opposite side.
                                         ; This does not include the side of the stack input (Hypnotized is always considered)
@@ -2076,7 +2199,7 @@ ZVSE2
 
 ; Initialization
 !!FU:A?(numArgs:y);
-!!VR(type)&(numArgs)<3:S0;
+!!VR(adjacentStackType)&(numArgs)<3:S0;
 !!VR(canBeDead)&(numArgs)<4:S(FALSE);
 !!VR(revertHypnotizedSide)&(numArgs)<5:S(FALSE);
 
@@ -2135,7 +2258,7 @@ ZVSE2
 
     !!if&(loopStack)>(NO_STACK);
       ; Skip if the looped stack doesn't belong to the side requested
-      !!if&(type);
+      !!if&(adjacentStackType);
         ; Get the side of the looped stack depending on whether it requires to get the real controller of the stack
         ; Question: Do we really need both?
         !!if&(revertHypnotizedSide)=(FALSE);
@@ -2144,8 +2267,8 @@ ZVSE2
           !!FU(tum_GetActualStackSide):P(loopStack)/?(loopSide);
         !!en;
 
-        !!co&(type)=-1/(loopSide)=(side);
-        !!co&(type)=1/(loopSide)<>(side);
+        !!co&(adjacentStackType)=-1/(loopSide)=(side);
+        !!co&(adjacentStackType)=1/(loopSide)<>(side);
       !!en;
 
       !!FU(Array_Push):P(adjacentStacksList)/(loopStack);
@@ -2420,20 +2543,20 @@ ZVSE2
 ; Usually is used after BM:K
 !?FU(tum_ExecutePhoenixResurrection);
 !!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(cmbMgr:y);
-!!SN:E4624416/(CALLCONV_THISCALL)/(cmbMgr);
+!!SN:E4624416/(CALLCONV_THISCALL)/(cmbMgr); 469020
 
-****************************************
-**** Get position of a stack's head ****
-****************************************
+********************************************
+**** Get the position of a stack's head ****
+********************************************
 ; While BM:P returns the position of the "ass" of a wide stack, this function always returns the position of the head.
 !?FU(tum_GetStackHeadPosition);
 !#VA(stack:x) (pos:x);
 
-!!BM(stack):Z?(stackStuct:y) P?(pos) F?(flags:y);
+!!BM(stack):Z?(stackStruct:y) P?(pos) F?(flags:y);
 !!VR(isWide:y):S(flags) &(MON_FLAG_WIDE);
 
 !!if&(isWide);
-  !!UN:C(stackStuct)/68/4/?(secPosOrientation:y);
+  !!UN:C(stackStruct)/68/4/?(secPosOrientation:y);
 
   ; If the stack is wide
   !!if&(secPosOrientation)>=0;
@@ -2506,7 +2629,7 @@ Death Ripple? 005A106A (5902442)
 **** Check if it is possible to summon more stacks on the battlefield for a side ****
 *************************************************************************************
 ; Check if there are 20 stacks already on one side of the battlefield
-!?FU(tum_CheckIfPossibleToSummonMoreStacks);
+!?FU(tum_CheckIfPossibleToCreateMoreStacks);
 !#VA(side:x) (result:x);
 !#VA(pendingStacks:x);                  [Optional. Number of Stacks that has not yet been in the battlefield but should be considered]
 
@@ -2514,9 +2637,9 @@ Death Ripple? 005A106A (5902442)
 !!VR(pendingStacks)&(numArgs)<3:S0;
 
 !!VR(result):S(FALSE);
-!!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(value:y);
-!!VR(address:y):S(side) *(UNC_INT) +21692 +(value);
-!!UN:C(address)/4/?(stackQty:y);
+!!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(combatManager:y);
+!!VR(offset:y):S(side) *(UNC_INT) +21692;
+!!UN:C(combatManager)/(offset)/4/?(stackQty:y);
 
 !!VR(stackQty):+(pendingStacks);
 
@@ -2549,7 +2672,7 @@ Death Ripple? 005A106A (5902442)
 ; Use when the stack animation stuck at somewhere
 ; SN:D sometimes crashes the game, especailly in some bad timing
 ; This is usually used after BM:K to show the damaging animation of stacks
-!?FU(tum_UpdateStackAnimation);
+!?FU(tum_DrawActionPlay);
 !!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(cmbMgr:y);
 !!SN:E4621680/2/(cmbMgr)/-1/1;
 
@@ -2625,6 +2748,31 @@ Death Ripple? 005A106A (5902442)
 !!VR(result)&(mon)=(MON_PHOENIX):S1;
 !!VR(result)|(mon)=(MON_SACRED_PHOENIX)/(mon)=(MON_DIVINE_PHOENIX):S2;
 !!VR(result)&(mon)=(MON_RED_SKELETON):S2;
+
+************************************
+**** Check if a stack can shoot ****
+************************************
+
+!?FU(tum_CheckIfStackCanShoot);
+!#VA(stack:x) (result:x);
+
+!!VR(result):S(FALSE);
+
+; Check if the stack has any shot left
+!!BM(stack):U3/?(shots:y);
+!!FU&(shots)<=0:E;
+
+; Check if the stack has shooter flag
+!!BM(stack):F?(flags:y);
+!!VR(isShooter:y):S(flags) &(MON_FLAG_SHOOTER);
+!!FU&(isShooter)=(FALSE):E;
+
+; Check if the stack is adjacent to an enemy, and the owner hero doens't have golden bow
+!!BM(stack):Z?(stackStruct:y);
+!!SN:E4466192/(CALLCONV_THISCALL)/(stackStruct)/0; 442610
+!!FU&v1=(FALSE):E;
+
+!!VR(result):S(TRUE);
 
 *****************************************************
 **** Check if a stack can receive a custom spell ****
@@ -2754,6 +2902,22 @@ Death Ripple? 005A106A (5902442)
 
 !!VR(result):S(TRUE);
 
+***********************************
+**** Fix the facing of a stack ****
+***********************************
+; Usually is needed after forcibly moving a stack
+!?FU(tum_FixStackFacing);
+!#VA(stack:x);
+
+!!BM(stack):Z?(stackStruct:y) I?(side:y);
+!!UN:C(stackStruct)/68/4/?(currentDirection:y);
+
+!!if&(side)=(BATTLE_LEFT)/(currentDirection)=0;
+  !!SN:E4482112/(CALLCONV_THISCALL)/(stackStruct)/1; 446440
+!!el&(side)=(BATTLE_RIGHT)/(currentDirection)=1;
+  !!SN:E4482112/(CALLCONV_THISCALL)/(stackStruct)/1;
+!!en;
+
 ********************************************
 **** Get the max spell points of a hero ****
 ********************************************
@@ -2803,3 +2967,31 @@ The game may fall at any time.^;
 
 !!VR(second):S(systemTime[3]) %65536;
 !!VR(mSecond):S(systemTime[3]) :65536;
+
+*********************************
+**** Show a message silently ****
+*********************************
+
+!?FU(tum_ShowMessageWithoutSound);
+!#VA(stringPtr:x);
+
+!!FU(tum_SoundControl):P0/2;
+!!IF:Lz(stringPtr);
+!!FU(tum_SoundControl):P1/2;
+
+!?FU(tum_SoundControl);
+; Arguments: SoundIsOn: boolean; OldValue: v-index
+!!if&x1=1;
+  !!VRy4:Svx2;
+  !!VRy1:Sy4%256;
+  !!VRy4::256;
+  !!VRy2:Sy4%256;
+  !!VRy4::256;
+  !!VRy3:Sy4%256;
+  !!UN:C6916016/1/y1 C6916020/1/y2 C6916028/1/y3;
+!!el;
+  !!UN:C6916016/1/?y1 C6916020/1/?y2 C6916028/1/?y3 C6916016/1/0 C6916020/1/0 C6916028/1/0;
+  !!VRy3:*65536;
+  !!VRy2:*256;
+  !!VRvx2:Sy1+y2+y3;
+!!en;

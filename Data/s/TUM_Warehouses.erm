@@ -83,7 +83,7 @@ x1=player 0-7, x2=Warehouse type 0-6, x3=resource amount, x4=PO-number (never vi
 
   !!VRz2:S^{%Z3仓库}
 
-  在仔细搜索这个仓库之后，你发现了{%X3}个%Z3。^;
+在仔细搜索这个仓库之后，你发现了{%X3}个%Z3。^;
 
   !!IF&1000:M^%Z2^;                     [Show Message]
   !!SN&1000:D;                          [Redraw resource bar]

@@ -28,7 +28,7 @@ Parameter Settings:
 *The objects should match in size, for now. Choose Up to 5 Objects that might be replaced, each with individual chance. I recommend to replace mostly other CBs.*
 *If you replace a object that has a "shifted" yellow enter square you can correct it with the "shift" parameter.*
 
-!#VRi^CB_115_Replace_Objects^:S1;       (1=yes, 0=no. You should only chose "No" if you plan to create a custom map and place your CB yourself. With "No" the replace settings below will have no effect)
+!#VRi^CB_115_Replace_Objects^:S0;       (1=yes, 0=no. You should only chose "No" if you plan to create a custom map and place your CB yourself. With "No" the replace settings below will have no effect)
 
 !#VRi^CB_115_Replace_0_Type_Number^:S17;(Write here type number of the objects you want to search and replace. Input 0-231. Check ERM Help OB)
 !#VRi^CB_115_Replace_0_SubType_Number^:S54; (Write here subtype number of the objects you want to search and replace. Input 0-max Subtype. Check ERM Help OB)

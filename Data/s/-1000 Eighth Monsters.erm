@@ -148,7 +148,7 @@ ZVSE2
 !!en;
 
 !!SN:Vi^eighth_8thMonsList^/0/(MON_LIGHT_TEMPLAR)/(MON_LIGHT_PALADIN)/(MON_DRYAD)/(MON_OAK_DRYAD)/(MON_DRAKE_GOLEM)/(MON_DRAGON_GOLEM)/
-  (MON_SUCCUBUS)/(MON_LILIM)/(MON_WEREWOLF_TOW)/(MON_DIRE_WEREWOLF)/(MON_ILLITHID)/(MON_ALHOON);
+  (MON_SUCCUBI)/(MON_LILIM)/(MON_WEREWOLF_TOW)/(MON_DIRE_WEREWOLF)/(MON_ILLITHID)/(MON_ALHOON);
 !!SN:Vi^eighth_8thMonsList^/12/(MON_COUATL)/(MON_QUETZALCOUATL)/(MON_TROLL_HAG)/(MON_TROLL_WITCH)/(MON_TRITON)/(MON_ABYSSAL_TRITON);
 
 !?FU(OnGameEnter)&i^eighth_on^;
@@ -1153,10 +1153,10 @@ ZVSE2
 !?FU(OnDetermineMonInfoDlgUpgrade)&i^eighth_on^;
 !!FU&i^Typhon_Third_Upgrade_Mod_Active^:E;
 
-!#VA(monType:x) (upgType:x) (town:x) (hero:x);
+!#VA(monType:x) (upgType:x) (townId:x) (hero:x);
 
 ; Exit if not from town screen
-!!FU&(town)<=(NO_TOWN):E;
+!!FU&(townId)<=(NO_TOWN):E;
 
 !!MA:O(monType)/?(ownerTown:y);
 
@@ -1164,12 +1164,12 @@ ZVSE2
 !!UN:P174/?(universalUpgrade:y);
 
 !!if&(universalUpgrade)<>(TRUE);
-  !!CA0/(town):T?(townType:y);
+  !!CA0/(townId):T?(townType:y);
   !!FU&(ownerTown)<>(townType):E;
 !!en;
 
 ; If the monster is a non-upgraded eighth monster, get its upgrade if the upgraded 8th dwelling is built
-!!if&i^tum_upgGuild_%(town)^/i^eighth_8thDwell_%(town)^;
+!!if&i^tum_upgGuild_%(townId)^/i^eighth_8thDwell_%(townId)^;
   !!FU(eighth_Get8thMonByTownType):P(ownerTown)/(TRUE)/?(upgMon:y)/?(nonUpgMon:y);
   !!VR(upgType)&(monType)=(nonUpgMon):S(upgMon);
 !!en;

@@ -3,7 +3,8 @@
  	"Third_Upgrade_Mod": {
 
  		"outOfDate": 						"{Your ERA is outdated!}\n\nThird Upgrade Mod requires ERA @version@ to work! Please download and install the latet ERA from the given link:\n\nhttp://heroescommunity.com/viewthread.php3?TID=46111",
- 		"brokenMpSupport":					"{Broken Multiplayer Support}\n\nThird Upgrade Mod is not fully functional in Multiplayer games. It is very likely to crash when two human players present in the same battle. Please make sure all the human players are in the same team before playing.",
+		"brokenMpSupport0": 				"{Broken Multiplayer Support}\n\nThird Upgrade Mod is not fully compatible with Multiplayer games. Creature abilities may malfunction when two human players are in the same battle. Please exit the game, ensure all human players are on the same team, and try again.",
+		"brokenMpSupport1": 				"{Broken Multiplayer Support}\n\nThird Upgrade Mod is not fully compatible with Multiplayer games. Creature abilities may malfunction when a human player is attacked by a computer player. To avoid this, try attacking the computer player instead.",
  		"restartRequired": 					"{Restart Required}\n\nTo run the game correclty, it's required to restart your ERA after turning off Eighth Monsters option of Third Upgrade Mod.",
 
  		"Creature_Specialist_Title": 		"{~r}Creature Specialist{~}\n\n",

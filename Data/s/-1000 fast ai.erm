@@ -663,8 +663,8 @@ ZVSE2
 !?FU(OnGameEnter);
 !!re i/0/4;
   !!if&i^fastai_totalHeroLimit_%i^>0;
-    !!VR(address:y):Si *(UNC_INT) +6685996;
-    !!UN:C(address)/(UNC_INT)/21;
+    !!VR(address:y):Si *(UNC_INT) +6685996; 66052C
+    !!UN:C(address)/(UNC_INT)/i^fastai_totalHeroLimit_%i^;
   !!en;
 !!en;
 

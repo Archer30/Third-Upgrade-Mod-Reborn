@@ -47,16 +47,18 @@
       "castleCitadel": "\n城堡的大本营 +1",
 
       // Heroes
-      "specDesc": "{~r}生物特长{~}\n\n使@mon@攻击力+@atk@、防御力+@def@，",
+      "specDesc": "{~r}@mon1@特长{~}\n\n使@monDesc@攻击力+@atk@，防御力+@def@",
       "specMon0": "@mon1@、@mon2@和@mon3@",
       "specMon1": "@mon1@、@mon2@、@mon3@和@mon4@",
-      "specEnd0": "杀伤力+@stat@。",
-      "specEnd1": "速度+@stat@。",
-      
-      "spec150": "在战斗中使5级以上有生命的部队获得丧尸属性。5级以上的丧尸杀伤力+1、生命值+5%、速度+1。",
+      "specEnd0": "杀伤力+@stat@",
+      "specEnd1": "速度+@stat@",
+      "spec149ext": "，并获得飞行 (无视障碍) 的能力。",
+      "spec150": "{~r}丧尸特长{~}\n\n在战斗中使5级以上有生命的部队获得丧尸属性。5级以上的丧尸杀伤力+4、生命值+25%、速度+1。",
       "specBattle150": "{@hero@}的部队变成了丧尸！",
-      "spec153": "在战斗中使1-4级有生命的部队获得龙属性以及吐息攻击的能力。",
+      "spec151": "{~r}龙特长{~}\n\n使龙攻击力+10，防御力+10。",
+      "spec153": "{~r}龙特长{~}\n\n在战斗中使1-4级有生命的部队获得龙属性以及吐息攻击的能力，并且不受1-3级负面或杀伤性魔法的影响。",
       "specBattle153": "{@hero@}的部队变成了龙！",
+      "spec155ext": "，并获得真实传送 (可移动到战场任意位置) 的能力。",
       
       // Creatures
       // Hatred
@@ -69,6 +71,9 @@
       "transmutation1": "@atkMon@将@defMon@转化成了@victim@", //%s turn %s to %s
 
       // Monsters - General
+      "cast0": "@castMon@施放@spell@在@targetMon@身上",
+      "cast1": "@castMon@施放@spell@在@targetMon@身上",
+
       "noSpell0": "@mon@耗尽了他的所有魔法值", // The %s has exhausted his spell points
       "noSpell1": "@mon@耗尽了他们的所有魔法值", // The %s have exhausted their spell points
       "tooManyStacks": "战场已经容纳不下更多的部队了",
@@ -76,12 +81,14 @@
       "res0": "@num@个@mon@起死回生了！", // %d %s rises from the dead!
       "res1": "@num@个@mon@起死回生了！", // %d %s rise from the dead!
 
-      // TUM Towns Monsters
+      // TUM Town Monsters
+      "spikyDefense": "尖刺防御造成@dmg@点损伤。",
+
       "holyCharge0": "@mon@对经过的所有敌人造成@dmg@%的攻击损伤！",
       "holyCharge1": "@mon@对经过的所有敌人造成@dmg@%的攻击损伤！",
 
-      "wingsOfRenewal0": "@mon@的复活能量传递给了周围的盟友！",
-      "wingsOfRenewal1": "@mon@的复活能量传递给了周围的盟友！",
+      "wingsOfRenewal0": "@mon@的复活能量传递给了周围的盟友。",
+      "wingsOfRenewal1": "@mon@的复活能量传递给了周围的盟友。",
 
       "hammerCrush": "重锤粉碎：@bonus@%",
 
@@ -95,8 +102,8 @@
       "mendNotEnough1": "@currMon@没有足够的能力复活@targetMon@", // are not powerful enough to resurect the
       "mendMain": "复活@num@个@mon@", // Resurrect the
 
-      "hardenedShelter0": "@mon@变成了石像！",
-      "hardenedShelter1": "@mon@变成了石像！",
+      "hardenedShelter0": "@mon@变成了石像。",
+      "hardenedShelter1": "@mon@变成了石像。",
 
       "disarm0": "@mon@使敌人的反击次数降低了！",
       "disarm1": "@mon@使敌人的反击次数降低了！",
@@ -107,6 +114,13 @@
       "infernoReinforcements0": "@mon@召唤了来自地狱的盟友。",
       "infernoReinforcements1": "@mon@召唤了来自地狱的盟友。",
 
+      "wingedMagog": "火球攻击。\n飞行。",
+
+      "hellishStrike0": "怒火中烧的@mon@再次挥动鞭子",
+      "hellishStrike1": "怒火中烧的@mon@再次挥动鞭子",
+      "hellishStrikeExt0": "，并窃取了1点防御力。",
+      "hellishStrikeExt1": "，并窃取了1点防御力。",
+
       "malevolentReckoning0": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
       "malevolentReckoning1": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
 
@@ -115,11 +129,11 @@
 
       "soulReap": "灵魂收割：@bonus@%",
 
-      "riteOfBloodNotDragon": "只能从有生命的龙或九头怪的尸体中召唤@mon@",
-      "riteOfBloodNotEnoughBody": "没有足够的尸体用于召唤@mon@",
-      "riteOfBloodNotEnoughCaster0": "@mon@没有足够的能力进行血之祭",
-      "riteOfBloodNotEnoughCaster1": "@mon@没有足够的能力进行血之祭",
-      "riteOfBloodMain": "召唤@num@个@riteMon@ (@targetMon@的尸体)",
+      "riteOfSoulsNotDragon": "只能从有生命的龙或九头怪的尸体中召唤@mon@",
+      "riteOfSoulsNotEnoughBody": "没有足够的尸体用于召唤@mon@",
+      "riteOfSoulsNotEnoughCaster0": "@mon@没有足够的能力进行魂祭",
+      "riteOfSoulsNotEnoughCaster1": "@mon@没有足够的能力进行魂祭",
+      "riteOfSoulsMain": "召唤@num@个@riteMon@ (@targetMon@的尸体)",
 
       "reflection0": "@mon@的影子从深渊中显现。",
       "reflection1": "@mon@的影子从深渊中显现。",
@@ -151,22 +165,31 @@
       "manaTransferCast1": "@currMon@将@spell@次施法次数转移给了@targetMon@！",
 
       "flameRenewal0": "爆炸对邻近的部队造成@dmg@点损伤！",
-      "flameRenewal1": "爆炸使邻近的火系元素恢复了@dmg@点生命值！", // Fire-type Element
-      "flameRenewal2": "爆炸对邻近的部队造成@dmg@点损伤，火系元素恢复了@hp@点生命值！",
+      "flameRenewal1": "爆炸使邻近的火元素恢复了@dmg@点生命值！", // Fire-type Element
+      "flameRenewal2": "爆炸对邻近的部队造成@dmg@点损伤，火元素恢复了@hp@点生命值！",
 
       // 8th creatures
-      "naturalsPurification0": "@mon@的净化能量传递给了周围的盟友！",
-      "naturalsPurification1": "@mon@的净化能量传递给了周围的盟友！",
+      "thornRebirthHint": "荆棘重生：@dmg@点伤害",
+      "thornRebirth0": "@atkMon@造成的额外@dmg@点损伤让盟友恢复了@hp@点生命值。",
+      "thornRebirth1": "@atkMon@造成的额外@dmg@点损伤让盟友恢复了@hp@点生命值。",
 
-      "veilOfChaos0": "@mon@丧失理智了！",
-      "veilOfChaos1": "@mon@丧失理智了！",
+      "luringShotDisabled": "诱惑之箭已禁用",
+      "luringShotLeft": "诱惑之箭使敌人向左移动",
+      "luringShotRight": "诱惑之箭使敌人向右移动",
+      "luringShot0": "@mon@被迷住了心智，不由自主地动了起来。", // is forced to move against the will.
+      "luringShot1": "@mon@被迷住了心智，不由自主地动了起来。", 
 
-      "hardenedSkin0": "@mon@的防御力提升了！",
-      "hardenedSkin1": "@mon@的防御力提升了！",
+      "veilOfChaos0": "@mon@丧失理智了，慌乱间攻击了盟友！",
+      "veilOfChaos1": "@mon@丧失理智了，慌乱间攻击了盟友！",
+
+      "hardenedSkin0": "@mon@的防御力提升了。",
+      "hardenedSkin1": "@mon@的防御力提升了。",
+
+      "iceCloak": "冰霜使邻近的水元素恢复了@hp@点生命值。",
 
       // TUM Neutral Monsters
-      "cleavingBlow0": "@atkMon@的攻击穿透了敌人的防御！",
-      "cleavingBlow1": "@atkMon@的攻击穿透了敌人的防御！",
+      "cleavingBlow0": "@atkMon@的攻击穿透了敌人的防御。",
+      "cleavingBlow1": "@atkMon@的攻击穿透了敌人的防御。",
 
       "mysticUnravel0": "@mon@身上的有益魔法都被解除了。",
       "mysticUnravel1": "@mon@身上的有益魔法都被解除了。",
@@ -182,6 +205,9 @@
 
       "spellBreak": "@mon@的魔力消散了！",
 
+      "PlaguePurge0": "@mon@净化了周围的盟友！",
+      "PlaguePurge1": "@mon@净化了周围的盟友！",
+
       "adaptabilityDesc0": "{泥地}：攻击后施放迟缓大法。",
       "adaptabilityDesc1": "{沙地}：杀伤力降低5%。",
       "adaptabilityDesc2": "{草地}：拥有攻击加速。",
@@ -192,8 +218,10 @@
       "adaptabilityDesc7": "{熔岩}：受火系魔法攻击时损伤增加30%。",
       "adaptabilityDesc8": "{水域}：行动前恢复35点生命值 (一回合一次，可复活)。",
 
-      "eternalResilience": "@mon@恢复了@regenHp@点生命值",
-      "eternalResilienceExt": "，并且@reviveNum@个复活了。",
+      "eternalResilience0": "@mon@恢复了@regenHp@点生命值",
+      "eternalResilience1": "@mon@恢复了@regenHp@点生命值",
+      "eternalResilienceExt0": "，并且@reviveNum@个复活了。",
+      "eternalResilienceExt1": "，并且@reviveNum@个复活了。",
 
       "shadowSneak": "@defMon@无视了@atkMon@的攻击并发动了反击！",
 
