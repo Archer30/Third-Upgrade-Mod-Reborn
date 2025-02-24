@@ -6,7 +6,7 @@ ATTENTION: Third Upgrades Mod requires "Visual Studio Redistributable" download 
 
 
                    ************** Third Upgrades Mod *****************
-                  *************** Version: v1.6.x ******************
+                  *************** Version: v1.7.x ******************
                      ***************** Reborn ******************
 
 Third Upgrade Mod: Reborn is a branch of TUM official, developed by Archer30 the erm author of TUM. The main improvement of TUM - Reborn Edition is that it partially resolves the issue of long AI turn and CTDs by rewriting a huge amount of code. Balance improvements and QoL changes are also included. 
