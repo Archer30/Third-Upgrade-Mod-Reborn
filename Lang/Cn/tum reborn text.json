@@ -84,6 +84,15 @@
       // TUM Town Monsters
       "spikyDefense": "尖刺防御造成@dmg@点损伤。",
 
+      "heavenlyInspirationMain": "使@mon@可再次行动",
+      "heavenlyInspirationNoMorale": "只能使受士气影响的部队再次行动",
+      // "heavenlyInspirationMorale0": "@mon@本回合已经再次行动了",
+      // "heavenlyInspirationMorale1": "@mon@本回合已经再次行动了",
+      "heavenlyInspiration0": "@mon@的总生命值太高了",
+      "heavenlyInspiration1": "@mon@的总生命值太高了",
+      "heavenlyInspirationCast0": "天堂激励让@targetMon@可再一次进攻。",
+      "heavenlyInspirationCast1": "天堂激励让@targetMon@可再一次进攻。",
+
       "holyCharge0": "@mon@对经过的所有敌人造成@dmg@%的攻击损伤！",
       "holyCharge1": "@mon@对经过的所有敌人造成@dmg@%的攻击损伤！",
 
@@ -116,10 +125,15 @@
 
       "wingedMagog": "火球攻击。\n飞行。",
 
+      "demonsShield0": "@mon@无视了所受的@dmg@点损伤！",
+      "demonsShield1": "@mon@无视了所受的@dmg@点损伤！",
+      "demonsShieldReset0": "@mon@的恶鬼之盾被重新激活了。",
+      "demonsShieldReset1": "@mon@的恶鬼之盾被重新激活了。",
+
       "hellishStrike0": "怒火中烧的@mon@再次挥动鞭子",
       "hellishStrike1": "怒火中烧的@mon@再次挥动鞭子",
-      "hellishStrikeExt0": "，并窃取了1点防御力。",
-      "hellishStrikeExt1": "，并窃取了1点防御力。",
+      "hellishStrikeExt0": "，并窃取了@stat@点防御力。",
+      "hellishStrikeExt1": "，并窃取了@stat@点防御力。",
 
       "malevolentReckoning0": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
       "malevolentReckoning1": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
@@ -179,17 +193,21 @@
       "luringShot0": "@mon@被迷住了心智，不由自主地动了起来。", // is forced to move against the will.
       "luringShot1": "@mon@被迷住了心智，不由自主地动了起来。", 
 
-      "veilOfChaos0": "@mon@丧失理智了，慌乱间攻击了盟友！",
-      "veilOfChaos1": "@mon@丧失理智了，慌乱间攻击了盟友！",
+      "veilOfChaos0": "@mon@丧失理智了",
+      "veilOfChaos1": "@mon@丧失理智了",
+      "veilOfChaosExt": "，慌乱间攻击了盟友！",
 
-      "hardenedSkin0": "@mon@的防御力提升了。",
-      "hardenedSkin1": "@mon@的防御力提升了。",
+      "hardenedSkin0": "@mon@的攻击力和防御力提高了@value@点。",
+      "hardenedSkin1": "@mon@的攻击力和防御力提高了@value@点。",
 
       "iceCloak": "冰霜使邻近的水元素恢复了@hp@点生命值。",
 
       // TUM Neutral Monsters
       "cleavingBlow0": "@atkMon@的攻击穿透了敌人的防御。",
       "cleavingBlow1": "@atkMon@的攻击穿透了敌人的防御。",
+
+      "destruction0": "@num@个@defMon@在@atkMon@的诅咒下化作尘埃。",
+      "destruction1": "@num@个@defMon@在@atkMon@的诅咒下化作尘埃。",
 
       "mysticUnravel0": "@mon@身上的有益魔法都被解除了。",
       "mysticUnravel1": "@mon@身上的有益魔法都被解除了。",
@@ -225,8 +243,9 @@
 
       "shadowSneak": "@defMon@无视了@atkMon@的攻击并发动了反击！",
 
-      "flesheater0": "@flesheater@吞噬了敌人的尸体并恢复了@hp@点生命值！",
-      "flesheater1": "@flesheater@吞噬了敌人的尸体并恢复了@hp@点生命值！",
+      "corpseFeast0": "@mon@吞噬了敌人的尸体",
+      "corpseFeast1": "@mon@吞噬了敌人的尸体",
+      "corpseFeastExt": "，并且数量上升了@num@。",
 
       "spellJammer0": "@mon@的魔法被夺走了。",
       "spellJammer1": "@mon@的魔法被夺走了。", // The target can't cast spells.

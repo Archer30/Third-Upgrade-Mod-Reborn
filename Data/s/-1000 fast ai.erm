@@ -800,7 +800,7 @@ ZVSE2
 **********************************************************************************
 ; This is for fixing AIs' strategy with Perry's CBs. They might appear to be weaker than they thought.
 ; AI will grant additional troops for the strongest stack before battle. This stack should not exceed the quantity at the start, after the battle ended
-!?FU(OnBeforeBattleUniversal)&i^timerIsAi^;
+!?FU(OnBeforeBattleUniversal)&i^timerIsAi^/-(ERM_FLAG_IS_HUMAN);
 ; Exit if it is a battle vs a hero
 !!FU&i^battle_hero_1^>(NO_HERO)/i^wog_72_randHeroActive^<>(TRUE):E;
 
@@ -843,7 +843,7 @@ ZVSE2
   !!HEi^battle_hero_0^&(newNum)>(num):C0/(highestSlot)/(mon)/(newNum);
 !!en;
 
-!?FU(OnAfterBattleUniversal)&i^timerIsAi^/i^fastai_highestAiNum^;
+!?FU(OnAfterBattleUniversal)&i^timerIsAi^/i^fastai_highestAiNum^/-(ERM_FLAG_IS_HUMAN);
 !!HEi^battle_hero_0^:C0/i^fastai_highestAiSlot^/?(mon:y)/?(num:y);
 
 !!if&(mon)=i^fastai_highestAiType^/(num)>i^fastai_highestAiNum^;

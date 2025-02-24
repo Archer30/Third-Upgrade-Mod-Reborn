@@ -569,7 +569,7 @@ ZVSE2
 !#VA(buildingId:x);                     [OPT. Building Id built or demolished]
 
 !!FU:A?(numArgs:y);
-!!VR(buildingId)&(numArgs)<2:S0;
+!!VR(buildingId)&(numArgs)<(@buildingId):S0;
 
 !!CA0/(townId):T?(townType:y);
 !!FU(eighth_Get8thMonByTownType):P(townType)/(TRUE)/?(upgMon:y)/?(nonUpgMon:y);
@@ -741,7 +741,7 @@ ZVSE2
 
 !!VR(dwellName:z):Sz(ertInd);
 
-!!FU(eighth_GetReqBuildNames):P(townType);
+!!FU(eighth_GetReqBuildNames):P(townType); [Export names to s^eighth_fortReq^ and s^eighth_dwellReq^]
 
 !!SN:T^eighth.dwellDesc^/?(dwellDesc:z)/^dwellName^/(dwellName:z)/^monName^/(monName:z); [dwellDesc]
 
@@ -798,10 +798,10 @@ ZVSE2
 !!FU(eighth_GetBuild8thDwellStatus):P(buildReqMet)/(resReqMet)/?(allReqMet:y);
 
 !!if&(allReqMet)/(rightClick);
-  !!VR(build8thDialog:z)S(dwellDesc) +(buildReq) +(resReq);
+  !!VR(build8thDialog:z):S(dwellDesc) +(buildReq) +(resReq);
   !!FU(Substr):P^%(build8thDialog)^/0/-3/?(build8thDialog);[remove the last 3 characters (newlines)]
 !!el;
-  !!VR(build8thDialog)S(dwellDesc) +(buildReq) +(resReq) +s^eighth_buildStatus^;
+  !!VR(build8thDialog):S(dwellDesc) +(buildReq) +(resReq) +s^eighth_buildStatus^;
 !!en;
 
 !!if&(rightClick);
@@ -1438,6 +1438,112 @@ ZVSE2
 !!SN:Mi^eighth_portalOfSummoningList^/(index)/(mon);
 !!VR(index):+1;
 !!SN:Mi^eighth_portalOfSummoningList^/(index)/(num);
+
+******************************************************************
+**** Upgrade the 8th dwelling when new_towns.era is presented ****
+******************************************************************
+; This script is enabled only when new towns plugin is enabld
+!?FU(OnTownMouseClick)&999/i^mouse_action^=(MOUSE_RMB_PRESSED)/i^mouse_item^>=10/i^mouse_item^<=13/i^eighth_on^/i^tum_newTowns_on^; [trigger on clicking in town screen)]
+!!CA(CURRENT_TOWN):U?(townId:y);
+!!FU|i^eighth_8thDwell_%(townId)^<>(TRUE)/i^tum_upgGuild_%(townId)^:E;
+
+!!FU(eighth_BuildNewBuilding):P; 
+
+!?FU(eighth_BuildNewBuilding);           [trigger on clicking in town screen)]
+!!VRv4:S0;
+!!VRv5:S0;
+!!VRv6:S0;
+!!CA(CURRENT_TOWN):B3/9;                [ckeck if there's a castle)]
+!!VRv4&1:S1;                            [set a helping var)]
+
+!!CA(CURRENT_TOWN):B3/8;                [check for citadel)]
+!!VRv5&1:S1;
+
+!!CA(CURRENT_TOWN):B3/7;                [check for fort)]
+!!VRv6&1:S1;
+
+!!CM&v4=0/v5=0/v6=0:R1;                 [if no fort, citadel or castle reenable standard text)]
+
+!!UN:P(WOG_OPT_DISABLE_TOWN_DEMOLISHING)/?(disableDemolish:y); [check if town demolition is enabled]
+
+!!if&(disableDemolish)=1;
+  !!CM:R0;                              [if it is not enabled - disable any standard text]
+!!el;
+  !!CA(CURRENT_TOWN):B3/0;              [Cancel standard action if Level 1 Mage Guild is built - town hall can't be demolished in this case]
+
+  !!CM&1:R0;
+!!en;
+
+; Get basic info
+!!CA(CURRENT_TOWN):T?(townType:y) U?(townId:y);
+!!OW:C?(player:y);
+
+; Check if the current player meets the resources requirement
+; get resources requirement string
+!!VR(newLine:z):S^
+^;
+!!VR(resReqMet:y):S(TRUE);
+!!VR(resReqStr:z):S^^;
+!!VR(counter:y):S0;
+!#VA(costs[7]:y);
+
+!!re i/(RES_FIRST)/(RES_LAST_SOD);
+  !!OW:R(player)/i/?(currRes:y);
+  !!SN:Mi^eighth_dwellCostsList_%(townType)^/i/?(costs[i]);
+
+  !!if&(costs[i])>0;
+    !!VR(resReqStr):+^{~>RESOURCE.def:%i} %(costs[i])      ^;
+    !!VR(counter):+1;
+
+    !!if&(counter)=5;
+      !!VR(resReqStr):+(newLine) +(newLine);
+    !!en;
+  !!en;
+
+  !!VR(resReqMet)&(currRes)<(costs[i]):S(FALSE);
+!!en;
+
+!!FU(Substr):P^%(resReqStr)^/0/-6/?(resReqStr);[remove the last few characters]
+!!VR(resReqStr):+(newLine) +(newLine) +(newLine); [resReq]
+
+; Get the name of the creature
+!!VR(monInd:y):S(townType) *2 +1;
+!!SN:Mi^eighth_8thMonsList^/(monInd)/?(mon:y);
+!!SN:H^monname^/(mon)/1/?(monName:z);
+
+; Get the name of the dwelling
+!!VR(ertInd:y):S(townType) +770009;
+!!VR(dwellName:z):Sz(ertInd);
+
+!!SN:T^eighth.dwellDesc^/?(dwellDesc:z)/^dwellName^/(dwellName:z)/^monName^/(monName:z); [dwellDesc]
+
+; Set up all strings and summarise conditions
+!!FU(eighth_GetBuild8thDwellStatus):P(TRUE)/(resReqMet)/?(allReqMet:y);
+
+!!if&(allReqMet);
+  !!VR(upgrade8thDialog:z):S(dwellDesc) +(newLine) +(resReqStr);
+  !!FU(Substr):P^%(upgrade8thDialog)^/0/-3/?(upgrade8thDialog);[remove the last 3 characters (newlines)]
+!!el;
+  !!VR(upgrade8thDialog):S(dwellDesc) +(resReqStr) +s^eighth_buildStatus^;
+!!en;
+
+!!if&(allReqMet);
+  !!IF:Q1/(PIC_TYPE_MONSTER)/(mon)/2^%(upgrade8thDialog)^; [dialogue - ask]
+
+  !!if&1;                               [if build]
+    !!re i/(RES_FIRST)/(RES_LAST_SOD);
+      !!OW:R(CURRENT_PLAYER)/i/d-(costs[i]);
+    !!en;
+
+    !!SN:P^BUILDTWN^;                   [Play the sound of a new building]
+    !!VRi^tum_upgGuild_%(townId)^:S(TRUE);
+    !!FU(eighth_Update8thDwell):P(townId);
+    !!FU(tum_SetTownBuildingStatus):P(townId);
+    !!SN:D;
+  !!en;
+!!el;
+  !!IF:Q1/(PIC_TYPE_MONSTER)/(mon)/1^%(upgrade8thDialog)^; [dialgoue - display only]
+!!en;
 
 // Functions
 ****************************

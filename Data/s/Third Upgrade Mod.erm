@@ -77,7 +77,15 @@ visit www.heroescommunity.com for updates and news
 !!en;
 
 ; Check for third upgrades in town - only when there is no creature upgrade specialty or artifact upgrade
-!!FU(tum_GetUpgMonInTown)&i^tum_upgGuild_%(townId)^:P(monType)/(townId)/?(upgType);
+!!if&(townId)>(NO_TOWN);
+  !!if&i^tum_upgGuild_%(townId)^;
+    !!FU(tum_GetUpgMonInTown):P(monType)/(townId)/?(upgType);
+  ; Or check for universal upgrades
+  !!el;
+    !!UN:P174/?(universalUpg:y);
+    !!FU(tum_GetUpgMonInTown)&(universalUpg):P(monType)/(townId)/?(upgType);
+  !!en;
+!!en;
 
 !?FU(tum_GetUpgMonInTown);
 !#VA(monType:x) (townId:x) (upgType:x);
@@ -96,27 +104,59 @@ visit www.heroescommunity.com for updates and news
   !!FU&(townType)<>(monTownType):E;
 !!en;
 
-; Get monster's level and get upgrade chain of the level
+; Get the monster's level and get the upgrade chain of the level
 !!MA:L(monType)/?(level:y);
-!!FU(tum_GetMonstersInTown):P(monTownType)/(level)/?(basicMon:y)/?(upgMon:y)/?(thirdUpgMon:y);
 
-; Exit if upgraded dwelling is not built - might not be compatible with extended ugrades (is disabled anyway)
+; Exit if the upgraded dwelling is not built - might not be compatible with extended ugrades (is disabled anyway)
 !!VR(upgDwelling:y):S37 +(level);
 !!CA0/(townId):B3/(upgDwelling);
 !!FU&-1:E;
 
-; Set up monster's upgrades
-!!if&(monType)=(basicMon);
-  !!VR(upgType):S(upgMon);
-!!el&(monType)=(upgMon);
-  !!VR(upgType)&i^tum_upgGuild_%(townId)^:S(thirdUpgMon);
+; If the monster belongs to a town
+; Do not merge this part with the following
+!!if&(monTownType)>(NO_TOWN);
+  !!FU(tum_GetMonstersInTown):P(monTownType)/(level)/?(basicMon:y)/?(upgMon:y)/?(thirdUpgMon:y);
+
+  !!if|(monType)=(basicMon)/(monType)=(upgMon)/(monType)=(thirdUpgMon);
+    !!if&(monType)=(basicMon);
+      !!VR(upgType):S(upgMon);
+    !!el&(monType)=(upgMon);
+      !!VR(upgType)&i^tum_upgGuild_%(townId)^:S(thirdUpgMon);
+    !!en;
+
+    ; If the monster is a 3rd upgrade, get the 4th upgrade if 4th upgrade option is enabled/monster is level 7
+    !!if&(monType)=(thirdUpgMon)/(level)=(MON_MAX_LEVEL)/i^tum_upgGuild_%(townId)^;
+      !!UN:P(WOG_OPT_4TH_UPGRADES)/?(fourthUpgOn:y);
+      !!FU(GetUpgradedMonster)&(fourthUpgOn):P(monType)/?(upgType);
+    !!en;
+
+  ; Don't treat the monster as it is from a town if it cannot be produce in a town
+  !!el;
+    !!VR(monTownType):S(NO_TOWN);
+  !!en;
 !!en;
 
-; If the monster is a 3rd upgrade, get 4th upgrades if 4th upgrade option is enabled/monster is levle 7/upgraded level 7 dwelling, upgrade guild is built
-!!UN:P(WOG_OPT_4TH_UPGRADES)/?(fourthUpgOn:y);
+; If the monster doen't belong to a town and Universla Upgrade is enabled
+!!if&(universalUpg)/(monTownType)=(NO_TOWN);
+  !!FU(GetUpgradedMonster):P(monType)/?(possibleUpgType:y);
 
-!!if&(fourthUpgOn)/(monType)=(thirdUpgMon)/(level)=6/i^tum_upgGuild_%(townId)^;
-  !!FU(GetUpgradedMonster):P(monType)/?(upgType);
+  !!if&(possibleUpgType)>(NO_MON);
+    ; For level 1 to 6
+    !!if&(level)<(MON_MAX_LEVEL);
+      !!VR(upgType):S(possibleUpgType);
+      
+    ; For level 7
+    !!el;
+      !!MA:F(possibleUpgType)/?(fv:y) F(MON_BLOOD_DRAGON)/?(bloodFv:y);
+
+      !!if&(fv)<(bloodFv);
+        !!VR(upgType):S(possibleUpgType);
+      !!el&i^tum_upgGuild_%(townId)^;
+        !!MA:F(MON_DARKNESS_DRAGON)/?(darknessFv:y);
+        !!VR(upgType)&(fv)<=(darknessFv):S(possibleUpgType);
+      !!en;
+    !!en;
+  !!en;
 !!en;
 
 !?FU(tum_GetMonstersInTown);
@@ -199,6 +239,7 @@ visit www.heroescommunity.com for updates and news
 
 ; Check for upgrade if it was clicked on a monster
 !!if&(type)>(NO_MON)/(num)>0;
+  !!MA:O(type)/?(monTownType:y);
   !!FU(tum_GetUpgMonInTown):P(type)/(townId)/?(upg:y);
 
   ; Check the cost of upgrade if the monster has one
@@ -581,17 +622,7 @@ script by Archer30 and daemon_n
 !!FU(gem_AddTownButton):P^zart141.def^/64/32/^%Z20^/^%Z21^/^%Z21^/(TUM_Build_New_Building)/0/0/0;
 
 ; Build special buildings
-!?FU(OnTownMouseClick)&999/i^mouse_action^=(MOUSE_RMB_PRESSED); [trigger on clicking in town screen)]
-
-!!CA(CURRENT_TOWN):U?y30;               [get town id]
-!!CA(CURRENT_TOWN):T?y2;                [get town type)]
-
-!!CA(CURRENT_TOWN):O?y-2;               [owner of the town: y-2)]
-!!FU&y-2<>i^timerOwner^:E;
-
-!!CM:I?y1;                              [Get what type of click)]
-!!FU&y1<10:E;                           [abort if not town hall type)]
-!!FU&y1>13:E;                           [abort if not town hall type)]
+!?FU(OnTownMouseClick)&999/i^mouse_action^=(MOUSE_RMB_PRESSED)/i^mouse_item^>=10/i^mouse_item^<=13; [trigger on clicking in town screen)]
 !!FU(TUM_Build_New_Building):P; 
 
 !?FU(TUM_Build_New_Building);           [trigger on clicking in town screen)]
@@ -3068,7 +3099,7 @@ Updated by Archer30 (25.04.24)
 // To-do: Restrain the use of Attract Dead Souls ability (should disable it completely)
 // Warning: This script must be executed later than 6 wog - random heroes, the disabling Necromancy bit must be later than any other script changes Necromancy
 ; Set up battle variables
-; After random hero set up
+; After random hero set up (their Ring of Obliviions will also work on players)
 !?FU(OnAfterBattleSetup)&i^tum_emerald_on^;
 !!VRi^tum_%(ART_RING_OF_OBLIVION)_equipped^:S(FALSE);
 

@@ -135,12 +135,13 @@ ZVSE2
   !!SN:Vi^eighth_dwellCostsList_%(TOWN_RAMPART)^/0/5/0/5/0/0/3/5000;
   !!SN:Vi^eighth_dwellCostsList_%(TOWN_INFERNO)^/0/5/0/5/0/0/5/5000;
   !!SN:Vi^eighth_dwellCostsList_%(TOWN_NECROPOLIS)^/0/5/0/0/0/5/0/5000;
+  !!SN:Vi^eighth_dwellCostsList_%(TOWN_DUNGEON)^/0/0/4/5/0/0/0/5000;
+  !!SN:Vi^eighth_dwellCostsList_%(TOWN_FORTRESS)^/0/10/0/0/3/0/0/5000;
   !!SN:Vi^eighth_dwellCostsList_%(TOWN_CONFLUX)^/0/5/0/5/0/0/0/5000;
 !!en;
 
 !!SN:Vi^eighth_8thMonsList^/8/(MON_ENTOMBED_SPHINX)/(MON_ASHEN_SPHINX);
 !!MA:U(MON_ENTOMBED_SPHINX)/(MON_ASHEN_SPHINX);
-!!MA:O(MON_ASHEN_SPHINX)/(TOWN_NECROPOLIS);
 
 ***************************************************
 **** Fix ACM Monster Spell Count Compatibility ****
@@ -407,7 +408,7 @@ ZVSE2
 
 ; Reduce Defense
 ; The original Reduced Defense feature of Amethyst is disabled due to a lot of bugs
-!!UN:C7722144/(UNC_INT)/1627159939;
+!!UN:C7722144/(UNC_INT)/1627159939; 75D4A0
 !!UN:C7722148/(UNC_INT16)/2164;
 
 !!UN:C4465379/(UNC_INT)/1969289347;
@@ -1876,7 +1877,9 @@ ZVSE2
 
 !!BM(atkStack):T?(type:y);
 
-!!if&(type)=(MON_ELITE_LIZARD);
+!!if&(type)=(MON_MEDUSA_EMPRESS);
+  !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/20/70/(SKILL_NOT_LEARNED);
+!!el&(type)=(MON_ELITE_LIZARD);
   !!FU(tum_CastPassiveMonsterSpell):P(atkStack)/(defStack)/20/73/(SKILL_NOT_LEARNED);
 !!en;
 
@@ -1926,6 +1929,186 @@ ZVSE2
   !!VR(isDmgSpell:y):S(flags) &512;
   !!MR&(isDmgSpell):F100;
 !!en;
+
+
+// Multiple act twice abilities
+// Warning: i^battle_round^>=0 is required in every function, otherwise the script will corrupt the timing of artifact casts
+// Note: This script is put at the front of TUM Reborn scripts because it morale events (mode 2) triggers before OnBattleActionEnd event
+// Move Twice - Ice Dragons
+; Act a second time. Possible to stack with Morale to act a third time
+// Good Morale - Swordmasters
+; Act a second time if the morale is >=3 (once every 2 turns)
+// Mana Surge - Arcane Genies
+; Act a second time if the morale is >=1 after casting a spell
+!?FU(OnBattleRound)&i^battle_round^>=0;
+!!VRi^tum_twice_actingStack^:S(NO_STACK);
+
+!?FU(OnBeforeBattleAction)&i^battle_round^>=0;
+!!VRi^tum_twice_actingStack^:S(NO_STACK);
+
+!!FU&i^tum_abilityCounter_%i(tum_twice_actingStack)^>0:E;
+
+; Exit if the action is not correct
+!!BG:A?(action:y);
+!!FU&(action)<>(BATTLE_ACTION_WALK)/
+     (action)<>(BATTLE_ACTION_WALK_AND_ATTACK)/
+     (action)<>(BATTLE_ACTION_SHOOT)/
+     (action)<>(BATTLE_ACTION_CATAPULT)/
+     (action)<>(BATTLE_ACTION_MONSTER_CAST)/
+     (action)<>(BATTLE_ACTION_TENT_HEAL):E;
+
+; Exit if the stack cannot activate act twice
+!!BMi^battle_acting_stack^:T?(type:y);
+!!FU(tum_GetMonMoveTwiceMode):P(type)/?(mode:y);
+!!FU&(mode)=0:E;
+!!FU&(mode)=2/(action)<>(BATTLE_ACTION_WALK_AND_ATTACK):E;
+!!FU&(mode)=3/(action)<>(BATTLE_ACTION_MONSTER_CAST):E;
+
+!!BG:N?i^tum_twice_actingStack^;
+
+!?FU(OnBattleActionEnd)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_abilityCounter_%i(tum_twice_actingStack)^=0;
+!!VR(stack:y):Si^tum_twice_actingStack^;
+!!BM(stack):N?(num:y);
+
+!!FU&(num)<=0:E;
+
+!!BM(stack):T?(type:y);
+!!FU(tum_GetMonMoveTwiceMode):P(type)/?(mode:y);
+!!FU&(mode)=0:E;
+
+; Check if the stack has triggered morale
+!!BM(stack):F?(flags:y);
+!!VR(isActed:y):S(flags) &(MON_FLAG_ACTED);
+
+; Ice Dragons
+!!if|(mode)=1/(mode)=3;
+  ; If the monster has morale activated, it should not be acted OnBattleActionEnd
+  !!if&(isActed)=(FALSE);
+    !!VRi^tum_twice_actingStack^:S(NO_STACK);
+    !!FU:E;
+  !!en;
+
+; Swordmaster
+; Arcane Genie
+!!el|(mode)=2/(mode)=3;
+  ; Exit if morale has been triggerd for the stack
+  !!FU&(isActed)=(FALSE):E;
+
+  !!VR(triggeredMorale:y):S(flags) &(MON_FLAG_MORALE);
+  !!FU&(triggeredMorale):E;
+
+  ; Check if the stack satisfies the condition of triggering a scripted morale event
+  !!VR(canActTwice:y):S(FALSE);
+  !!BM(stack):G(BMG_FIELD_MORALE)/?(morale:y)/d;
+
+  !!if&(mode)=2/(morale)>=3;
+    !!VR(canActTwice):S(TRUE);
+  !!el&(mode)=3/(morale)>=1;
+    !!VR(canActTwice):S(TRUE);
+  !!en;
+
+  ; Exit if the condition hasn't been meet
+  !!if&(canActTwice)<>(TRUE);
+    !!VRi^tum_twice_actingStack^:S(NO_STACK);
+    !!FU:E;
+
+  ; "fake" good morale
+  ; Note: there is no need to check if a stack is not blind/paralyzed/stoned before activate morale
+  !!el;
+    !!if&i^battle_isVisible^;
+      !!VR(isPlural:y):S(num) -1 B;
+      !!SN:H^monname^/(type)/(isPlural)/?(monName:z);
+      !!SN:T^tumr.str.goodMorale^/?(battleLog:z)/^mon^/(monName);
+      !!MM:S(battleLog);
+
+      !!SN:P^GoodMrle^;
+      !!BM(stack):V20;
+    !!en;
+
+    !!BM(stack):Fd|(MON_FLAG_MORALE);
+  !!en;
+!!en;
+
+!!BM(stack):Fd~(MON_FLAG_ACTED);
+
+!?FU(OnBeforeBattleStackTurn)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_abilityCounter_%i(tum_twice_actingStack)^=0;
+!#VA(stack:x);
+
+!!BMi^tum_twice_actingStack^:T?(monType:y) N?(monNum:y);
+!!FU|(monType)=(NO_MON)/(monNum)<=0:E;
+
+!!FU(tum_GetMonMoveTwiceMode):P(monType)/?(mode:y);
+!!FU&(mode)=0:E;
+
+; Defeine how many turns required to trigger the ability again
+; For mode 1 and 2, it's the same turn number as the mode
+; For mode 3, it's 1
+!!if&(mode)<3;
+  !!VRi^tum_abilityCounter_%i(tum_twice_actingStack)^:+(mode);
+!!el;
+  !!VRi^tum_abilityCounter_%i(tum_twice_actingStack)^:+1;
+!!en;
+
+!!VR(stack):Si^tum_twice_actingStack^;
+
+!!VRi^tum_twice_actingStack^:S(NO_STACK);
+
+!?FU(tum_GetMonMoveTwiceMode);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S0;
+!!VR(result)&(mon)=(MON_ICE_DRAGON):S1;
+!!VR(result)&(mon)=(MON_SWORDMASTER):S2;
+!!VR(result)&(mon)=(MON_ARCANE_GENIE):S3;
+
+
+// Cesar Griffins' Unyielding Retaliation
+; Chance to retaliate an additional time each time retaliates. 
+; Additionally, this extra retaliation can be triggered even when the attacker cannot by retaliated in usual circumstances. 
+!?FU(tum_OnBeforeRetaliation);
+!#VA(hook:x);
+
+; Exit if the defender doesn't have Unyielding Retaliation
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_ESI)/4/?(defStruct:y);
+!!UN:C(defStruct)/52/4/?(defType:y);
+!!FU(tum_GetMonUnyieldingRetaliationChance):P(defType)/?(chance:y);
+!!FU&(chance)=0:E;
+
+; Exit if the defender has no retaliation left
+!!UN:C(defStruct)/1108/4/?(retaliation:y);
+!!FU&(retaliation)<=0:E;
+
+; Exit if the attacker is killed (usually by Fire Shield)
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EDI)/4/?(atkStruct:y);
+!!UN:C(atkStruct)/76/4/?(atkNum:y);
+!!FU&(atkNum)<=0:E;
+
+; Exit if the defender is Blind/Paralyzed/Stoned
+!!UN:C(defStruct)/244/4/?(defSide:y) C(defStruct)/248/4/?(stackOfSide:y);
+!!VR(defStack:y):S(defSide) *(BATTLE_STACKS_PER_SIDE) +(stackOfSide);
+
+!!BM(defStack):G(SPELL_BLIND)/?(blindTurns:y)/?t G70/?(stoneTurns:y)/?t G74/?(paralyzeTurns:y)/?t;
+!!FU|(blindTurns)>0/(stoneTurns)>0/(paralyzeTurns)>0:E;
+
+; Exit if the attacker and defender aren't next to each other
+; The distance can be greater than 1 if the defender is hit and move to another hex
+!!UN:C(atkStruct)/244/4/?(atkSide:y) C(atkStruct)/248/4/?(stackOfSide:y);
+!!VR(atkStack:y):S(atkSide) *(BATTLE_STACKS_PER_SIDE) +(stackOfSide);
+
+!!FU(tum_GetStackHeadPosition):P(defStack)/?(defHeadPos:y) P(atkStack)/?(atkHeadPos:y);
+!!FU(tum_CalcHexesDistance):P(defHeadPos)/(atkHeadPos)/?(distance:y);
+!!FU&(distance)>1:E;
+
+; Initate a melee attack
+; Here we don't use FU(tum_MakeStackMeleeAttackStack) to skip the complication of turning part
+!!FU(tum_MakeStackMeleeAttackStack):P(defStack)/(atkStack)/(TRUE);
+!!BM(defStack):Rd-1;
+
+!?FU(tum_GetMonUnyieldingRetaliationChance);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S0;
+!!VR(result)&(mon)=(MON_CESAR_GRIFFIN):S50;
 
 
 // Inquisitors' Spiky Defense
@@ -2004,9 +2187,236 @@ ZVSE2
 !!VR(rangedRate):S0;
 
 !!if&(mon)=(MON_INQUISITOR);
-  !!VR(meleeRate):S25;
-  !!VR(rangedRate):S25;
+  !!VR(meleeRate):S30;
+  !!VR(rangedRate):S30;
 !!en;
+
+
+// High Priests' Heavenly Inspiration
+; Encourage an acted stack, allows it to act again in this turn
+!?FU(OnBattleMouseHint)&i^tum_customSpellActive^;
+; Check monster position, exit if not on the same side (after Hypnotized) or is self
+!!BU:Ei^mouse_battleHex^/?(targetStack:y);
+!!FU&(targetStack)=(NO_STACK):E;
+!!FU&(targetStack)=i^battle_current_stack^:E;
+
+!!BM(targetStack):I?(targetSide:y);
+!!VR(currSide:y):Si^battle_current_side^;
+!!FU&(targetSide)<>(currSide):E;
+
+; Exit if target is the same as the current stack
+!!FU&(targetStack)=i^battle_current_stack^:E;
+
+; Get type and check if the stack has Heavenly Inspiration
+!!BMi^battle_current_stack^:T?(currType:y);
+!!FU(tum_CheckIfMonHasHeavenlyInspiration):P(currType)/?(result:y);
+!!FU&(result)=0:E;
+
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P5/?(result:y)/?(hint:z);
+
+!!if&(result)<>(TRUE);
+  !!MM&(hint)<>^^:M(hint);
+  !!FU:E;
+!!en;
+
+; Exit if the target can still act
+!!BM(targetStack):F?(flags:y);
+!!VR(isActed:y):S(flags) &(MON_FLAG_ACTED);
+!!FU&(isActed)=(FALSE):E;
+
+; Exit if the target cannot be affected by Morale
+!!VR(hasNoMorale:y):S(flags) &(MON_FLAG_NO_MORALE);
+
+!!if&(hasNoMorale);
+  !!SN:T^tumr.str.heavenlyInspirationNoMorale^/?(hint:z);
+  !!MM:M^%(hint)^;
+  !!FU:E;
+!!en;
+
+!!BMi^battle_current_stack^:N?(currNum:y);
+!!BM(targetStack):T?(targetType:y);
+
+!!BM(targetStack):N?(targetNum:y);
+!!VR(currIsPlural:y):S(currNum) -1 B;
+!!SN:H^monname^/(currType)/(currIsPlural)/?(currMonName:z);
+!!VR(targetIsPlural:y):S(targetNum) -1 B;
+!!SN:H^monname^/(targetType)/(targetIsPlural)/?(targetMonName:z);
+
+; Exit if the target has been affected by Morale - disabled for now
+*!VR(hasMorale:y):S(flags) &(MON_FLAG_MORALE);
+
+*!if&(hasMorale);
+  *!SN:T^tumr.str.heavenlyInspirationMorale%(targetIsPlural)^/?(hint:z)/^mon^/(targetMonName);
+  *!MM:M^%(hint)^;
+  *!FU:E;
+*!en;
+
+; Exit if not enough spell
+!!BMi^battle_current_stack^:E?(spells:y);
+
+!!if&(spells)<=0;
+  !!SN:T^tumr.str.noSpell%(currIsPlural)^/?(hint:z)/^mon^/(currMonName);
+  !!MM:M^%(hint)^;
+  !!FU:E;
+!!en;
+
+; Exit if the target has too much HP
+!!BMi^battle_current_stack^:H?(currHp:y) L?(currLostHp:y);
+!!VR(currTotalHp:y):S(currHp) *(currNum) -(currLostHp);
+!!BM(targetStack):H?(targetHp:y) L?(targetLostHp:y);
+!!VR(targetTotalHp:y):S(targetHp) *(targetNum) -(targetLostHp);
+
+!!if&(targetTotalHp)>(currTotalHp);
+  !!SN:T^tumr.str.heavenlyInspiration%(targetIsPlural)^/?(hint:z)/^mon^/(targetMonName);
+  !!MM:M^%(hint)^;
+  !!FU:E;
+!!en;
+
+; Change the cursor and show hint
+!!UN:R5/3/0;
+
+!!SN:T^tumr.str.heavenlyInspirationMain^/?(hint)/^mon^/(targetMonName);
+!!MM:M(hint);
+
+!?FU(OnBattleScreenMouseClick)&i^mouse_action^=(MOUSE_LMB_PRESSED)/i^tum_customSpellActive^;
+; Check monster position, exit if not on the same side (after Hypnotized) or is self
+!!BU:Ei^mouse_battleHex^/?(targetStack:y);
+!!FU&(targetStack)=(NO_STACK):E;
+!!FU&(targetStack)=i^battle_current_stack^:E;
+
+!!BM(targetStack):I?(targetSide:y);
+!!VR(currSide:y):Si^battle_current_side^;
+!!FU&(targetSide)<>(currSide):E;
+
+; Exit if target is the same as the current stack
+!!FU&(targetStack)=i^battle_current_stack^:E;
+
+; Get type and check if the stack has Heavenly Inspiration
+!!BMi^battle_current_stack^:T?(currType:y);
+!!FU(tum_CheckIfMonHasHeavenlyInspiration):P(currType)/?(result:y);
+!!FU&(result)=0:E;
+
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P5/?(result:y);
+!!FU&(result)<>(TRUE):E;
+
+; Exit if the target can still act
+!!BM(targetStack):F?(flags:y);
+!!VR(isActed:y):S(flags) &(MON_FLAG_ACTED);
+!!FU&(isActed)=(FALSE):E;
+
+; Exit if the target cannot be affected by Morale
+!!VR(hasNoMorale:y):S(flags) &(MON_FLAG_NO_MORALE);
+!!FU&(hasNoMorale):E;
+
+!!BMi^battle_current_stack^:N?(currNum:y);
+!!BM(targetStack):T?(targetType:y);
+
+!!BM(targetStack):N?(targetNum:y);
+
+; Exit if the target has been affected by Morale - disabled for now
+*!VR(hasMorale:y):S(flags) &(MON_FLAG_MORALE);
+*!FU&(hasMorale):E;
+
+; Exit if not enough spell
+!!BMi^battle_current_stack^:E?(spells:y);
+!!FU&(spells)<=0:E;
+
+; Exit if the target has too much HP
+!!BMi^battle_current_stack^:H?(currHp:y) L?(currLostHp:y);
+!!VR(currTotalHp:y):S(currHp) *(currNum) -(currLostHp);
+!!BM(targetStack):H?(targetHp:y) L?(targetLostHp:y);
+!!VR(targetTotalHp:y):S(targetHp) *(targetNum) -(targetLostHp);
+
+!!FU&(targetTotalHp)>(currTotalHp):E;
+
+!!FU(tum_ExecuteHeavenlyInspiration):P(targetStack)/(currNum)/(currType)/(targetType);
+
+!!VR(oppSide:y):S(currSide) X(TRUE);
+!!IP:Di^battle_owner_%(oppSide)^;
+!!FU(tum_ExecuteHeavenlyInspiration):D(targetStack)/(currNum)/(currType)/(targetType);
+
+!?FU(tum_ExecuteHeavenlyInspiration);
+!#VA(targetStack:x) (currNum:x) (currType:x) (targetType:x);
+
+; Play the casting animation manually
+!!BMi^battle_current_stack^:P?(currPos:y);
+
+; Get real coordinates of hexes
+!!FU(tum_GetCoordsOfHex):P(currPos)/?(currX:y)/?(currY:y) Pi^mouse_battleHex^/?(targetX:y)/?(targetY:y);
+
+; Check if it is required to turn around
+!!VR(mustTurnAround:y):S(FALSE);
+!!BMi^battle_current_stack^:I?(realSide:y);
+
+!!if&(currX)<(targetX);
+  !!VR(mustTurnAround)&(realSide)=(BATTLE_RIGHT):S(TRUE);
+!!el&(currX)>(targetX);
+  !!VR(mustTurnAround)&(realSide)=(BATTLE_LEFT):S(TRUE);
+!!en;
+
+; Get the group of frame for animation
+!!if&(currY)>(targetY);
+  !!VR(group:y):S14;
+!!el&(currY)=(targetY);
+  !!VR(group):S15;
+!!el;
+  !!VR(group):S16;
+!!en;
+
+; Get data
+!!BMi^battle_current_stack^:Z?(stackStruct:y);
+
+; Turn around
+!!SN&(mustTurnAround):E4482112/(CALLCONV_THISCALL)/(stackStruct)/1;
+
+; Play stack animation
+!!FU(tum_BattleStack_PlayAnimation):P(stackStruct)/(group)/(FALSE);
+
+; Restore the cursor to default - for the current acting player only
+!!OW:C?(currPlayer:y)/?(interactPlayer:y);
+
+!!re i/0/1;
+  !!if&i^battle_owner_%i^=(interactPlayer);
+    !!CM:R0;
+    !!UN:R5/0/0;
+
+    !!br;
+  !!en;
+!!en;
+
+; Battle log
+!!BM(targetStack):N?(targetNum:y);
+!!VR(targetIsPlural:y):S(targetNum) -1 B;
+!!SN:H^monname^/(targetType)/(targetIsPlural)/?(targetMonName:z);
+!!SN:T^tumr.str.heavenlyInspirationCast%(targetIsPlural)^/?(battleLog:z)/^targetMon^/(targetMonName);
+!!MM:S(battleLog);
+
+; Sound on the target
+!!SN:P^Mirth^;
+; Animation on the target (the sprite is in AmeEfect.pac)
+!!FU(tum_PlayCustomAnimationOnStack):P(targetStack)/^rushtrgt^;
+
+; Set as not acted, add Morale flag
+!!BM(targetStack):Fd~(MON_FLAG_ACTED) Fd|(MON_FLAG_MORALE);
+
+; Turn back
+!!SN&(mustTurnAround):E4482112/(CALLCONV_THISCALL)/(stackStruct)/1;
+!!SN:D;
+
+; Set up new spell for the current stack
+!!BMi^battle_current_stack^:Ed-1;
+!!FU(tum_FixXEMonsterSpellCountCompatibility):P; [ACM Compatiblity]
+
+; Pass the turn
+!!BG:A(BATTLE_ACTION_SKIP);
+
+!?FU(tum_CheckIfMonHasHeavenlyInspiration);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S(FALSE);
+!!VR(result)&(mon)=(MON_HIGH_PRIEST):S(TRUE);
 
 
 // Holy Champions' Holy Charge
@@ -2196,6 +2606,7 @@ ZVSE2
 // Cherubs' Wings of Renewal
 ; Whenever casting an active monster spell, friendly stacks adjacent to the position of spell would be revived
 ; This means an AOE revival for Cherubs
+; There is no need to check spell resistance for Resurrection spell casted by Archangels, as the check is missing in the orignal Heroes 3.
 !?FU(OnBattleActionEnd)&i^battle_acting_stack^>(NO_STACK);
 !!BG:A?(action:y);
 
@@ -2349,6 +2760,14 @@ ZVSE2
 !!FU(tum_CheckIfMonHasBlindingLight):P(currType)/?(result:y);
 !!FU&(result)<>(TRUE):E;
 
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P(SPELL_BLIND)/?(result:y)/?(hint:z);
+
+!!if&(result)<>(TRUE);
+  !!MM&(hint)<>^^:M(hint);
+  !!FU:E;
+!!en;
+
 !!BMi^battle_current_stack^:N?(currNum:y);
 
 ; Show no spell hint if needed
@@ -2359,14 +2778,6 @@ ZVSE2
   !!SN:H^monname^/(currType)/(isPlural)/?(monName:z);
   !!SN:T^tumr.str.noSpell%(isPlural)^/?(hint:z)/^mon^/(monName);
   !!MM:M^%(hint)^;
-  !!FU:E;
-!!en;
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P(SPELL_BLIND)/?(result:y)/?(hint:z);
-
-!!if&(result)<>(TRUE);
-  !!MM&(hint)<>^^:M(hint);
   !!FU:E;
 !!en;
 
@@ -2427,15 +2838,15 @@ ZVSE2
 !!FU(tum_CheckIfMonHasBlindingLight):P(currType)/?(result:y);
 !!FU&(result)<>(TRUE):E;
 
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P(SPELL_BLIND)/?(result:y);
+!!FU&(result)<>(TRUE):E;
+
 !!BMi^battle_current_stack^:N?(currNum:y);
 
 ; Exit if no spell
 !!BMi^battle_current_stack^:E?(spells:y);
 !!FU&(spells)<=0:E;
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P(SPELL_BLIND)/?(result:y);
-!!FU&(result)<>(TRUE):E;
 
 !!FU(tum_ExecuteBlindingLight):Pi^battle_current_stack^/(currNum)/(currType)/(side)/?(hasSucceed);
 
@@ -2543,15 +2954,15 @@ ZVSE2
 !!FU(tum_CheckIfMonHasBlindingLight):P(currType)/?(result:y);
 !!FU&(result)<>(TRUE):E;
 
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P(SPELL_BLIND)/?(result:y);
+!!FU&(result)<>(TRUE):E;
+
 !!BMi^battle_acting_stack^:N?(currNum:y);
 
 ; Exit if no spell
 !!BMi^battle_acting_stack^:E?(spells:y);
 !!FU&(spells)<=0:E;
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P(SPELL_BLIND)/?(result:y);
-!!FU&(result)<>(TRUE):E;
 
 !!FU(tum_ExecuteBlindingLight):Pi^battle_acting_stack^/(currNum)/(currType)/i^battle_acting_side^;
 
@@ -2732,10 +3143,21 @@ ZVSE2
 !!BM(targetStack):I?(targetSide:y);
 !!FU&(currSide)<>(targetSide):E;
 
+; Exit if target is the same as the current stack
+!!FU&(targetStack)=i^battle_current_stack^:E;
+
 ; Get type and check the mending power of the current stack
 !!BMi^battle_current_stack^:T?(currType:y);
 !!FU(tum_GetMonMendingPower):P(currType)/?(mendPower:y);
 !!FU&(mendPower)<=0:E;
+
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P3/?(result:y)/?(hint:z);
+
+!!if&(result)<>(TRUE);
+  !!MM&(hint)<>^^:M(hint);
+  !!FU:E;
+!!en;
 
 !!BMi^battle_current_stack^:N?(currNum:y);
 
@@ -2750,20 +3172,9 @@ ZVSE2
   !!FU:E;
 !!en;
 
-; Exit if stack is the same
-!!FU&(targetStack)=i^battle_current_stack^:E;
-
 ; Exit if the current number is bigger than initial (can be equal to)
 !!BM(targetStack):N?(targetNum:y) B?(targetInitNum:y);
 !!FU&(targetNum)>(targetInitNum):E;
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P3/?(result:y)/?(hint:z);
-
-!!if&(result)<>(TRUE);
-  !!MM&(hint)<>^^:M(hint);
-  !!FU:E;
-!!en;
 
 ; Check if the target is a construct
 !!FU(tum_GetStackOrMonLivingType):P(targetStack)/?(livingType:y);
@@ -2794,10 +3205,6 @@ ZVSE2
     !!en;
   !!en;
 !!en;
-
-; Check if the stack can receive spell - not working when the target is dead
-*!FU(tum_CheckIfStackCanReceiveCustomSpell):P(targetStack)/(currSide)/(SPELL_RESURRECTION)/3/0/?(result);
-*!FU&(result)<>(TRUE):E;
 
 ; Get the total mending power
 !!VR(totalMendPower:y):S(currNum) *(mendPower);
@@ -2838,26 +3245,26 @@ ZVSE2
 !!BM(targetStack):I?(targetSide:y);
 !!FU&(currSide)<>(targetSide):E;
 
+; Exit if target is the same as the current stack
+!!FU&(targetStack)=i^battle_current_stack^:E;
+
 ; Get type and check the mending power of the current stack
 !!BMi^battle_current_stack^:T?(currType:y);
 !!FU(tum_GetMonMendingPower):P(currType)/?(mendPower:y);
 !!FU&(mendPower)<=0:E;
+
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P3/?(result:y);
+!!FU&(result)<>(TRUE):E;
 
 !!BMi^battle_current_stack^:N?(currNum:y);
 
 !!BMi^battle_current_stack^:E?(spells:y);
 !!FU&(spells)<=0:E;
 
-; Exit if stack is the same
-!!FU&(targetStack)=i^battle_current_stack^:E;
-
 ; Exit if the current number is bigger than initial (can be equal to)
 !!BM(targetStack):N?(targetNum:y) B?(targetInitNum:y);
 !!FU&(targetNum)>(targetInitNum):E;
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P3/?(result:y);
-!!FU&(result)<>(TRUE):E;
 
 ; Check if the target is a construct
 !!FU(tum_GetStackOrMonLivingType):P(targetStack)/?(livingType:y);
@@ -2883,10 +3290,6 @@ ZVSE2
     !!en;
   !!en;
 !!en;
-
-; Check if the stack can receive spell - not working when the target is dead
-*!FU(tum_CheckIfStackCanReceiveCustomSpell):P(targetStack)/(currSide)/(SPELL_RESURRECTION)/3/0/?(result);
-*!FU&(result)<>(TRUE):E;
 
 ; Get the total mending power
 !!VR(totalMendPower:y):S(currNum) *(mendPower);
@@ -2918,7 +3321,7 @@ ZVSE2
 !!en;
 
 ; Get the group of frame for animation
-!!if&(currY)<(targetY);
+!!if&(currY)>(targetY);
   !!VR(group:y):S11;
 !!el&(currY)=(targetY);
   !!VR(group):S12;
@@ -3442,7 +3845,90 @@ ZVSE2
 !!VR(result)&(mon)=(MON_EFREETI_RAJAH):S(TRUE);
 
 
-// Pit Fiends' Hellish Strike
+// Sharp Horned Demons' Demon's Shield
+; Completly block the received physical damage every X turn. Reset the ability after killing a stack
+; Disable physcical damage
+!?FU(OnMonsterPhysicalDamage_Quit);
+!!FU(tum_GetMonsterPhysicalDamageType):P?(dmgType:y);
+!!FU|(dmgType)<0/(dmgType)>2:E;
+
+; Get the stack being hit
+; Exit if the counter isn't 0
+!!MF:N?(defStack:y);
+!!FU&i^tum_abilityCounter_%(defStack)^<>0:E;
+
+; Exit if the stack doesn't have Demon's Shield
+!!BM(defStack):T?(type:y);
+!!FU(tum_GetMonDemonsShieldCooldown):P(type)/?(cooldown:y);
+!!FU&(cooldown)=0:E;
+
+; Check if damage is disabled (done by 3rd party scripts)
+!!MF:F?(damage:y);
+!!FU&(damage)<=0:E;
+
+!!MF:E?(allowDamage:y);
+!!FU&(allowDamage)=(FALSE):E;
+
+; Set the stack as immume to this attack
+!!MF:F0;
+!!MF:E0;                              [don't show damage animation]
+!!VRi^tum_abilityCounter_%(defStack)^:+(cooldown);
+
+; Show cosmetics
+!!if&i^battle_isVisible^;
+  ; Text
+  !!BM(defStack):N?(num:y);
+  !!VR(isPlural:y):S(num) -1 B;
+  !!SN:H^monname^/(type)/(isPlural)/?(monName:z);
+  !!SN:T^tumr.str.demonsShield%(isPlural)^/?(battleLog:z)/^mon^/(monName)/^dmg^/(damage);
+  !!MM:S(battleLog);
+
+  ; Animation
+  !!BM(defStack):V84;
+!!en;
+
+; Reset the counter if killing a stack
+!?FU(tum_OnAfterMelee);
+!#VA(atkStack:x) (defStack:x);
+
+; Exit if the cooldown is 0
+!!FU&i^tum_abilityCounter_%(atkStack)^=0:E;
+
+; Exit if the attacker is killed/the defender isn't killed
+!!BM(atkStack):N?(atkNum:y);
+!!BM(defStack):N?(defNum:y);
+!!FU|(atkNum)<=0/(defNum)>0:E;
+
+; Exit if the stack doesn't have Demon's Shield
+!!BM(atkStack):T?(atkType:y);
+!!FU(tum_GetMonDemonsShieldCooldown):P(atkType)/?(cooldown:y);
+!!FU&(cooldown)=0:E;
+
+; Exit if the defender is a clone
+!!BM(defStack):F?(defFlags:y);
+!!VR(isClone:y):S(defFlags) &(MON_FLAG_CLONE);
+!!FU&(isClone):E;
+
+; Reset the cooldown
+!!VRi^tum_abilityCounter_%(atkStack)^:S0;
+
+; Show cosmetics
+!!if&i^battle_isVisible^;
+  !!BM(atkStack):N?(num:y);
+  !!VR(isPlural:y):S(num) -1 B;
+  !!SN:H^monname^/(atkType)/(isPlural)/?(monName:z);
+  !!SN:T^tumr.str.demonsShieldReset%(isPlural)^/?(battleLog:z)/^mon^/(monName);
+  !!MM:S(battleLog);
+!!en;
+
+!?FU(tum_GetMonDemonsShieldCooldown);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S0;
+!!VR(result)&(mon)=(MON_SHARP_HORNED_DEMON):S4;
+
+
+// Pit Masters' Hellish Strike
 ; Chance to stirke one more time, also absorb defense from the target and convert to attack.
 ; The triggering timing is after all the melee attack events (similar to Barbarian Lord's Axe of Ferocity).
 ; This effets stacks with other abilities that adds additional strikes.
@@ -3493,7 +3979,7 @@ ZVSE2
   ; Get the basic battle log
   !!VR(atkIsPlural:y):S(atkNum) -1 B;
   !!SN:H^monname^/(atkType)/(atkIsPlural)/?(atkMonName:z);
-  !!SN:T^tumr.str.hellishStrike%(atkIsPlural)^/?(battleLog:z)/^mon^/(atkMonName)/^stat^/(statTransfer);
+  !!SN:T^tumr.str.hellishStrike%(atkIsPlural)^/?(battleLog:z)/^mon^/(atkMonName);
 
   ; If there was no defense to be stolen
   !!if&(defDef)<=0;
@@ -3501,7 +3987,7 @@ ZVSE2
 
   ; If defense was stolen successfully
   !!el;
-    !!SN:T^tumr.str.hellishStrikeExt%(atkIsPlural)^/?(battleLogExt:z);
+    !!SN:T^tumr.str.hellishStrikeExt%(atkIsPlural)^/?(battleLogExt:z)/^stat^/(statTransfer);
     !!VR(battleLog):+(battleLogExt);
   !!en;
 
@@ -3514,7 +4000,7 @@ ZVSE2
 !!VR(chance):S0;
 
 !!if&(mon)=(MON_PIT_MASTER);
-  !!VR(chance):S25;
+  !!VR(chance):S130;
   !!VR(statTransfer):S1;
 !!en;
 
@@ -3541,9 +4027,8 @@ ZVSE2
       !!FU(tum_Battle_CanStackBeAffectedBySpell):P(atkStack)/(SPELL_FIRE_WALL)/(defSide)/?(result);
 
       !!if&(result);
-        !!VR(level:y):S(defNum) :10 F(SKILL_NOT_LEARNED)/(SKILL_EXPERT);
         !!VR(power:y):S(defNum) :2 F1/(INT_MAX);
-        !!FU(tum_PlaceMagicObstacle):P(SPELL_FIRE_WALL)/(castPos)/(level)/(power)/(TRUE);
+        !!FU(tum_PlaceMagicObstacle):P(SPELL_FIRE_WALL)/(castPos)/(SKILL_NOT_LEARNED)/(power)/(TRUE);
       !!en;
     !!en;
   !!en;
@@ -3925,6 +4410,14 @@ ZVSE2
 !!FU(tum_GetRiteOfSoulsRate):P(currType)/?(riteRate:y);
 !!FU&(riteRate)<=0:E;
 
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P4/?(result:y)/?(hint:z);
+
+!!if&(result)<>(TRUE);
+  !!MM&(hint)<>^^:M(hint);
+  !!FU:E;
+!!en;
+
 ; Check if there are 20 stacks already - if the proposed stack to revive is hostile
 !!FU(tum_CheckIfPossibleToCreateMoreStacks):P(currSide)/?(result:y);
 
@@ -3948,14 +4441,6 @@ ZVSE2
 !!en;
 
 !!BM(targetStack):B?(targetInitNum:y);
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P4/?(result:y)/?(hint:z);
-
-!!if&(result)<>(TRUE);
-  !!MM&(hint)<>^^:M(hint);
-  !!FU:E;
-!!en;
 
 ; Check if the target is a living Dragon or Hydra
 !!BM(targetStack):T?(targetType:y);
@@ -4035,6 +4520,10 @@ ZVSE2
 !!FU(tum_GetRiteOfSoulsRate):P(currType)/?(riteRate:y);
 !!FU&(riteRate)<=0:E;
 
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P3/?(result:y);
+!!FU&(result)<>(TRUE):E;
+
 ; Check if there are 20 stacks already - if the proposed stack to revive is hostile
 !!FU(tum_CheckIfPossibleToCreateMoreStacks):P(currSide)/?(result:y);
 !!FU&(result)<>(TRUE):E;
@@ -4045,10 +4534,6 @@ ZVSE2
 !!FU&(spells)<=0:E;
 
 !!BM(targetStack):B?(targetInitNum:y);
-
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P3/?(result:y);
-!!FU&(result)<>(TRUE):E;
 
 ; Check if the target is a living dragon or hydra
 !!BM(targetStack):T?(targetType:y);
@@ -4107,7 +4592,7 @@ ZVSE2
 !!en;
 
 ; Get the group of frame for animation
-!!if&(currY)<(targetY);
+!!if&(currY)>(targetY);
   !!VR(group:y):S11;
 !!el&(currY)=(targetY);
   !!VR(group):S12;
@@ -4400,6 +4885,30 @@ ZVSE2
 !!VR(result)&(mon)=(MON_HARPY_SANGUINARY):S(TRUE);
 
 
+// Medusa Empress' Stone Breaking Fury
+; Deal full damage to stoned units instead of half
+!?FU(tum_OnHalveDamageToStonedUnit);
+!#VA(hook:x);
+
+; Get the attacking type
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBX)/4/?(stackStruct:y);
+!!UN:C(stackStruct)/52/4/?(type:y);
+
+; Exit if the attacker doens't have Stone Breaking Fury
+!!FU(tum_CheckIfMonHasStoneBreakingFury):P(type)/?(result:y);
+!!FU&(result)=(FALSE):E;
+
+; Skip stone damage divider
+!!SN:X?t/0;
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/4472144;
+
+!?FU(tum_CheckIfMonHasStoneBreakingFury);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S(FALSE);
+!!VR(result)&(mon)=(MON_MEDUSA_EMPRESS):S(TRUE);
+
+
 // Chimeras' Tri Attack
 ; Cast different spells on 3-headed attack secondary targets according to the direction
 ; Left head: Weakness, Right head: Disrupting Ray
@@ -4407,9 +4916,9 @@ ZVSE2
 !#VA(atkStack:x) (defStack:x);
 
 !!BM(atkStack):T?(type:y);
-!!FU(tum_CheckMonHasTriAttackChance):P(type)/?(hasElemBlast:y);
+!!FU(tum_GetMonTriAttackChance):P(type)/?(chance:y);
 
-!!if&(hasElemBlast);
+!!if&(chance);
   !!FU(NewIntArray):P?i^tum_triAttackList^/(M_TEMP);
   !!FU(Array_Push):Pi^tum_triAttackList^/(atkStack);
 !!en;
@@ -4426,7 +4935,7 @@ ZVSE2
 !#VA(atkStack:x) (defStack:x);
 
 !!BM(atkStack):T?(type:y);
-!!FU(tum_CheckMonHasTriAttackChance):P(type)/?(chance:y);
+!!FU(tum_GetMonTriAttackChance):P(type)/?(chance:y);
 
 !!VR(isThirdTarget:y):S(FALSE);
 !!BM(atkStack):I?(atkSide:y);
@@ -4457,7 +4966,7 @@ ZVSE2
 !!SN:Mi^tum_triAttackList^;
 !!VRi^tum_triAttackList^:S0;
 
-!?FU(tum_CheckMonHasTriAttackChance);
+!?FU(tum_GetMonTriAttackChance);
 !#VA(mon:x) (result:x);
 
 !!VR(result):S0;
@@ -4676,6 +5185,13 @@ ZVSE2
 !!BM(defStack):T?(type:y);
 !!FU(tum_CheckIfMonHasImperviousToPain):P(type)/?(result:y);
 
+; Check if damage is disabled (done by 3rd party scripts)
+!!MF:F?(damage:y);
+!!FU&(damage)<=0:E;
+
+!!MF:E?(allowDamage:y);
+!!FU&(allowDamage)=(FALSE):E;
+
 !!if&(result);
   !!MF:F?(damage:y);
   !!VR(newDamage:y):S(damage) +i^tum_abilityCounter2_%(defStack)^;
@@ -4805,7 +5321,7 @@ ZVSE2
 ; First implementation
 ; Restore memory hacks
 !?FU(OnBeforeBattleUniversal);
-!!UN:C7722324/(UNC_INT)/(MON_GHOST_BEHEMOTH); 7722324
+!!UN:C7722324/(UNC_INT)/(MON_GHOST_BEHEMOTH); 75D554
 
 !?FU(OnSetupBattlefield);
 !!UN:C7722324/(UNC_INT)/(MON_GHOST_BEHEMOTH);
@@ -4816,7 +5332,7 @@ ZVSE2
 
 !!BMi^battle_current_stack^:T?(mon:y);
 !!FU(tum_GetMonChanceToIgnoreDefense):P(mon)/?(chance:y);
-!!UN&(chance)=100:C7722324/(UNC_INT)/(mon);
+!!UN&(chance)>=100:C7722324/(UNC_INT)/(mon);
 
 ; Restore memory hacks
 !?FU(OnAfterBattleUniversal);
@@ -4861,6 +5377,7 @@ ZVSE2
 !?FU(tum_GetMonChanceToIgnoreDefense);
 !#VA(mon:x) (result:x);
 
+!!VR(result):S0;
 !!VR(result)&(mon)=(MON_SPECTRAL_BEHEMOTH):S100;
 !!VR(result)|(mon)=(MON_RAT)/(mon)=(MON_BATTLE_RAT):S100;
 
@@ -5374,15 +5891,21 @@ ZVSE2
 
 ; Get type and check if the stack has Mana Transfer
 !!BMi^battle_current_stack^:T?(currType:y);
-!!FU(tum_CheckMonHasManaTransferRate):P(currType)/?(rate:y);
+!!FU(tum_GetMonHasManaTransferRate):P(currType)/?(rate:y);
 !!FU&(rate)=0:E;
+
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P3/?(result:y)/?(hint:z);
+
+!!if&(result)<>(TRUE);
+  !!MM&(hint)<>^^:M(hint);
+  !!FU:E;
+!!en;
 
 !!BMi^battle_current_stack^:N?(currNum:y);
 !!BM(targetStack):E?(targetSpells:y) T?(targetType:y);
 
 !!BM(targetStack):N?(targetNum:y);
-!!VR(currIsPlural:y):S(currNum) -1 B;
-!!SN:H^monname^/(currType)/(currIsPlural)/?(currMonName:z);
 !!VR(targetIsPlural:y):S(targetNum) -1 B;
 !!SN:H^monname^/(targetType)/(targetIsPlural)/?(targetMonName:z);
 
@@ -5398,32 +5921,15 @@ ZVSE2
   !!FU:E;
 !!en;
 
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P3/?(result:y)/?(hint:z);
-
-!!if&(result)<>(TRUE);
-  !!MM&(hint)<>^^:M(hint);
-  !!FU:E;
-!!en;
-
 ; Exit if the target can transfer spells
-!!FU(tum_CheckMonHasManaTransferRate):P(targetType)/?(targetRate:y);
+!!FU(tum_GetMonHasManaTransferRate):P(targetType)/?(targetRate:y);
 !!FU&(targetRate)>0:E;
 
 ; Exit if the target cannot cast
 !!if&(targetSpells)<=0;
   !!MA:B(targetType)/?(targetSpells);
-
-  !!if&(targetSpells)<=0;
-    *!SN:T^tumr.str.manaTransferNotValid^/?(hint)/^currMon^/(currMonName)/^targetMon^/(targetMonName);
-    *!MM:M^%(hint)^;
-    !!FU:E;
-  !!en;
+  !!FU&(targetSpells)<=0:E;
 !!en;
-
-; Exit if the target can't receive level 3 spell
-!!FU(tum_CheckIfStackCanReceiveCustomSpell):P(targetStack)/(currSide)/(SPELL_TELEPORT)/3/0/?(result);
-!!FU&(result)<>(TRUE):E;
 
 ; Change the cursor and show hint
 !!UN:R5/3/0;
@@ -5443,8 +5949,12 @@ ZVSE2
 
 ; Get type and check if the stack has Mana Transfer
 !!BMi^battle_current_stack^:T?(currType:y);
-!!FU(tum_CheckMonHasManaTransferRate):P(currType)/?(rate:y);
+!!FU(tum_GetMonHasManaTransferRate):P(currType)/?(rate:y);
 !!FU&(rate)=0:E;
+
+; Exit if not possible to cast
+!!FU(tum_CheckIfPossibleToCast):P3/?(result:y);
+!!FU&(result)<>(TRUE):E;
 
 !!BMi^battle_current_stack^:N?(currNum:y);
 !!BM(targetStack):E?(targetSpells:y) T?(targetType:y);
@@ -5454,12 +5964,8 @@ ZVSE2
 !!VR(spellsToTransfer:y):S(spells) :(rate);
 !!FU&(spellsToTransfer)<=0:E;
 
-; Exit if not possible to cast
-!!FU(tum_CheckIfPossibleToCast):P3/?(result:y);
-!!FU&(result)<>(TRUE):E;
-
 ; Exit if the target can transfer spells
-!!FU(tum_CheckMonHasManaTransferRate):P(targetType)/?(targetRate:y);
+!!FU(tum_GetMonHasManaTransferRate):P(targetType)/?(targetRate:y);
 !!FU&(targetRate)>0:E;
 
 ; Exit if the target cannot cast
@@ -5468,18 +5974,14 @@ ZVSE2
   !!FU&(targetSpells)<=0:E;
 !!en;
 
-; Exit if the target can't receive level 3 spell
-!!FU(tum_CheckIfStackCanReceiveCustomSpell):P(targetStack)/(currSide)/(SPELL_TELEPORT)/3/0/?(result);
-!!FU&(result)<>(TRUE):E;
-
-!!FU(tum_ExecuteManaTransfer):P(targetStack)/(currNum)/(currType)/(targetType)/(spellsToTransfer)/(targetStack);
+!!FU(tum_ExecuteManaTransfer):P(targetStack)/(currNum)/(currType)/(targetType)/(spellsToTransfer);
 
 !!VR(oppSide:y):S(currSide) X(TRUE);
 !!IP:Di^battle_owner_%(oppSide)^;
-!!FU(tum_ExecuteManaTransfer):D(targetStack)/(currNum)/(currType)/(targetType)/(spellsToTransfer)/(targetStack);
+!!FU(tum_ExecuteManaTransfer):D(targetStack)/(currNum)/(currType)/(targetType)/(spellsToTransfer);
 
 !?FU(tum_ExecuteManaTransfer);
-!#VA(targetStack:x) (currNum:x) (currType:x) (targetType:x) (spellsToTransfer:x) (targetStack:x);
+!#VA(targetStack:x) (currNum:x) (currType:x) (targetType:x) (spellsToTransfer:x);
 
 ; Play the casting animation manually
 !!BMi^battle_current_stack^:P?(currPos:y);
@@ -5498,7 +6000,7 @@ ZVSE2
 !!en;
 
 ; Get the group of frame for animation
-!!if&(currY)<(targetY);
+!!if&(currY)>(targetY);
   !!VR(group:y):S14;
 !!el&(currY)=(targetY);
   !!VR(group):S15;
@@ -5559,7 +6061,7 @@ ZVSE2
 ; Pass the turn
 !!BG:A(BATTLE_ACTION_SKIP);
 
-!?FU(tum_CheckMonHasManaTransferRate);
+!?FU(tum_GetMonHasManaTransferRate);
 !#VA(mon:x) (result:x);
 
 !!VR(result):S0;
@@ -6213,9 +6715,9 @@ ZVSE2
 !!if&(defNum)>0;
   !!BM(atkStack):T?(atkMon:y);
   ; Check if the attacker can cast Hypnotize
-  !!FU(tum_CheckIfMonCanHypnotize):P(atkMon)/?(canHypnotize:y);
+  !!FU(tum_GetMonHypnotizeRate):P(atkMon)/?(rate:y)/?(static:y);
 
-  !!if&(canHypnotize);
+  !!if&(rate)>0;
     ; Check if the target monster is hypnotized
     !!BM(defStack):G(SPELL_HYPNOTIZE)/?(duration:y)/?(level:y);
 
@@ -6228,7 +6730,7 @@ ZVSE2
         ; Check if the total HP of the defender is lower than 20 + 25*(attacker count)
         ; Attacker's power
         !!BM(atkStack):N?(atkNum:y);
-        !!VR(maxHypnotizeHp:y):S25 *(atkNum) +20;
+        !!VR(maxHypnotizeHp:y):S(rate) *(atkNum) +(static);
         ; Defender's total Hp
         !!BM(defStack):H?(hp:y) L?(lostHp:y);
         !!VR(totlaHp:y):S(hp) *(defNum) -(lostHp);
@@ -6254,12 +6756,18 @@ ZVSE2
 !!BM(defStack)&(hasAttackTwice):Fd|(MON_FLAG_ATTACKS_TWICE);
 !!VRi^tum_hypnotize_stackData^:S0;
 
-!?FU(tum_CheckIfMonCanHypnotize);
-!#VA(mon:x) (result:x);
+!?FU(tum_GetMonHypnotizeRate);
+!#VA(mon:x) (rate:x) (static:x);
 
-!!VR(result):S(FALSE);
-!!VR(result)&(mon)=(MON_FANGARM):S(TRUE);
-!!VR(result)|(mon)=(MON_ILLITHID)/(mon)=(MON_ALHOON):S(TRUE);
+!!VR(rate):S(FALSE);
+
+!!if&(mon)=(MON_FANGARM);
+  !!VR(rate):S25;
+  !!VR(static):S20;
+!!el|(mon)=(MON_ILLITHID)/(mon)=(MON_ALHOON);
+  !!VR(rate):S35;
+  !!VR(static):S30;
+!!en;
 
 !?FU(tum_CheckIfStackCanBeHypnotized);
 !#VA(stackId:x) (castingSide:x) (result:x);
@@ -6283,8 +6791,9 @@ ZVSE2
 
 
 // Alhoons' Veil of Chaos
-; Casts Berserk when attacked
+; Forces a target that attacked the Veil of Chaos holder to attack one of its adjacent allies, or casts Berserk if there is no adjacent ally. 
 ; Note that both OnBeforeBattleAction and OnAfterMelee does not work here as Berserk would be cleared after attack is finished
+; In the future, this ability might be changed to: Forces the attacking enemy to attack a nearest ally (similar to Berserk spell but the effect comes immediately)
 !?FU(OnBattleActionEnd)&i^battle_acting_stack^>(NO_STACK);
 !!BG:A?(action:y);
 !!FU&(action)<>(BATTLE_ACTION_WALK_AND_ATTACK):E;
@@ -6301,7 +6810,7 @@ ZVSE2
 
 ; Check if it is lucky
 !!VR(random:y):R0/0/99;
-!!FU&(random)>(chance):E;
+!!FU&(random)>=(chance):E;
 
 ; Prevent the attacking unit to trigger the effect if it's attakcing out of its own will
 ; This is to make the situation less complicated (similar to Winter Wyvern's Winter's Curse skips most passive abilities)
@@ -6317,11 +6826,6 @@ ZVSE2
 !!BMi^battle_acting_stack^:F?(defFlags:y);
 !!VR(isMindImmune:y):S(defFlags) &(MON_FLAG_MIND_IMMUNITY);
 !!FU&(isMindImmune):E;
-; Unused implementation - Check if the target accepts a level 4 air school spell
-; This pops up spell resistance info when checking on Ghosts Behemoths for some reason, yet the result still returns TRUE
-*!FU(tum_GetActualStackSide):P(defSide)/?(actualDefSide:y);
-*!FU(tum_CheckIfStackCanReceiveCustomSpell):Pi^battle_acting_stack^/(actualDefSide)/(SPELL_BERSERK)/4/(SPELL_SCHOOL_AIR)/?(result:y);
-*!FU&(result)<>(TRUE):E;
 
 ; Check if there is any stack with the same side adjacent to the target
 ; Temporarily remove Hypnotize spell in order to execute the function FU(tum_GetAdjacentStacksOfStack) correctly
@@ -6332,33 +6836,51 @@ ZVSE2
 
 !!UN:C(actStruct)/648/4/(hypnotizeInfo:y);
 
-!!SN:M(adjacentStacksList)/?(size:y);
-!!FU&(size)=0:E;
-
-; randomly choose a target and melee attack it
-!!VR(index:y):R1/(size) -1;
-!!SN:M(adjacentStacksList)/(index)/?(targetStack:y);
-
-; Play cosmetics
 !!if&i^battle_isVisible^;
-  ; Sound
-  !!SN:P^disintegrate^;                 [This is the sound for Confusion in VCMI]
-
-  ; Animation
-  !!FU(tum_PlayCustomAnimationOnStack):Pi^battle_acting_stack^/^confusion^;
-
-  ; Display msg
   !!BMi^battle_acting_stack^:N?(atkNum:y) T?(atkType:y);
   !!VR(isPlural:y):S(atkNum) -1 B;
   !!SN:H^monname^/(atkType)/(isPlural)/?(monName:z);
-  !!SN:T^tumr.str.veilOfChaos%(isPlural)^/?(msg:z)/^mon^/(monName);
-  !!MM:S(msg);
 !!en;
 
-; And execute the attack
-!!FU(tum_MakeStackMeleeAttackStack):Pi^battle_acting_stack^/(targetStack);
+!!SN:M(adjacentStacksList)/?(size:y);
 
-!!FU(tum_ExecutePhoenixResurrection):P;
+; If there is an adjacent unit, force the target to attack one of the adjacents
+!!if&(size)>0;
+  ; randomly choose a target and melee attack it
+  !!VR(index:y):R1/(size) -1;
+  !!SN:M(adjacentStacksList)/(index)/?(targetStack:y);
+
+  ; Play cosmetics
+  !!if&i^battle_isVisible^;
+    ; Sound
+    !!SN:P^disintegrate^;                 [This is the sound for Confusion in VCMI]
+
+    ; Animation
+    !!FU(tum_PlayCustomAnimationOnStack):Pi^battle_acting_stack^/^confusion^;
+
+    ; Display msg
+    !!SN:T^tumr.str.veilOfChaos%(isPlural)^/?(msg:z)/^mon^/(monName);
+    !!VR(msg):+^%T(tumr.str.veilOfChaosExt)^;
+    !!MM:S(msg);
+  !!en;
+
+  ; And execute the attack
+  !!FU(tum_MakeStackMeleeAttackStack):Pi^battle_acting_stack^/(targetStack);
+
+  !!FU(tum_ExecutePhoenixResurrection):P;
+
+; If there isn't, just cast Berserk
+!!el;
+  ; Cast the spell
+  !!FU(tum_CastPassiveMonsterSpell):P(defStack)/i^battle_acting_stack^/100/(SPELL_BERSERK)/(SKILL_NOT_LEARNED)/?(result:y);
+
+  ; Display msg
+  !!if&i^battle_isVisible^/(result);
+    !!SN:T^tumr.str.veilOfChaos%(isPlural)^/?(msg:z)/^mon^/(monName);
+    !!VR(msg):+^%T(tumr.str.period)^;
+    !!MM:S(msg);
+  !!en;
+!!en;
 
 !?FU(tum_GetMonVeilOfChaosChance);
 !#VA(mon:x) (result:x);
@@ -6367,23 +6889,23 @@ ZVSE2
 !!VR(result)&(mon)=(MON_ALHOON):S20;
 
 
-// Couatls and Quetzalcouatls' Hardened Skin
-; Increase defense every turn
+// Couatls and Quetzalcouatls' Serpent's Blessing
+; Increase attack and defense every turn
 !?FU(OnBattleStackObtainsTurn)&i^tum_abilityCounter_%i(battle_current_stack)^=0/i^tum_tacticsIsEnded^;
 !!BMi^battle_current_stack^:T?(type:y);
-!!FU(tum_GetHardenedSkinType):P(type)/?(hardenedSkinTypeType:y);
+!!FU(tum_GetSerpentsBlessingValue):P(type)/?(value:y);
 
-!!if&(hardenedSkinTypeType);
+!!if&(value)>0;
   !!VRi^tum_abilityCounter_%i(battle_current_stack)^:+1;
 
-  ; Type 1 - increase the defense
-  !!BMi^battle_current_stack^:Dd1;
+  ; Increase the stats
+  !!BMi^battle_current_stack^:Ad(value) Dd(value);
 
   !!if&i^battle_isVisible^;
     !!BMi^battle_current_stack^:N?(num:y);
     !!VR(isPlural:y):S(num) -1 B;
     !!SN:H^monname^/(type)/(isPlural)/?(monName:z);
-    !!SN:T^tumr.str.hardenedSkin%(isPlural)^/?(battleLog:z)/^mon^/(monName);
+    !!SN:T^tumr.str.hardenedSkin%(isPlural)^/?(battleLog:z)/^mon^/(monName)/^value^/(value);
     !!MM:S(battleLog);
 
     !!SN:P^puppet master^;
@@ -6391,14 +6913,14 @@ ZVSE2
   !!en;
 !!en;
 
-!?FU(tum_GetHardenedSkinType);
+!?FU(tum_GetSerpentsBlessingValue);
 !#VA(mon:x) (result:x);
 
 !!VR(result):S0;
 !!VR(result)|(mon)=(MON_COUATL)/(mon)=(MON_QUETZALCOUATL):S1;
 
 
-// Curse of Dullness
+// Troll Witches' Curse of Dullness
 ; Cast Slow with reducing spell resistance when applying the effect
 ; Disabled as this isn't working for some reason. Casting with BM:C on Black Dragons and it's resisted? WTF
 !?FU(tum_OnAfterShoot);
@@ -6464,25 +6986,126 @@ ZVSE2
 !!VR(result)&(mon)=(MON_TROLL_WITCH):S20;
 
 
-// Abyssal Tritons' Poseidon's Favour
-; Chance to obtain experience, gold, resources or even artifacts after visiting a vanishiable object on the sea
-; The reward is depending on the number of Poseidon's Favour user with dimishing return
-; WIPWIPWIP
-; Be wary of resources, they can have guards!
+// Demiliches' Destruction
+; Chance to kill a percentage of the enemy after melee attack
+!?FU(tum_OnAfterMelee);
+!#VA(atkStack:x) (defStack:x);
 
-!$OB12&1000; [campfire]
+; Exit if any of the stack is dead
+!!BM(atkStack):N?(atkNum:y);
+!!BM(defStack):N?(defNum:y);
+!!FU|(atkNum)<0/(defNum)<0:E;
+
+; Exit if the attacking stack doesn't have Destruction
+!!BM(atkStack):T?(atkType:y);
+!!FU(tum_GetMonDesctructionDetails):P(atkType)/?(chance:y)/?(divider:y);
+!!FU&(chance)=0:E;
+
+; Exit if not lucky
+!!VR(random:y):R0/0/99; 
+!!FU&(random)>=(chance):E;
+
+; Calculate the number of kill, exit if nothing
+!!BM(defStack):N?(defNum:y);
+!!VR(killNum:y):S(defNum) :(divider);
+!!FU&(killNum)<=0:E;
+
+; Kill
+!!BM(defStack)Nd-(killNum);
+
+; Show cosmetics
+!!if&i^battle_isVisible^;
+  !!BM(defStack):T?(defMon:y);
+  !!VR(defIsPlural:y):S(killNum) -1 B;
+  !!SN:H^monname^/(defMon)/(defIsPlural)/?(defMonName:z);
+
+  !!VR(atkIsPlural:y):S(atkNum) -1 B;
+  !!SN:H^monname^/(atkType)/(atkIsPlural)/?(atkMonName:z);
+  !!SN:T^tumr.str.destruction%(defIsPlural)^/?(battleLog:z)/^num^/(killNum)/^defMon^/(defMonName)/^atkMon^/(atkMonName);
+  !!MM:S(battleLog);
+
+  !!SN:P^disintegrate^;
+  !!FU(tum_PlayCustomAnimationOnStack):P(defStack)/^disinegrate^;
+!!en;
+
+!?FU(tum_GetMonDesctructionDetails);
+!#VA(mon:x) (chance:x) (divider:x);
+
+!!VR(chance):S0;
+
+!!if&(mon)=(MON_DEMILICH);
+  !!VR(chance):S10;
+  !!VR(divider):S4;                     [1/4]
+!!en;
 
 
-!$OB29&1000; [flotsam]
+// Dread Skippers' Sorrow attack
+; Cast Sorrow before melee attack
+!?FU(OnBeforeBattleAction)&i^battle_acting_stack^>(NO_STACK);
+!!BG:A?(action:y);
+!!FU&(action)<>(BATTLE_ACTION_WALK_AND_ATTACK):E;
+
+; Exit if the defender is not valid
+!!BG:E?(targetStack:y);
+!!FU&(targetStack)=(NO_STACK):E;
+
+; Exit if the attacker or the defender is killed
+!!BMi^battle_acting_stack^:N?(atkNum:y);
+!!BM(targetStack):N?(defNum:y);
+!!FU|(atkNum)<=0/(defNum)<=0:E;
+
+; Check if the attacker has Sorrow Attack
+!!BMi^battle_acting_stack^:T?(atkType:y);
+!!FU(tum_GetMonSorrowAttackChance):P(atkType)/?(chance:y);
+!!FU&(chance)=0:E;
+
+; Exit if not lucky
+!!VR(random:y):R0/0/99;
+!!FU&(random)>=(chance):E;
+
+; Exit if the targeted stack cannot receive the spell
+!!FU(tum_Battle_CanStackBeAffectedBySpell):P(targetStack)/(SPELL_SORROW)/i^battle_current_side^/?(canReceive:y);
+!!FU&(canReceive)=(FALSE):E;
+
+; Cast
+!!BM(targetStack):P?(targetPos:y);
+!!BMi^battle_acting_stack^:C(SPELL_SORROW)/(targetPos)/(SKILL_ADVANCED)/1000/(TRUE);
+
+!?FU(tum_GetMonSorrowAttackChance);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S0;
+!!VR(result)&(mon)=(MON_DREAD_SKIPPER):S100;
 
 
-!$OB79&1000; [resource]
+// Mermaids' Protection from Whirlpool
+; Protect the hero from losing troops when passing through Whirlpool
+!?FU(tum_OnEnterWhirlpool);
+!#VA(hook:x);
 
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/(UNC_INT)/?(ebp:y) C(ebp)/8/(UNC_INT)/?(heroStruct:y);
+!!UN:C(heroStruct)/26/(UNC_INT)/?(heroId:y);
 
-!$OB82&1000; [sea chest]
+!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
+  !!HE(heroId):C0/i/?(type:y)/?(num:y);
 
+  !!if&(type)>(NO_MON)/(num)>0;
+    !!FU(tum_CheckIfMonHasProtectionFromWhirlpool):P(type)/?(result:y);
 
-!$OB101&1000; [treasure chest]
+    !!if&(result);
+      !!SN:X?t/0;
+      !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/(UNC_INT)/4901007;
+
+      !!br;
+    !!en;
+  !!en;
+!!en;
+
+!?FU(tum_CheckIfMonHasProtectionFromWhirlpool);
+!#VA(mon:x) (result:x);
+
+!!VR(result):S(FALSE);
+!!VR(result)&(mon)=(MON_MERMAID):S(TRUE);
 
 
 // Carpet Whisperers' carpet animation
@@ -7046,36 +7669,6 @@ ZVSE2
 
 ; If it is, play the "Don't" sound
 !!SN&(soundName)=^smoo^:P^smooDONT^;
-
-
-// Mermaid's Protection from Whirlpool
-; Protect the hero from losing troops when passing through Whirlpool
-!?FU(tum_OnEnterWhirlpool);
-!#VA(hook:x);
-
-!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EBP)/(UNC_INT)/?(ebp:y) C(ebp)/8/(UNC_INT)/?(heroStruct:y);
-!!UN:C(heroStruct)/26/(UNC_INT)/?(heroId:y);
-
-!!re i/(ARMY_SLOT_FIRST)/(ARMY_SLOT_LAST);
-  !!HE(heroId):C0/i/?(type:y)/?(num:y);
-
-  !!if&(type)>(NO_MON)/(num)>0;
-    !!FU(tum_CheckIfMonHasProtectionFromWhirlpool):P(type)/?(result:y);
-
-    !!if&(result);
-      !!SN:X?t/0;
-      !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/(UNC_INT)/4901007;
-
-      !!br;
-    !!en;
-  !!en;
-!!en;
-
-!?FU(tum_CheckIfMonHasProtectionFromWhirlpool);
-!#VA(mon:x) (result:x);
-
-!!VR(result):S(FALSE);
-!!VR(result)&(mon)=(MON_MERMAID):S(TRUE);
 
 
 // Fire Paladins and Vermillion Birds' Flame Strike
@@ -7712,7 +8305,7 @@ ZVSE2
 
 ; Check if it is lucky
 !!VR(random:y):R0/0/99;
-!!FU&(random)>(chance):E;
+!!FU&(random)>=(chance):E;
 
 ; Check if possible to retaliate
 !!VR(atkStack:y):Si^battle_acting_stack^;
@@ -7856,9 +8449,9 @@ ZVSE2
 !!VR(result)&(mon)=(MON_WENDIGO):S(TRUE);
 
 
-// Wendigos' Flesh-eater
+// Wendigos' Corpse Feast
 ; Eat the stack killed by attack and wipe it from the battlefield completely
-; If the stack was killed not resulted by an attack dealt by Flesh-eaters, then it's no longer possible to be consumed
+; If the stack was killed not resulted by an attack dealt by the corpse feaster, then it's no longer possible to be consumed
 !?FU(OnMonsterPhysicalDamage);
 ; Exit if not direct melee or strike all around
 !!UN:C42149568/(UNC_INT)/?(dmgType:y);
@@ -7868,37 +8461,46 @@ ZVSE2
 !!MF:N?(defStack:y);
 !!VR(atkStack:y):Si^tum_attackStack^;
 
-; Check if the attacking monster is a flesh eater
+; Check if the attacking monster is a corpse feaster
 !!BM(atkStack):T?(type:y);
-!!FU(tum_CheckIfMonIsFleshEater):P(type)/?(result:y);
+!!FU(tum_GetMonCorpseFeastDetails):P(type)/?(rate:y)/?(basicHp:y);
 
-!!if&(result);
+!!if&(rate)>0;
+  !!BM(atkStack):H?(atkHp:y);
   !!MF:F?(finalDmg:y);
 
   ; Check if the defedning monster is a living one
   !!BM(defStack):F?(monFlags:y);
   !!VR(isAlive:y):S(monFlags) &(MON_FLAG_ALIVE);
   !!VR(isClone:y):S(monFlags) &(MON_FLAG_CLONE);
-  !!VRi^tum_flesheaterIsSummoned^:S(monFlags) &(MON_FLAG_SUMMONED);
+  !!VRi^tum_corpseFeastIsSummoned^:S(monFlags) &(MON_FLAG_SUMMONED);
 
   !!if&(isAlive)/(isClone)=(FALSE);
-    ; Check if the defending monster would be be killed by the flesh eater
-    !!BM(defStack):N?(num:y) H?(hp:y) L?(lostHp:y);
-    !!VR(defCurrTotalHp:y):S(num) *(hp) -(lostHp);
+    ; Check if the defending monster would be be killed by the corpse feaster
+    !!BM(defStack):N?(num:y) H?(defHp:y) L?(lostHp:y);
+    !!VR(defCurrTotalHp:y):S(num) *(defHp) -(lostHp);
 
     ; Store the hp of the def stack if it would be killed, set up flags for the victim to disappear 
     !!if&(finalDmg)>=(defCurrTotalHp);
-      !!VRi^tum_flesheaterRegenHp^:S(defCurrTotalHp);
+      !!VR(efficiencyFloat:e):S1;
+      !!VR(maxEfficiencyFloat:e):S1;
+      !!VR(efficiencyFloat):S(defHp) :(atkHp);
+      !!VR(efficiencyFloat)&(efficiencyFloat)>(maxEfficiencyFloat):S(maxEfficiencyFloat);
+      
+      !!VR(numIncreased:y):S(num) *(efficiencyFloat) *(rate) :100;
+
+      !!VRi^tum_corpseFeastFound^:S(TRUE);
+      !!VRi^tum_corpseFeastNumIncreased^:+(numIncreased);
       !!BM(defStack):Fd|813694976 E0;    [Clone, Sacrified, No Colouring]
     !!en;
   !!en;
 !!en;
 
-!?FU(tum_OnAfterMelee)&i^tum_flesheaterRegenHp^;
+!?FU(tum_OnAfterMelee)&i^tum_corpseFeastFound^;
 !#VA(atkStack:x) (defStack:x);
 
 ; Warning: 
-; In some case the attacerk's killed, or the defender wasn't killed, quit the flesh eating scene
+; In some case the attacerk's killed, or the defender wasn't killed, quit the corpse eating scene
 ; However, the defender would still suffer from clone flag/0 spell. Will be fixed if reported
 !!BM(atkStack):N?(atkNum:y);
 !!BM(defStack):N?(defNum:y);
@@ -7906,57 +8508,59 @@ ZVSE2
 !!if&(atkNum)>0/(defNum)<=0;
   ; Remove the clone flag from the defender
   !!BM(defStack):Fd~(MON_FLAG_CLONE);
-  !!BM(defStack)&i^tum_flesheaterIsSummoned^=(FALSE):Fd~(MON_FLAG_SUMMONED);
-  
-  ; Calculate the new HP and number of the flesheater
-  !!VR(noHpLost:y):S(FALSE);
-  !!BM(atkStack):H?(hp:y) L?(lostHp:y) B?(startNum:y);
+  !!BM(defStack)&i^tum_corpseFeastIsSummoned^=(FALSE):Fd~(MON_FLAG_SUMMONED);
 
-  !!VR(totalStartHp:y):S(startNum) *(hp);
-  !!VR(totalHp:y):S(atkNum) *(hp) -(lostHp);
-  !!VR(noHpLost)&(totalStartHp)=(totalHp):S(TRUE);
+  !!VR(numIncreased:y):Si^tum_corpseFeastNumIncreased^;
 
-  !!VR(newTotalHp:y):S(totalHp) +i^tum_flesheaterRegenHp^ F(totalHp)/(totalStartHp);
-  !!VR(newCurrHp:y):S(newTotalHp) %(hp);
-  !!VR(newNum:y):S(newTotalHp) :(hp) +1;
+  ; Increase the number of the corpse feaster
+  !!if&(numIncreased)>0;
+    !!BM(atkStack):Nd(numIncreased);
+    !!BM(atkStack):N?(currNum:y) B?(initNum:y);
+    !!BM(atkStack)&(initNum)<(currNum):B(currNum);
+    
+    ; Show battle log and play animation/sound
+    !!if&i^battle_isVisible^;
+      !!BM(atkStack):T?(type:y);
+      !!VR(isPlural:y):S(atkNum) -1 B;
+      !!SN:H^monname^/(type)/(isPlural)/?(monName:z);
+      !!SN:T^tumr.str.corpseFeast%(isPlural)^?(msg:z)/^mon^/(monName);
+      !!SN:T^tumr.str.corpseFeastExt^/?(extMsg:z)/^num^/(numIncreased);
+      !!VR(battleLog:z):S(msg) +(extMsg);
+      !!MM:S(battleLog);
 
-  !!if&(newCurrHp)=0;
-    !!VR(newCurrHp):S(hp);
-    !!VR(newNum):-1;
-  !!en;
+      ; Play sound and animation
+      !!SN:P^ANIMDEAD^;
+      !!FU(tum_PlayCustomAnimationOnStack):P(atkStack)/^Sp06_A^;
+    !!en;
 
-  !!VR(hpDrained:y):S(newTotalHp) -(totalHp);
-  !!VR(resurrectedNum:y):S(newNum) -(atkNum);
-
-  !!VR(newLostHp:y):S(hp) -(newCurrHp);
-
-  ; Set up new number and hp
-  !!BM(atkStack):N(newNum) L(newLostHp);
-
-  ; Show battle log and play animation/sound
-  !!if&i^battle_isVisible^/(noHpLost)<>(TRUE);
-    !!BM(atkStack):T?(type:y);
-    !!VR(isPlural:y):S(atkNum) -1 B;
-    !!SN:H^monname^/(type)/(isPlural)/?(flesheaterName:z);
-    !!SN:T^tumr.str.flesheater%(isPlural)^?(battleLog:z)/^flesheater^/(flesheaterName)/^hp^/(hpDrained);
-    !!MM:S(battleLog);
-
-    ; Play sound and animation
-    !!SN:P^ANIMDEAD^;
-    !!BM(atkStack):V74;
+  ; Just remove the corpse 
+  !!el;
+    !!if&i^battle_isVisible^;
+      !!BM(atkStack):T?(type:y);
+      !!VR(isPlural:y):S(atkNum) -1 B;
+      !!SN:H^monname^/(type)/(isPlural)/?(monName:z);
+      !!SN:T^tumr.str.corpseFeast%(isPlural)^?(msg:z)/^mon^/(monName);
+      !!VR(battleLog):S(msg) +^%T(tumr.str.period)^;
+      !!MM:S(battleLog);
+    !!en;
   !!en;
 !!en;
 
 ; Restore the global variable
-!!VRi^tum_flesheaterRegenHp^:S0;
-!!VRi^tum_flesheaterIsSummoned^:S0;
+!!VRi^tum_corpseFeastFound^:S(FALSE);
+!!VRi^tum_corpseFeastNumIncreased^:S0;
+!!VRi^tum_corpseFeastIsSummoned^:S0;
 
-; Funciton to check if the targeted monster is eligible for flesh eating
-!?FU(tum_CheckIfMonIsFleshEater);
-!#VA(mon:x) (result:x);
+; Funciton to check if the targeted monster is eligible for corpse eating
+!?FU(tum_GetMonCorpseFeastDetails);
+!#VA(mon:x) (rate:x) (basicHp:x);
 
-!!VR(result):S(FALSE);
-!!VR(result)&(mon)=(MON_WENDIGO):S(TRUE);
+!!VR(rate):S(FALSE);
+
+!!if&(mon)=(MON_WENDIGO);
+  !!VR(rate):S50;
+  !!VR(basicHp):S45;
+!!en;
 
 
 // Everlasting Dragons' Eternal Resilience
@@ -8396,108 +9000,6 @@ ZVSE2
 !!VR(result)&(mon)=(MON_RAVEN):S2;
 
 
-// Swordmaster's Good Morale and Ice Dragon's Move Twice
-// Warning: i^battle_round^>=0 is required in every function, otherwise the script will corrupt the timing of artifact casts
-// Good Morale
-; Always acts a second time if the morale is >=3 (once every 2 turns)
-// Move Twice
-; Always acts a second time. Possible to stack with Morale to act a third time
-!?FU(OnBattleRound)&i^battle_round^>=0;
-!!VRi^tum_twice_actingStack^:S(NO_STACK);
-
-!?FU(OnBeforeBattleAction)&i^battle_round^>=0;
-!!VRi^tum_twice_actingStack^:S(NO_STACK);
-
-!!FU&i^tum_abilityCounter_%i(tum_twice_actingStack)^>0:E;
-
-; Exit if the action is not correct
-!!BG:A?(action:y);
-!!FU&(action)<>(BATTLE_ACTION_WALK)/
-     (action)<>(BATTLE_ACTION_WALK_AND_ATTACK)/
-     (action)<>(BATTLE_ACTION_SHOOT)/
-     (action)<>(BATTLE_ACTION_CATAPULT)/
-     (action)<>(BATTLE_ACTION_MONSTER_CAST)/
-     (action)<>(BATTLE_ACTION_TENT_HEAL):E;
-
-; Exit if the stack is not Swordmaster nor Ice Dragon
-!!BMi^battle_acting_stack^:T?(type:y);
-!!FU(tum_CheckMonMoveTwiceMode):P(type)/?(mode:y);
-!!FU&(mode)=-1:E;
-
-!!BG:N?i^tum_twice_actingStack^;
-
-!?FU(OnBattleActionEnd)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_abilityCounter_%i(tum_twice_actingStack)^=0;
-!!VR(stack:y):Si^tum_twice_actingStack^;
-!!BM(stack):N?(num:y);
-
-!!FU&(num)<=0:E;
-
-!!BM(stack):T?(type:y);
-!!FU(tum_CheckMonMoveTwiceMode):P(type)/?(mode:y);
-!!FU&(mode)=0:E;
-
-; Check if the stack has triggered morale
-!!BM(stack):F?(flags:y);
-!!VR(isActed:y):S(flags) &(MON_FLAG_ACTED);
-
-; Ice Dragons
-!!if&(mode)=1;
-  ; If the monster has morale activated, it should not be acted OnBattleActionEnd
-  !!if&(isActed)=(FALSE);
-    !!VRi^tum_twice_actingStack^:S(NO_STACK);
-    !!FU:E;
-  !!en;
-; Special treatment for Swordmaster
-!!el&(mode)=2;
-  !!FU&(isActed)=(FALSE):E;
-
-  !!BM(stack):G(BMG_FIELD_MORALE)/?(morale:y)/d;
-
-  ; Exit if Swordmaster doesn't have morale +3 or more
-  !!if&(morale)<3;
-    !!VRi^tum_twice_actingStack^:S(NO_STACK);
-    !!FU:E;
-  !!el;
-    ; "fake" good morale
-    ; Note that there is no need to check if a stack is not blind/paralyzed/stoned before activate morale
-    !!if&i^battle_isVisible^;
-      !!VR(isPlural:y):S(num) -1 B;
-      !!SN:H^monname^/(type)/(isPlural)/?(monName:z);
-      !!SN:T^tumr.str.goodMorale^/?(battleLog:z)/^mon^/(monName);
-      !!MM:S(battleLog);
-
-      !!SN:P^GoodMrle^;
-      !!BM(stack):V20;
-    !!en;
-
-    !!BM(stack):Fd|(MON_FLAG_MORALE);
-  !!en;
-!!en;
-
-!!BM(stack):Fd~(MON_FLAG_ACTED);
-
-!?FU(OnBeforeBattleStackTurn)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_abilityCounter_%i(tum_twice_actingStack)^=0;
-!#VA(stack:x);
-
-!!BMi^tum_twice_actingStack^:T?(monType:y) N?(monNum:y);
-!!FU|(monType)=(NO_MON)/(monNum)<=0:E;
-
-!!FU(tum_CheckMonMoveTwiceMode):P(monType)/?(mode:y);
-!!FU&(mode)=0:E;
-
-!!VRi^tum_abilityCounter_%i(tum_twice_actingStack)^:+(mode);
-!!VR(stack):Si^tum_twice_actingStack^;
-
-!!VRi^tum_twice_actingStack^:S(NO_STACK);
-
-!?FU(tum_CheckMonMoveTwiceMode);
-!#VA(mon:x) (result:x);
-
-!!VR(result):S0;
-!!VR(result)&(mon)=(MON_ICE_DRAGON):S1;
-!!VR(result)&(mon)=(MON_SWORDMASTER):S2;
-
-
 // Dragonling Evolutions
 ; Dragonlings' evolution to grown dragons and also the special effects of dragon arrifacts are defined here
 !?FU(OnEveryDay);
@@ -8859,7 +9361,7 @@ ZVSE2
       !!if&(castleUpg);
         !!CA(CURRENT_TOWN):U?(townId:y);
         !!VR(monBonusItemId:y):S(townId) *10 +2 +(MON_MAX_LEVEL);
-        !!SN:M(WOG_OPT_CASTLE_UPGRADING)/(monBonusItemId)/?(monNum:y);
+        !!SN:M45/(monBonusItemId)/?(monNum:y);
         !!FU(tum_FixGrailText)&(monNum)=0:Pz1/1/?z1;
       !!en;
     !!en;
@@ -9259,10 +9761,13 @@ ZVSE2
 
 ****************************************************************************************************
 // Shield of the Dark Paladin (210), Shield of the Light Paladin (254) and Apocalypse Blade (232)
-// Cast Armageddon at the start of the battle, repeat the spell once if any stack was elimated by the spell, max for 5 times
+// Shield of the Dark Paladin: Cast Death Ripple at the start of the battle
+// Shield of the Light Paladin: Cast Destroy Undead at the start of the battle
+// Apocalypse Blade: Cast Armageddon at the start of the battle, repeat the spell once if any stack was elimated by the spell, max for 5 times
+; All of these effects don't affect troops owned by the artifact wielder
 !?FU(tum_OnBeforeArtifactAutoSpells);
 !!VR(side:y):Si^battle_current_side^;
-!!VR(hero:y):Si^battle_hero_%i(battle_current_side)^;
+!!VR(hero:y):Si^battle_hero_%(side)^;
 
 !!FU(tum_ManageHeroPowerOfSide):P(side)/?(power:y);
 !!VR(artPower:y):S(power) :5 +20;
@@ -10713,8 +11218,8 @@ ZVSE2
 !?FU(tum_sof_FreezeAllEnemies);
 !#VA(duration:x);
 
-!!BG:H?(hero:y);
 !!VR(side:y):Si^battle_current_side^;
+!!VR(hero:y):Si^battle_hero_%(side)^;
 
 !!HE(hero):A2/(ART_SWORD_OF_FROST)/?(has:y)/?(equipped:y);
 
@@ -10774,7 +11279,7 @@ ZVSE2
 
         !!SN:P^firestrm^;
 
-        !!FU(tum_PlayCustomAnimationOnMultipleStacks):P(affectedStacksList)/^blizzard^;
+        !!FU(tum_PlayCustomAnimationOnMultipleStacks):P(affectedStacksList)/^blizzard^/1;
       !!en;
     !!en;
 

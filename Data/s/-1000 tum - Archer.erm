@@ -295,59 +295,6 @@ H3Vector<H3CombatCreature*> dendroidBinds;
   !!VR(upgType)&(upgraded)>(NO_MON):S(upgraded);
 !!en;
 
-// Universal Upgrades FOR single TUM building for all TUM Upgrades
-; by Archer30
-!?FU(OnDetermineMonInfoDlgUpgrade_Quit)&i^tum_newTowns_on^=(FALSE);
-!#VA(monType:x) (upgType:x) (townId:x) (hero:x);
-
-!!UN:P174/?(wogOption:y);
-!!FU&(wogOption)<>(TRUE):E;
-
-; Exit if there is an existing upgrade or is not in a town
-!!FU|(upgType)>(NO_MON)/(townId)=(NO_TOWN):E;
-
-; If upgrade building is built, enter the main procedure
-!!if&i^tum_upgGuild_%(townId)^;
-  !!FU(tum_SetUniversalUpgrade):P(monType)/(townId)/?(upgType);
-; Otherwise check if it is a monster <= level 6
-!!el;
-  ; If the monster is a second upgraded monster, exit the function
-  !!MA:O(monType)/?(townType:y) L(monType)/?(level:y);
-  !!VR(counter:y):S14 *(townType) +7 +(level);
-  !!SN:Mi^tum_NativeTownCreaturesIds^/(counter:y)/?(upgMon:y);
-  !!FU&(monType)=(upgMon):E;
-
-  !!if&(level)<(MON_MAX_LEVEL);
-    !!FU(tum_SetUniversalUpgrade):P(monType)/(townId)/?(upgType);
-  ; Otherwise check if its upgrade is a normal level 7 monster (weaker than Blood Dragons)
-  ; For upgrading to level 8+, we simply need the third upgrade building
-  !!el;
-    !!FU(GetUpgradedMonster):P(monType)/?(upgraded:y);
-
-    !!if&(upgraded)>(NO_MON);
-      !!MA:F(upgraded)/?(fightValue:y) F(MON_BLOOD_DRAGON)/?(bloodFightValue:y);
-
-      ; And the upgraded level 7 dwelling is built
-      !!if&(fightValue)<(bloodFightValue);
-        !!CA0/(townId):B3/43;             [check if built into flag 1]
-        !!VR(upgType)&1:S(upgraded);
-      !!en;
-    !!en;
-  !!en;
-!!en;
-
-!?FU(tum_SetUniversalUpgrade);
-!#VA(monType:x) (townId:x) (upgType:x);
-
-!!MA:L(monType)/?(level:y);
-!!VR(buildingId:y):S(level) +37;        [37-43 upgraded dwellings]
-!!CA0/(townId):B3/(buildingId);           [check if built into flag 1]
-
-!!if&1;
-  !!FU(GetUpgradedMonster):P(monType)/?(upgraded:y);
-  !!VR(upgType)&(upgraded)>(NO_MON):S(upgraded);
-!!en;
-
 // Experience without abilities
 ; By loading a save game, all the stack exp abilities of creature Id > 255 would be recovered. This script removes them.
 !?FU(OnAfterLoadGame);
@@ -1535,8 +1482,10 @@ C(ebp)/16/4/d-i^tum_MonPlusLuckPower^ C(ebp)/20/4/di^tum_MonPlusLuckPower^;
 
 *******************************
 **** Manage Creature Stats ****
+*******************************
 ; Managing creature stats for gameplay or mod compatibility reasons
-!?FU(OnEveryDay)&i^timerDay^=1/i^timerOnce^;
+; For non-TUM Reborn only
+!?FU(OnEveryDay)&i^timerDay^=1/i^timerOnce^/i^tum_reborn_on^<>(TRUE);
 !!UN:P(WOG_OPT_STACK_EXPERIENCE)/?(stackExp:y);
 !!FU&(stackExp)<>(TRUE):E;
 
@@ -1550,9 +1499,9 @@ C(ebp)/16/4/d-i^tum_MonPlusLuckPower^ C(ebp)/20/4/di^tum_MonPlusLuckPower^;
 
 ; Replace Ice/Life Elementals' Ice Bolt with Forgetfulness
 ; This is for avoiding an issue of Yuji's Amethyst 2 - the power of the creature also affects stack exp ability casts, which makes Ice Bolt really OP
-!!EA(MON_ICE_ELEMENTAL):F112/?(slot:y);
+!!EA(MON_ICE_ELEMENTAL):F112/(SPELL_ICE_BOLT)/?(slot:y);
 !!EA(MON_ICE_ELEMENTAL):B(slot)/1/74/(SPELL_FORGETFULNESS)/0/2/4/6/8/10/12/14/16/18/20;
-!!EA(MON_LIFE_ELEMENTAL):F112/?(slot:y);
+!!EA(MON_LIFE_ELEMENTAL):F112/(SPELL_ICE_BOLT)/?(slot:y);
 !!EA(MON_LIFE_ELEMENTAL):B(slot)/1/74/(SPELL_FORGETFULNESS)/0/2/4/6/8/10/12/14/16/18/20;
 
 *******************************

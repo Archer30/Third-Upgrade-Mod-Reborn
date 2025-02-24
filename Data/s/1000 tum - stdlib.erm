@@ -14,8 +14,8 @@ ZVSE2
 !!UN:V?(wogVer:y)/?(eraVer:y)/?(hasHumanPlayer:y)/?(gameType:y)/?(networkType:y);
 
 ; Show msg if the ERA version is outdated
-!!VR(version:y):S3915;
-!!VR(versionStr:z):S^3.9.15^;
+!!VR(version:y):S3921;
+!!VR(versionStr:z):S^3.9.21^;
 
 !!if&(eraVer)<(version);
   !!SN:H^art^/(ART_PENDANT_OF_DEATH)/0/?(artName:z) H^art^/(ART_PENDANT_OF_DEATH)/0/^^;
@@ -254,16 +254,22 @@ ZVSE2
 ; Scouting
 !!SN:E(setHook)/1/5129161/(tum_OnGetScoutingRadius); [Trigger on getting the radius of Scouting] 004E43C9
 
+; Unyielding Retaliation
+!!SN:E(setHook)/1/4463359/(tum_OnBeforeRetaliation); 441AFF
+
 ; Chaotic Retaliation
 !!SN:E(setHook)/1/4463397/(tum_OnRetaliation); 441B25
 !!SN:E(setHook)/1/7761128/(tum_OnDeathBlow);
 
 ; Frostbound Terror (Enhanced Fear)
-!!SN:E(setHook)/1/4606276/(tum_OnFear); 00464944
+!!SN:E(setHook)/1/4606276/(tum_OnFear); 464944
 
 ; After all melee/shoot behaviours (after double/triple strikes)
 !!SN:E(setHook)/1/4463622/(tum_HOOK_AfterAllMeleeMainFunc); 441C06
 !!SN:E(setHook)/1/4456444/(tum_HOOK_AfterAllShootMainFunc); 43FFFC
+
+; Stone Breaking Fury
+!!SN:E(setHook)/1/4472132/(tum_OnHalveDamageToStonedUnit);
 
 ; Abyssal Gaze (Enhanced Death Stare)
 !!SN:E(setHook)/1/4459489/(tum_OnDeathStare); 440BE1
@@ -389,7 +395,7 @@ ZVSE2
   !!FU(tum_OnBeforeShoot):P(stackAttackerID)/(stackDefenderID);
 !!en;
 
-!!FU(tum_OnBeforeAttack):P(stackAttackerID)/(stackDefenderID);
+!!FU(tum_OnBeforeAttack):P(stackAttackerID)/(stackDefenderID)/(mode);
 
 !?FU(tum_HOOK_AfterMeleeMainFunc);
 !#VA(hook:x);
@@ -428,7 +434,7 @@ ZVSE2
   !!FU(tum_OnAfterShoot):P(stackAttackerID)/(stackDefenderID);
 !!en;
 
-!!FU(tum_OnAfterAttack):P(stackAttackerID)/(stackDefenderID);
+!!FU(tum_OnAfterAttack):P(stackAttackerID)/(stackDefenderID)/(mode);
 
 !?FU(tum_HOOK_AfterAllMeleeMainFunc);
 !#VA(hook:x);
@@ -607,7 +613,7 @@ ZVSE2
 !!VRi^tum_abilityCounter2_%(stackId)^:S0;
 !!VRi^tum_abilityCounter3_%i^:S0;
 
-; Reduce i^tum_abilityCounter_%i^ by 1 every round
+; Reduce i^tum_abilityCounter_%i^ by 1 every turn (round)
 ; i^tum_abilityCounter2_%i^ would only be reset for each battle
 ; i^tum_abilityCounter3_%i^ would be reset each stack turn
 !?FU(OnBattleRound_Quit)&i^battle_round^>=1;
@@ -1172,7 +1178,7 @@ ZVSE2
 !#VA(mode:x);                           [Mode. 0 - play the animation from the bottom of the stack. 1 - from the centre]
 
 !!FU:A?(numArgs:y);
-!!VR(mode)&(numArgs)<=2:S0;
+!!VR(mode)&(numArgs)<(@mode):S0;
 
 !!VR(text:z):Sz(filenamePtr);
 
@@ -1479,9 +1485,9 @@ ZVSE2
 !!SN:E5914512/(CALLCONV_THISCALL)/(cmbMgr)/(spellID)/(castingSide)/(stack)/1/1; [can stack apply buff/debuff] 5A3F90
 !!VR(result):Sv1;
 
-*******************************************
-**** Check spell resistance of a stack ****
-*******************************************
+***********************************************
+**** Check the spell resistance of a stack ****
+***********************************************
 ; This function checks the resistance of a stack with random roll, should be used in real casting process
 !?FU(tum_Battle_CanStackBeAffectedBySpell);
 !#VA(stackId:x) (spellID:x) (castingSide:x) (result:x);
@@ -1618,10 +1624,11 @@ ZVSE2
 
 ; Exit if the targeting stack has been buffed with the same spell, when the spell has 100% chance to cast
 ; We want to disable casting in this case to avoid multiple spell animations
-!!if&(chance)>=100/(isDmgSpell)<>(TRUE)/(spell)<>(SPELL_DISRUPTING_RAY);
-  !!BM(targetStack):G(spell)/?(duration:y)/?(level:y);
-  !!FU&(duration)>0:E;
-!!en;
+; Seems not needed
+*!if&(chance)>=100/(isDmgSpell)<>(TRUE)/(spell)<>(SPELL_DISRUPTING_RAY);
+  *!BM(targetStack):G(spell)/?(duration:y)/?(level:y);
+  *!FU&(duration)>0:E;
+*!en;
 
 ; Set up immunity info
 !!if&(ignoreImmunity);
@@ -1648,7 +1655,7 @@ ZVSE2
   ; Restrain spell level
   !!VR(powerCoef):F(SKILL_NOT_LEARNED)/(SKILL_EXPERT);
   ; Get the duration of spell
-  !!VR(duration):S3;
+  !!VR(duration:y):S3;
   !!VR(duration)&(spell)=(SPELL_BERSERK)/(spell)=72:S255; [Berserk and Bind - 255 turns]
   !!VR(duration)&(spell)=(SPELL_FRENZY):S2; [Frenzy - 2 turns]
   ; Cast the spell
@@ -1846,9 +1853,13 @@ ZVSE2
 ; Unlike FU(BattleStack_Shoot) There is no need to check/remove Attack Twice flag here.
 ; Executing SN:E4461360 will only lead to one stike no matter whether the attacker has Attack Twice or not.
 !?FU(tum_MakeStackMeleeAttackStack);
-!#VA(atkStack:x) (defStack:x);
+!#VA(atkStack:x) (defStack:x) (ignoreTurnAround:x);
+
+!!FU:A?(numArgs:y);
+!!VR(ignoreTurnAround)&(numArgs)<(@ignoreTurnAround):S(FALSE);
 
 !!VR(mustTurnAround:y):S(FALSE);
+!!VR(direction:y):S1;
 
 ; Get data
 !!BM(atkStack):Z?(atkStruct:y);
@@ -1859,10 +1870,10 @@ ZVSE2
   !!BM(defStack):P?(defPos:y);
 
   ; Get the direction of attack
-  !!FU(tum_GetCoordsOfHex):P(atkPos)/?(atkX:y)/?(atkY:y) P(defPos)/?(defX:y)/?(defY:y) ;
+  !!FU(tum_GetCoordsOfHex):P(atkPos)/?(atkX:y)/?(atkY:y) P(defPos)/?(defX:y)/?(defY:y);
 
   !!if&(atkY)>(defY);
-    !!VR(direction:y):S0;
+    !!VR(direction):S0;
   !!el&(atkY)=(defY);
     !!VR(direction):S1;
   !!el;
@@ -1870,10 +1881,12 @@ ZVSE2
   !!en;
 
   ; Check if it is required to turn around
-  !!if&(atkX)<(defX);
-    !!VR(mustTurnAround)&(atkSide)=(BATTLE_RIGHT):S(TRUE);
-  !!el;
-    !!VR(mustTurnAround)&(atkSide)=(BATTLE_LEFT):S(TRUE);
+  !!if&(ignoreTurnAround)<>(TRUE);
+    !!if&(atkX)<(defX);
+      !!VR(mustTurnAround)&(atkSide)=(BATTLE_RIGHT):S(TRUE);
+    !!el;
+      !!VR(mustTurnAround)&(atkSide)=(BATTLE_LEFT):S(TRUE);
+    !!en;
   !!en;
 !!en;
 
@@ -2550,23 +2563,11 @@ ZVSE2
 ********************************************
 ; While BM:P returns the position of the "ass" of a wide stack, this function always returns the position of the head.
 !?FU(tum_GetStackHeadPosition);
-!#VA(stack:x) (pos:x);
+!#VA(stack:x) (result:x);
 
-!!BM(stack):Z?(stackStruct:y) P?(pos) F?(flags:y);
-!!VR(isWide:y):S(flags) &(MON_FLAG_WIDE);
-
-!!if&(isWide);
-  !!UN:C(stackStruct)/68/4/?(secPosOrientation:y);
-
-  ; If the stack is wide
-  !!if&(secPosOrientation)>=0;
-    !!if&(secPosOrientation)=0;
-      !!VR(pos):-1;
-    !!el&(secPosOrientation)=1;
-      !!VR(pos):+1;
-    !!en;
-  !!en;
-!!en;
+!!BM(stack):Z?(stackStruct:y);
+!!SN:E4481984/(CALLCONV_THISCALL)/(stackStruct);
+!!VR(result):Sv1;
 
 ********************************************************
 **** Get the damage type of Monster Physical Damage ****
@@ -2779,7 +2780,11 @@ Death Ripple? 005A106A (5902442)
 *****************************************************
 ; Check if the stack can accept a spell with given flags (based on an existing spell), level and school
 ; The function doesn't seem to work as expected, it returns false acceptance or vice versa
+; Warning: This function is no longer used as it seems the original heroes 3 works differently. 
+; The Resurrection spell casted by Archangels work on Black Dragons, for example.
 !?FU(tum_CheckIfStackCanReceiveCustomSpell);
+!!FU:E;
+
 !#VA(stack:x);                          [Stack to receive the spell]
 !#VA(side:x);                           [Side to cast the spell]
 !#VA(spell:x);                          [spell to provide spell flags]
