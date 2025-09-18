@@ -9,10 +9,6 @@ Third Upgrade Mod: Reborn is a branch of TUM official, developed by Archer30 the
 
 Note: TUM - Reborn Edition is currently being actively developed. Please report any issue you found to Archer30 in order to have them fixed in the update release.
 
---------------------------------------------------------------------------------------------------
-
-TUM can only be used in single player games or co-op multiplayer games.
---------------------------------------------------------------------------------------------------
 
 Credits:
 
@@ -20,7 +16,8 @@ Archer30: Author, idea and scripting.
 VMaiko: Author, idea and graphics.
 PerryR: ERM author and scripting.
 Berserker: Scripting, idea.
-Majaczek: Plugins (Amethyst and Emerald).
+Majaczek: Plugins.
+SadnessPower: Plugins.
 Andruids: Graphics.
 Fiorin: Graphics.
 Moriarty89: Graphics.
@@ -30,6 +27,7 @@ Toriko：Graphics.
 Avatar: Sounds and Graphics resources.
 FirePaladin: Graphics.
 yogdush: Graphics.
+Aphra: Graphics.
 ElfbI: New Pandora Boxes.
 Ash&Amber: Tester.
 
@@ -48,6 +46,9 @@ Drwal - 2d Artist.
 Khemiel - 2d Artist.
 avatar - json guy.
 
+Original authors of Master of Puppets mod which their assets were used to do this mod:
+
+MoP
 
 
 This mod uses Fred79's Object Patch and part of the terrain objects are tied to RMG.
@@ -218,3 +219,4 @@ Neutrals (Hill Fort Only):
 Now it is possible to obtain additional units in the game, to obtain it there are 2 requirements, 
 You are required to build a dwelling of the same level as the same creature (For example to build Treehouse you need to build Enchaing Spring) and build an exclusive building for each faction.
 To obtain the upgraded version of the additional unit it is required that the building to obtain a third upgrade be built.
+

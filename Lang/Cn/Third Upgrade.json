@@ -32,7 +32,10 @@
 		"hota0": 							"在号角的呼唤下，海之灵现身。@num@个@mon@加入了@hero@的军队。",
 		"hota1": 							"在号角的呼唤下，海之灵现身。@num@个@mon@加入了@hero@的军队。",
 
-		"orbOfInhibition": 					"@art@使所有魔法都失效了",
+		"recantersCloak":					"禁魔披风阻止施放3级以上的魔法",
+		"orbOfInhibition": 					"禁魔球使所有魔法都失效了",
+		"capeOfSilenceMain":				"沉默斗篷阻止@hero@施放2级以下的魔法。",
+		"capeOfSilence":					"沉默斗篷阻止施放2级以下的魔法"
 		
 	},
 			

@@ -52,6 +52,8 @@
       "specMon1": "@mon1@、@mon2@、@mon3@和@mon4@",
       "specEnd0": "杀伤力+@stat@",
       "specEnd1": "速度+@stat@",
+      "spec147": "{~r}魔幻法师特长{~}\n\n将僧侣、祭司、法师和大法师升级为{魔幻法师}。\n允许{魔幻法师}和{奇迹法师}相互转换。",
+      "spec148": "{~r}幻影射手特长{~}\n\n将射手、神射手、木精灵和大精灵升级为{幻影射手}。\n将{幻影射手}升级为{极地射手}。允许{极地射手}和{熔岩射手}相互转换。",
       "spec149ext": "，并获得飞行 (无视障碍) 的能力。",
       "spec150": "{~r}丧尸特长{~}\n\n在战斗中使5级以上有生命的部队获得丧尸属性。5级以上的丧尸杀伤力+4、生命值+25%、速度+1。",
       "specBattle150": "{@hero@}的部队变成了丧尸！",
@@ -76,20 +78,31 @@
 
       "noSpell0": "@mon@耗尽了他的所有魔法值", // The %s has exhausted his spell points
       "noSpell1": "@mon@耗尽了他们的所有魔法值", // The %s have exhausted their spell points
+      "notEnoughSpell0": "@mon@的魔法值不足以施放这个魔法",
+      "notEnoughSpell1": "@mon@的魔法值不足以施放这个魔法",
       "tooManyStacks": "战场已经容纳不下更多的部队了",
+
+      "immune": "@mon@完全不受@spell@的影响", // @mon@ are immune to @spell@ (There is no singular in the vanilla game)
+
+      "spellUsed0": "@mon@本场战斗中不能再使用魔法了",
+      "spellUsed1": "@mon@本场战斗中不能再使用魔法了",
 
       "res0": "@num@个@mon@起死回生了！", // %d %s rises from the dead!
       "res1": "@num@个@mon@起死回生了！", // %d %s rise from the dead!
 
+      "cast": "施放@spell@在@mon@身上 (@effect@)", // Cast @spell@ on @mon@
+
+      "resShort": " (数量+@num@)。",
+
+      "spellFailed0": "@mon@尝试施放@spell@，但失败了。",
+      "spellFailed1": "@mon@尝试施放@spell@，但失败了。",
+
       // TUM Town Monsters
       "spikyDefense": "尖刺防御造成@dmg@点损伤。",
 
-      "heavenlyInspirationMain": "使@mon@可再次行动",
-      "heavenlyInspirationNoMorale": "只能使受士气影响的部队再次行动",
-      // "heavenlyInspirationMorale0": "@mon@本回合已经再次行动了",
-      // "heavenlyInspirationMorale1": "@mon@本回合已经再次行动了",
-      "heavenlyInspiration0": "@mon@的总生命值太高了",
-      "heavenlyInspiration1": "@mon@的总生命值太高了",
+      "heavenlyInspiration": "天堂激励",
+      "heavenlyInspirationHint": "施放天堂激励 (使@mon@可再次行动)",
+      "heavenlyInspirationHp": "@mon@的总生命值太高了",
       "heavenlyInspirationCast0": "天堂激励让@targetMon@可再一次进攻。",
       "heavenlyInspirationCast1": "天堂激励让@targetMon@可再一次进攻。",
 
@@ -101,15 +114,23 @@
 
       "hammerCrush": "重锤粉碎：@bonus@%",
 
+      "spellBreak": "@mon@的魔力消散了！",
+
+      "unbindingAbsorption": "解缚汲能",
+      "unbindingAbsorptionHint": "施放解缚汲能 (移除邻近的所有敌人受到的缠绕效果，获得额外的生命值)",
+      "unbindingAbsorptionCast0": "@mon@解开了敌人的束缚，并且生命值增加了@hp@点！",
+      "unbindingAbsorptionCast1": "@mon@解开了敌人的束缚，并且生命值增加了@hp@点！",
+
       //"blindingLightNoTarget": "无法施放致盲之光 (邻近没有会被失明的敌人)",
-      "blindingLightMain": "施放致盲之光 (使邻近的所有敌人失明)",
+      "blindingLight": "致盲之光",
+      "blindingLightHint": "施放致盲之光 (使邻近的所有敌人失明)",
       "blindingLightCast0": "@mon@使邻近的所有敌人失明了！",
       "blindingLightCast1": "@mon@使邻近的所有敌人失明了！",
 
-      "mendNotConstruct": "只有魔像才能复活。", // Only the non-living (golem) can be resurected.
+      "mendNotConstruct": "只有魔像和石像鬼才能复活。", // Only golems and Gargoyles can be resurected.
       "mendNotEnough0": "@currMon@没有足够的能力复活@targetMon@", // is not powerful enough to resurect the
       "mendNotEnough1": "@currMon@没有足够的能力复活@targetMon@", // are not powerful enough to resurect the
-      "mendMain": "复活@num@个@mon@", // Resurrect the
+      "mendHint": "复活@num@个@mon@", // Resurrect the
 
       "hardenedShelter0": "@mon@变成了石像。",
       "hardenedShelter1": "@mon@变成了石像。",
@@ -138,8 +159,20 @@
       "malevolentReckoning0": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
       "malevolentReckoning1": "@defMon@将@dmg@点损伤转移给了@victimMon@！",
 
-      "feast0": "在血肉的滋养下，@mon@的攻击力和防御力提高了@bonus@点！",
-      "feast1": "在血肉的滋养下，@mon@的攻击力和防御力提高了@bonus@点！",
+      "feast0": "在血肉的滋养下，@mon@的攻击力、防御力和速度+@bonus@！",
+      "feast1": "在血肉的滋养下，@mon@的攻击力、防御力和速度+@bonus@！",
+
+      "immortalSpirit0": "死去的@mon@从@hero@吸走了魔法值！",
+      "immortalSpirit1": "死去的@mon@从@hero@吸走了魔法值！",
+
+      "bloodSurge0": "鲜血沸腾的@mon@攻击邻近的所有敌人！",
+      "bloodSurge1": "鲜血沸腾的@mon@攻击邻近的所有敌人！",
+
+      "bloodCovenant": "鲜血契约",
+      "bloodCovenantHp": "@mon@的最大生命值太低了",
+      "bloodCovenantHint": "施放鲜血契约 (降低25%的生命值，提高20%的吸血比例)",
+      "bloodCovenantCast0": "@mon@最大生命值降低@hp@，吸血能力提高20%！",
+      "bloodCovenantCast1": "@mon@最大生命值降低@hp@，吸血能力提高20%！",
 
       "soulReap": "灵魂收割：@bonus@%",
 
@@ -147,12 +180,17 @@
       "riteOfSoulsNotEnoughBody": "没有足够的尸体用于召唤@mon@",
       "riteOfSoulsNotEnoughCaster0": "@mon@没有足够的能力进行魂祭",
       "riteOfSoulsNotEnoughCaster1": "@mon@没有足够的能力进行魂祭",
-      "riteOfSoulsMain": "召唤@num@个@riteMon@ (@targetMon@的尸体)",
+      "riteOfSoulsHint": "召唤@num@个@riteMon@ (@targetMon@的尸体)",
 
       "reflection0": "@mon@的影子从深渊中显现。",
       "reflection1": "@mon@的影子从深渊中显现。",
 
       "axeRampage": "飞斧狂暴：@bonus@%",
+
+      "battleTrance": "战斗专注",
+      "battleTranceHint": "施放战斗专注 (使邻近的所有盟友孤注一掷，消耗3次施法次数)",
+      "battleTranceCast0": "@mon@使邻近的所有盟友孤注一掷了！",
+      "battleTranceCast1": "@mon@使邻近的所有盟友孤注一掷了！",
 
       "imperviousToPainNeglect0": "@mon@无视了所受的@dmg@点损伤！",
       "imperviousToPainNeglect1": "@mon@无视了所受的@dmg@点损伤！",
@@ -161,6 +199,10 @@
 
       "spectralEcho": "超额的@dmg@点损伤击中了@mon@！",
 
+      "flameCurse0": "@mon@被灼热的熔岩烧伤了！",
+      "flameCurse1": "@mon@被灼热的熔岩烧伤了！",
+      
+
       //"venomweaveSeizure0": "@mon@在毒素的作用下陷入了昏迷！",
       //"venomweaveSeizure1": "@mon@在毒素的作用下陷入了昏迷！",
       "poisonNova": "剧毒新星使周围的所有敌人都中毒了！",
@@ -168,13 +210,34 @@
       "nightmare0": "@mon@陷入绝望，丧失了攻击的机会。",
       "nightmare1": "@mon@陷入绝望，丧失了攻击的机会。",
 
+      "prismaticCharm": "幻彩魅影",
+      "prismaticCharmDesc": "{幻彩魅影}：",
+      "prismaticCharmAccepted0": "@mon@已经接受过幻彩魅影 (@prism@) 的祝福了",
+      "prismaticCharmAccepted1": "@mon@已经接受过幻彩魅影 (@prism@) 的祝福了",
+      "prismaticCharmNoEffect": "幻彩魅影 (@prism@) 只对杀伤力有浮动的生物有效",
+      "prismaticCharm0": "杀伤力+1",
+      "prismaticCharm1": "最大杀伤力+2",
+      "prismaticCharm2": "最小杀伤力+2",
+      "prismaticCharm3": "攻击力+4",
+      "prismaticCharm4": "防御力+4",
+      "prismaticCharm5": "生命值+1",
+      "prismaticCharm6": "速度+1",
+      "prismaticCharmCast0": "幻彩魅影使@mon@的杀伤力+1。",
+      "prismaticCharmCast1": "幻彩魅影使@mon@的最大杀伤力+2。",
+      "prismaticCharmCast2": "幻彩魅影使@mon@的最小杀伤力+2。",
+      "prismaticCharmCast3": "幻彩魅影使@mon@的攻击力+4。",
+      "prismaticCharmCast4": "幻彩魅影使@mon@的防御力+4。",
+      "prismaticCharmCast5": "幻彩魅影使@mon@的生命值+1。",
+      "prismaticCharmCast6": "幻彩魅影使@mon@的速度+1。",
+
       "manaSiphon0": "@mon@夺走了敌人的施法次数！",
       "manaSiphon1": "@mon@夺走了敌人的施法次数！",
 
+      "manaTransfer": "法力传输",
       "manaTransferNotEnough0": "@mon@的施法次数不足以完成传输",
       "manaTransferNotEnough1": "@mon@的施法次数不足以完成传输",
       //"manaTransferNotValid": "@targetMon@无法接受@currMon@的施法次数",
-      "manaTransferMain": "将@spell@次施法次数转移给@mon@",
+      "manaTransferHint": "施放法力传输 (将@spell@次施法次数转移给@mon@)",
       "manaTransferCast0": "@currMon@将@spell@次施法次数转移给了@targetMon@！",
       "manaTransferCast1": "@currMon@将@spell@次施法次数转移给了@targetMon@！",
 
@@ -219,9 +282,14 @@
 
       "spellAbsorption": "@atkMon@吸收了@defMon@的@spell@。",
 
-      "lightningRod": "@mon@引来了闪电！",
+      // "lightningRod0": "@mon@引来了闪电！",
+      // "lightningRod1": "@mon@引来了闪电！",
 
-      "spellBreak": "@mon@的魔力消散了！",
+      "manaExtraction0": "@mon1@吸收了@mon2@的施法次数，生命值+@hp@",
+      "manaExtraction1": "@mon1@吸收了@mon2@的施法次数，生命值+@hp@",
+
+      "undyingBones0": "死去的@mon@的怨念汇聚成了幻象！",
+      "undyingBones1": "死去的@mon@的怨念汇聚成了幻象！",
 
       "PlaguePurge0": "@mon@净化了周围的盟友！",
       "PlaguePurge1": "@mon@净化了周围的盟友！",
@@ -277,6 +345,8 @@
       "atmaSword": "{阿特玛长剑}在手，@atkMon@即将杀死@rate@%的@defMon@！",
 
       "atmaRobe": "身披{阿特玛长袍}，@mon@抵御了@spell@一半的伤害！",
+
+      "rankSealingTalisman": "军衔封印符移除了战场上所有生物的部队经验技能。",
 
       "garbOfTheForestLord": "在{森林领主之袍}的力量下，一些仰慕者加入了@heroName@的军队。",
       "mastersScroll": "在{大师卷轴}的帮助下，@hero@掌握了@oppHero@的冒险魔法。",

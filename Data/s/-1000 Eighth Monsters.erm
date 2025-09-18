@@ -559,17 +559,35 @@ ZVSE2
 !?FU(OnAfterBuildTownBuilding)&i^eighth_onTownScreen^/i^eighth_on^;
 !#VA(townId:x) (buildingId:x);
 
-; If fort is demolished, the building id is 11 (instead of 7)
+; If fort is demolished, the building id is 11 (instead of 7), demolish the 8th dwell
+!!if&i^eighth_8thDwell_%(townId)^/(buildingId)=11;
+  !!CA0/(townId):B3/11;
+
+  !!if&-1;
+    !!VRi^eighth_8thDwell_%(townId)^:S(FALSE);
+    !!FU(eighth_SetOrGet8thMonByTownId):P(townId)/(NO_MON)/-1;
+  !!en;
+
+  !!SN:D;
+
 ; Also we need to update the 8th creature when 22 building (Portal of Summoning for Dungeon) is built
-!!FU(eighth_SetUpVarsAndUpdate8thDwell)|(buildingId)=11:P(townId)/(buildingId);
-!!SN:D;
+!!el&i^eighth_8thDwell_%(townId)^<>(TRUE)/(buildingId)=22;
+  !!CA0/(townId):T?(townType:y);
+
+  !!if&(townType)=(TOWN_DUNGEON);
+    !!CA0/(townId):B3/22;
+
+    !!if&1;
+      !!FU(eighth_SetOrGet8thMonByTownId):P(townId)/?(monType:y)/?(qty:y);
+      !!MA:G(monType)/?(growth:y);
+      !!FU(eighth_SetOrGet8thMonByTownId):P(townId)/(monType)/(growth);
+      !!SN:D;
+    !!en;
+  !!en;
+!!en;
 
 !?FU(eighth_SetUpVarsAndUpdate8thDwell);
 !#VA(townId:x);
-!#VA(buildingId:x);                     [OPT. Building Id built or demolished]
-
-!!FU:A?(numArgs:y);
-!!VR(buildingId)&(numArgs)<(@buildingId):S0;
 
 !!CA0/(townId):T?(townType:y);
 !!FU(eighth_Get8thMonByTownType):P(townType)/(TRUE)/?(upgMon:y)/?(nonUpgMon:y);
@@ -583,27 +601,12 @@ ZVSE2
 
 !!FU&i^eighth_on^<>(TRUE):E;
 
-; Update 8th dwelling
-
-; Demolish 8th dwellings if fort is demolished
-!!if&(buildingId)=11;
-  !!CA0/(townId):B3/7;
-
-  !!if&-1;
-    !!VRi^eighth_8thDwell_%(townId)^:S(FALSE);
-    !!FU(eighth_SetOrGet8thMonByTownId):P(townId)/(NO_MON)/-1;
-  !!en;
-; Update 8th dwell, if it is entering town screen or build up Portal of Summoning
-!!el;
-  !!VR(mustUpdate:y):S(FALSE);
-  !!VR(mustUpdate)&(buildingId)=0:S(TRUE);
-  !!VR(mustUpdate)&(buildingId)=22/(townType)=(TOWN_DUNGEON):S(TRUE);
-  !!FU(eighth_Update8thDwell)&(mustUpdate):P(townId);
-!!en;
+; Update 8th dwell details
+!!FU(eighth_Update8thDwellDetails):P(townId);
 
 !!SN:H^monname^/i^eighth_8thMon^/1/?s^eighth_8thMonName^;
 
-!?FU(eighth_Update8thDwell);
+!?FU(eighth_Update8thDwellDetails);
 !#VA(townId:x);
 
 !!CA0/(townId):T?(townType:y);
@@ -1341,7 +1344,13 @@ ZVSE2
 !!if&(type)>(NO_MON);
   !!VRi^eighth_isPortalOfSummoningDlg^:S(TRUE);
   ; Open recruit dialog without using any existing creatuer dialog
-  !!RD:O-1/-1/0/(townId)/1;
+  !!CA(CURRENT_TOWN):H0/?(hero:y);
+
+  !!if&(hero)<=(NO_HERO);
+    !!RD:O(CURRENT_TOWN)/-1/0/(townId)/1;
+  !!el;
+    !!RD:O(CURRENT_TOWN)/-1/1/(hero)/1;
+  !!en;
 !!en;
 
 ; Set up creature type and quantity when opening Portal of Summoning scripted dialog
@@ -1404,7 +1413,7 @@ ZVSE2
         !!if&(isNotYellowSquare)<>(TRUE);
           !!DWi/k/l:O?(owner:y);
 
-          ; If it a dwelling belongs to the town owner, set it in the array
+          ; If it is a dwelling belongs to the town owner, set it in the array
           !!if&(townOwner)=(owner);
             !!re j/0/3;
               !!DWi/k/l:Mj/?(type:y)/?(num:y);
@@ -1537,7 +1546,7 @@ ZVSE2
 
     !!SN:P^BUILDTWN^;                   [Play the sound of a new building]
     !!VRi^tum_upgGuild_%(townId)^:S(TRUE);
-    !!FU(eighth_Update8thDwell):P(townId);
+    !!FU(eighth_Update8thDwellDetails):P(townId);
     !!FU(tum_SetTownBuildingStatus):P(townId);
     !!SN:D;
   !!en;

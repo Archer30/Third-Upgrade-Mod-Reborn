@@ -27,37 +27,38 @@ ZVSE2
 !!en;
 
 ; Check if there are two human players in different teams
-!!if&(gameType)/(gameType)<>(GAME_TYPE_HOTSEAT);
-  !!FU(NewIntArray):P?(humanTeams:y);
+; No longer needed as TUM is now playable in MP - thanks to SadnessPower
+*!if&(gameType)/(gameType)<>(GAME_TYPE_HOTSEAT);
+  *!FU(NewIntArray):P?(humanTeams:y);
 
   ; Loop through all the players and see how many human teams in total
-  !!re i/(PLAYER_FIRST)/(PLAYER_LAST);
-    !!OW:Ii/?(isAi:y)/?(hasLost:y);
+  *!re i/(PLAYER_FIRST)/(PLAYER_LAST);
+    *!OW:Ii/?(isAi:y)/?(hasLost:y);
 
-    !!if&(isAi)<>(TRUE)/(hasLost)<>(TRUE);
-      !!OW:Ti/?(team:y);
-      !!FU(Array_Push):P(humanTeams)/(team);
-    !!en;
-  !!en;
+    *!if&(isAi)<>(TRUE)/(hasLost)<>(TRUE);
+      *!OW:Ti/?(team:y);
+      *!FU(Array_Push):P(humanTeams)/(team);
+    *!en;
+  *!en;
 
-  !!FU(Array_SortedUnique):P(humanTeams);
-  !!SN:M(humanTeams)/?(size:y);
+  *!FU(Array_SortedUnique):P(humanTeams);
+  *!SN:M(humanTeams)/?(size:y);
 
-  ; Show msg if there are at least two teams of human players and stop the game
-  !!if&(size)>1;
-    !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/?(artName:z) H^art^/(ART_BOOTS_OF_POLARITY)/0/^^;
-    !!IF:Q1/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)
+  ; Show msg if there are at least two teams of human players
+  *!if&(size)>1;
+    *!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/?(artName:z) H^art^/(ART_BOOTS_OF_POLARITY)/0/^^;
+    *!IF:Q1/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)
       /(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(MSG_TYPE_CHOOSE_PIC)/^%T(Third_Upgrade_Mod.brokenMpSupport0)^;
-    !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/(artName);
+    *!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/(artName);
 
   ; Show msg if there are is only one team of human players
-  !!el;
-    !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/?(artName:z) H^art^/(ART_BOOTS_OF_POLARITY)/0/^^;
-    !!IF:Q1/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)
+  *!el;
+    *!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/?(artName:z) H^art^/(ART_BOOTS_OF_POLARITY)/0/^^;
+    *!IF:Q1/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)
       /(PIC_TYPE_ART)/(ART_BOOTS_OF_POLARITY)/(MSG_TYPE_CHOOSE_PIC)/^%T(Third_Upgrade_Mod.brokenMpSupport1)^;
-    !!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/(artName);
-  !!en;
-!!en;
+    *!SN:H^art^/(ART_BOOTS_OF_POLARITY)/0/(artName);
+  *!en;
+*!en;
 
 ; Check if 8th creatures' memory hacks are not restored
 !!UN:P301/?(eighthMon:y);
@@ -203,7 +204,7 @@ ZVSE2
 !!SN:E(setHook)/1/4462998/(tum_HOOK_AfterMeleeMainFunc); [Trigger after melee attack, before retaliation] 441996
 !!SN:E(setHook)/1/4455129/(tum_HOOK_AfterShootMainFunc); [Trigger after shooting] 43FAD9
 
-!!SN:E(setHook)/1/4445929/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield]
+!!SN:E(setHook)/1/4445899/(tum_HOOK_AfterStackInitParams); [Trigger after initialising the stats of a stack on the battlefield]
 !!SN:E(setHook)/1/4454655/(tum_OnCalcMonsterDamage); [trigger on calculating monster damage] 43F8FF
 
 !!SN:E(setHook)/1/4461657/(tum_OnBeforeBreathAttack); [Trigger before breath attack] 441459
@@ -294,6 +295,10 @@ ZVSE2
   ; Auto spell arts
   !!SN:E(setHook)/1/4607930/(tum_OnBeforeArtifactAutoSpells); [Trigger before the native artifact auto spell casting] 464FBA
 
+  ; Cape of Silence
+  !!SN:E(setHook)/1/5932041/(tum_OnCheckStackResistance); 5A8409
+  !!SN:E(setHook)/1/5893738/(tum_OnShowHeroSpellBook2); 59EE6A
+
   ; Interference Artifacts
   !!SN:E(setHook)/1/4638788/(tum_OnDlg_HeroPreview_SpellPowerWrite); [Trigger on setting hero's power on the battlefield]
 
@@ -316,7 +321,7 @@ ZVSE2
   !!SN:E(setHook)/1/5930059/(tum_OnAfterCalcSpellDamage); [Trigger right after calculating spell damage]
 
   ; Ring of Anti-Magic
-  !!SN:E(setHook)/1/5932368/(tum_OnCheckStackReceiveSpell); [Trigger on checking the resistance of a stack, about to set it to negative when it has Anti-Magic spell]
+  !!SN:E(setHook)/1/5932368/(tum_OnCheckStackReceiveSpell); [Trigger on checking the resistance of a stack, about to set it to negative when it has Anti-Magic spell] 5A8550
 
   ; Binoculars
   !!SN:E(setHook)/1/5136562/(tum_OnGetVisionPowerPre); [Trigger on getting the vision power of a hero] 4E60B2
@@ -341,6 +346,17 @@ ZVSE2
   ; Morale desc
   !!SN:E(setHook)/1/4503222/(tum_OnSetMonNotAffectedByMorale_Desc); 44B6B6
   !!SN:E(setHook)/1/4504096/(tum_OnReduceMoraleDueToUndead_Desc); 44BA20
+
+  ; Command Sealing Talisman
+  !!SN:E(setHook)/1/7725433/(tum_OnPlaceCommander);
+  !!SN:E(setHook)/1/7779169/(tum_OnCommanderGainExperience); 76B361
+
+  ; Rank Sealing Talisman
+  !!SN:E(setHook)/1/7727126/(tum_OnSetupBeforeBattle);
+
+  ; Ring of Ban-Breaking
+  !!SN:E(setHook)/1/5893337/(tum_OnShowHeroSpellBook1); 59ECD9
+  !!SN:E(setHook)/1/4323946/(tum_OnCheckIfPossibleToCast); 41FA6A
 !!en;
 
 ; Disable War Machines in CB
@@ -601,24 +617,28 @@ ZVSE2
 ; Reset special ability counter to 0 at the start of battle
 !?FU(OnBeforeBattleUniversal);
 !!re i/(BATTLE_STACK_FIRST)/(BATTLE_STACK_LAST);
-  !!VRi^tum_abilityCounter_%i^:S0;
-  !!VRi^tum_abilityCounter2_%i^:S0;
-  !!VRi^tum_abilityCounter3_%i^:S0;
+  !!FU(tum_ResetStackStats):Pi;
 !!en;
 
 !?FU(tum_BattleStack_InitParams);
 !#VA(stackId:x) (side:x);
 
-!!VRi^tum_abilityCounter_%(stackId)^:S0;
-!!VRi^tum_abilityCounter2_%(stackId)^:S0;
-!!VRi^tum_abilityCounter3_%i^:S0;
+!!FU(tum_ResetStackStats):P(stackId);
 
-; Reduce i^tum_abilityCounter_%i^ by 1 every turn (round)
+!?FU(tum_ResetStackStats);
+!#VA(stack:x);
+
+; Counters
+!!VRi^tum_abilityCounter1_%(stack)^:S0;
+!!VRi^tum_abilityCounter2_%(stack)^:S0;
+!!VRi^tum_abilityCounter3_%(stack)^:S0;
+
+; Reduce i^tum_abilityCounter1_%i^ by 1 every turn (round)
 ; i^tum_abilityCounter2_%i^ would only be reset for each battle
 ; i^tum_abilityCounter3_%i^ would be reset each stack turn
 !?FU(OnBattleRound_Quit)&i^battle_round^>=1;
 !!re i/(BATTLE_STACK_FIRST)/(BATTLE_STACK_LAST);
-  !!VRi^tum_abilityCounter_%i^:-1 F0/(INT_MAX);
+  !!VRi^tum_abilityCounter1_%i^:-1 F0/(INT_MAX);
 !!en;
 
 !?FU(OnBattleStackObtainsTurn);
@@ -628,9 +648,7 @@ ZVSE2
 
 !?FU(OnAfterBattleUniversal);
 !!re i/(BATTLE_STACK_FIRST)/(BATTLE_STACK_LAST);
-  !!VRi^tum_abilityCounter_%i^:S0;
-  !!VRi^tum_abilityCounter2_%i^:S0;
-  !!VRi^tum_abilityCounter3_%i^:S0;
+  !!FU(tum_ResetStackStats):Pi;
 !!en;
 
 // EEF variable extended
@@ -647,6 +665,7 @@ ZVSE2
 !!VRi^tum_lastActingStack^:Si^battle_acting_stack^;
 
 // Set up critical artifact variables
+; For TUM Reborn, there is also a part 2 in 100 tum - reborn.erm
 !?FU(OnAfterBattleSetup);
 !!FU(tum_ResetArtifactVars):P;
 
@@ -655,9 +674,6 @@ ZVSE2
 
   !!HE(hero):A2/(ART_RECANTERS_CLOAK)/?(has:y)/?(equipped:y);
   !!VRi^tum_%(ART_RECANTERS_CLOAK)_equipped^&(equipped):S(TRUE);
-
-  !!HE(hero):A2/(ART_SPHERE_OF_PERMANENCE)/?(has)/?(equipped);
-  !!VRi^tum_%(ART_SPHERE_OF_PERMANENCE)_equipped^&(equipped):S(TRUE);
 
   !!HE(hero):A2/(ART_ORB_OF_VULNERABILITY)/?(has)/?(equipped);
   !!VRi^tum_%(ART_ORB_OF_VULNERABILITY)_equipped^&(equipped):S(TRUE);
@@ -671,6 +687,14 @@ ZVSE2
 
     !!HE(hero):A2/(ART_SHIELD_OF_THE_ANCIENTS)/?(has)/?(equipped);
     !!VRi^tum_%(ART_SHIELD_OF_THE_ANCIENTS)_equipped^&(equipped):S(TRUE);
+
+    !!if&i^tum_reborn_on^;
+      !!HE(hero):A2/273/?(has)/?(equipped);
+      !!VRi^tum_273_equipped^&(equipped):S(TRUE);
+
+      !!HE(hero):A2/274/?(has)/?(equipped);
+      !!VRi^tum_274_equipped^&(equipped):S(TRUE);
+    !!en;
   !!en;
 !!en;
 
@@ -686,6 +710,11 @@ ZVSE2
 !!if&i^tum_emerald_on^;
   !!VRi^tum_%(ART_CAPE_OF_SILENCE)_equipped^:S(FALSE);
   !!VRi^tum_%(ART_SHIELD_OF_THE_ANCIENTS)_equipped^:S(FALSE);
+
+  !!if&i^tum_reborn_on^;
+    !!VRi^tum_273_equipped^:S(FALSE);
+    !!VRi^tum_274_equipped^:S(FALSE);
+  !!en;
 !!en;
 
 // Get the string pointer to be used in battle
@@ -1203,7 +1232,7 @@ ZVSE2
   !!BM(stack):V82;
   !!SN:B6835288/d/^Poof.def^;
 !!el&(mode)=1;
-  !!SN:B6837180/d/(text);
+  !!SN:B6837180/d/(text); 6853BC
   !!BM(stack):V9;
   !!SN:B6837180/d/^C04SPF0.def^;
 !!en;
@@ -1520,9 +1549,9 @@ ZVSE2
 !!SN:F^ExtendArrayLifetime^/(validStackList);
 !!SN:M(validStackList)/?(numStacks);
 
-****************************************************
-**** Gett an adjacent hex number of a given hex ****
-****************************************************
+***************************************************
+**** Get an adjacent hex number of a given hex ****
+***************************************************
 ; Check igrik's picture for details: http://wforum.heroes35.net/showthread.php?tid=5717&pid=118391#pid118391
 !?FU(tum_GetAdjacentHex);
 !#VA(hex:x);                            [Given hex ID]
@@ -1656,7 +1685,8 @@ ZVSE2
   !!VR(powerCoef):F(SKILL_NOT_LEARNED)/(SKILL_EXPERT);
   ; Get the duration of spell
   !!VR(duration:y):S3;
-  !!VR(duration)&(spell)=(SPELL_BERSERK)/(spell)=72:S255; [Berserk and Bind - 255 turns]
+  !!VR(duration)&(spell)=(SPELL_BERSERK):S255; [Berserk and Bind - 255 turns]
+  !!VR(duration)&(spell)=72:S255;
   !!VR(duration)&(spell)=(SPELL_FRENZY):S2; [Frenzy - 2 turns]
   ; Cast the spell
   !!BM(castStack):C(spell)/(targetPos)/(powerCoef)/(duration)/(TRUE);
@@ -1924,7 +1954,7 @@ ZVSE2
 !?FU(tum_CheckIfPossibleToCast);
 !#VA(firstArg:x);                       [Spell level 1-5 or spell Id, depending on the value. 6 for skipping the check of artifacts (Pit Lord)]
 !#VA(result:x);                         [Out. Boolean]
-!#VA(stringPtr:x);                      [Optional. If fail, output the text of failure]
+!#VA(stringPtr:x);                      [Optional. If not possible to cast, output the reason in the text]
 
 ; Initialization
 !!VR(result):S(FALSE);
@@ -1932,7 +1962,7 @@ ZVSE2
 
 ; Get the level of the spell depending on the value of the first argument
 !!if&(firstArg)<(SPELL_FIRST_BATTLE);
-  !!VR(level:y):S(firstArg) F1/6;
+  !!VR(level:y):S(firstArg) F1/5;
 !!el;
   !!SS(firstArg):L?(level);
 !!en;
@@ -1954,7 +1984,7 @@ ZVSE2
   !!HEi^battle_x^/i^battle_y^/i^battle_z^:Z?(heroStruct:y);
   !!UN:C(heroStruct)/12/(UNC_INT)/?(type) C(heroStruct)/16/(UNC_INT)/?(subtype:y);
 !!el;
-  !!OB4:U?(subtype:y);                  [Get Subtype]
+  !!OBi^battle_x^/i^battle_y^/i^battle_z^:U?(subtype:y); [Get Subtype]
 !!en;
 
 !!if&(type)=(OBJ_GARRISON)/(subtype)=1;
@@ -1965,17 +1995,19 @@ ZVSE2
 
 ; Check if Orb of Inhibition is presented
 !!if&i^tum_%(ART_ORB_OF_INHIBITION)_equipped^;
-  !!SN:H^art^/(ART_ORB_OF_INHIBITION)/0/?(artName:z);
-  !!SN:T^Third_Upgrade_Mod.orbOfInhibition^/?(string)/^art^/(artName);
+  !!SN:T^Third_Upgrade_Mod.orbOfInhibition^/?(string);
   !!VR(stringPtr):Z(string);
   !!FU:E;
 !!en;
 
 ; Check if Recanter's Cloak or Cape of Silence is presented (depending on spell level)
-; Spell level = 6 skips both artifact checks
-!!if&(level)>=3/(level)<=5/i^tum_%(ART_RECANTERS_CLOAK)_equipped^;
+!!if&(level)>=3/i^tum_%(ART_RECANTERS_CLOAK)_equipped^;
+  !!SN:T^Third_Upgrade_Mod.recantersCloak^/?(string);
+  !!VR(stringPtr):Z(string);
   !!FU:E;
 !!el&(level)<=2/i^tum_%(ART_CAPE_OF_SILENCE)_equipped^/i^tum_emerald_on^;
+  !!SN:T^Third_Upgrade_Mod.capeOfSilence^/?(string);
+  !!VR(stringPtr):Z(string);
   !!FU:E;
 !!en;
 
@@ -2174,13 +2206,14 @@ ZVSE2
   !!co|(loopPoses[j])<1/(loopPoses[j])>185;
 
   !!BU:E(loopPoses[j])/?(loopStack:y);
-  !!co&(loopStack)=(stack);           [Next if it is the given stack (happens for wide units)]
 
   !!if&(loopStack)=(NO_STACK)/(canBeDead);
     !!BU:D(loopPoses[j])/?(loopStack);
   !!en;
 
   !!if&(loopStack)>(NO_STACK);
+    !!co&(loopStack)=(stack);           [Next if it is the given stack (happens for wide units)]
+
     ; Skip if the looped stack doesn't belong to the side requested
     !!if&(adjacentStackType);
       !!BM(loopStack):I?(loopSide:y);
@@ -2263,13 +2296,14 @@ ZVSE2
     !!co|(loopPoses[j])<1/(loopPoses[j])>185;
 
     !!BU:E(loopPoses[j])/?(loopStack:y);
-    !!co&(loopStack)=(stack);           [Next if it is the given stack (happens for wide units)]
 
     !!if&(loopStack)=(NO_STACK)/(canBeDead);
       !!BU:D(loopPoses[j])/?(loopStack);
     !!en;
 
     !!if&(loopStack)>(NO_STACK);
+      !!co&(loopStack)=(stack);           [Next if it is the given stack (happens for wide units)]
+
       ; Skip if the looped stack doesn't belong to the side requested
       !!if&(adjacentStackType);
         ; Get the side of the looped stack depending on whether it requires to get the real controller of the stack
@@ -2831,20 +2865,24 @@ Death Ripple? 005A106A (5902442)
 !#VA(regenHp:x);                        [Amount of HP regen]
 !#VA(reviveNum:x);                      [Out. Number of creature revived]
 !#VA(actualRegenHp:x);                  [Out. Actual amount of HP regenerated. By default this equals to regen Hp unless the stack is neally full]
-!#VA(mustRevive:x);                     [OPT. Activate the effect only when it's possible to revive at least one (like the limit of Archangel spell). FALSE means not limited]
+; Optional modes
+; Mode 1: Activate the effect only when it's possible to revive at least one (like the limit of Archangel spell)
+; Mode 2: Allow the exessive amount of healing to increase the number of creature in the stack (breaking through the limit of BM:B)
+; These 2 modes have nothing in common, you can only activate one of them.
+!#VA(mode:x);
 
 ; Initialise vars
 !!FU:A?(numArgs:y);
-!!VR(mustRevive)&(numArgs)<5:S(FALSE);
+!!VR(mode)&(numArgs)<(@mode):S0;
 
-!!VR(reviveNum):S(FALSE);
+!!VR(reviveNum):S0;
 !!VR(actualRegenHp):S(regenHp);
 
 ; Calculations
 !!BM(stack):H?(hp:y) L?(lostHp:y) N?(num:y) B?(initNum:y);
 
-; Exit if the heal amount is no bigger than the HP of one unit if it's set to Must Revive mode
-!!FU&(regenHp)<(hp)/(mustRevive):E;
+; Exit if the healing amount is no bigger than the HP of one unit if it's set to mode 1
+!!FU&(regenHp)<(hp)/(mode)=1:E;
 
 !!VR(totalCurrHp:y):S(hp) *(num) -(lostHp);
 !!VR(totalInitHp:y):S(hp) *(initNum);
@@ -2852,8 +2890,8 @@ Death Ripple? 005A106A (5902442)
 ; Exit if it overflows
 !!FU|(totalCurrHp)<=0/(totalInitHp)<=0:E;
 
-; Exit if nothing to heal
-!!if&(totalInitHp)<=(totalCurrHp);
+; Exit if nothing to heal - except for mode 2
+!!if&(totalInitHp)<=(totalCurrHp)/(mode)<>2;
   !!VR(actualRegenHp):S0;
   !!FU:E;
 !!en;
@@ -2862,9 +2900,15 @@ Death Ripple? 005A106A (5902442)
 !!VR(totalNewHp:y):S(totalCurrHp) +(regenHp);
 
 ; Fix overflows
-!!VR(totalNewHp)&(totalNewHp)<(totalCurrHp):S(totalInitHp);
-; Deal with overheal
-!!if&(totalNewHp)>(totalInitHp);
+!!if&(totalNewHp)<(totalCurrHp);
+  ; Get the bigger hp between the current Hp and the initial Hp
+  !!VR(biggerHp:y):S(totalCurrHp);
+  !!VR(biggerHp)&(totalInitHp)>(totalCurrHp):S(totalInitHp);
+  !!VR(totalNewHp):S(biggerHp);
+!!en;
+
+; Deal with overheal - except for mode 2
+!!if&(totalNewHp)>(totalInitHp)/(mode)<>2;
   !!VR(overhealHp:y):S(totalNewHp) -(totalInitHp);
   !!VR(actualRegenHp):S(regenHp) -(overhealHp);
   !!VR(totalNewHp):S(totalInitHp);

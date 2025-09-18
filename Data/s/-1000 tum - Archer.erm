@@ -491,6 +491,22 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 
 !!VR(result)&(mon)=(MON_GHOUL):S(TRUE);
 
+// Randomizer
+!?FU(ES_771_EnsureSameGrowthForMonsInTowns);
+!!UN:P(WOG_OPT_4TH_UPGRADES)/?(fourthUpgOn:y);
+
+!!re i/(TOWN_FIRST)/(TOWN_LAST_WOG);
+  !!re j/(MON_MIN_LEVEL)/(MON_MAX_LEVEL);
+    !!FU(tum_GetMonstersInTown):Pi/j/?(nonUpgMon:y)/?(upgMon:y)/?(thirdUpgMon:y);
+    !!MA:G(nonUpgMon)/?(growth:y) G(thirdUpgMon)/(growth);
+
+    !!if&(fourthUpgOn);
+      !!FU(GetUpgradedMonster):P(thirdUpgMon)/?(fourthUpgMon:y);
+      !!MA:G(fourthUpgMon)/(growth);
+    !!en;
+  !!en;
+!!en;
+
 // Strong Resistance
 !?FU(ES_777_GetArtifactBonus);
 !#VA(hero:x) (bonus:x);
@@ -535,7 +551,20 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 !?FU(ES_995_CheckIfMonIsEligible);
 !#VA(mon:x) (result:x);
 
-!!VR(result)&(mon)=(MON_CATOBLEPAS):S(TRUE);
+!!if&(mon)=(MON_CATOBLEPAS);
+  !!VR(result):S(TRUE);
+  !!VRi^tum_995_isAbyssalGaze^&i^tum_reborn_on^:S(TRUE);
+!!en;
+
+!?FU(ES_995_CheckIfStackAffectedByDeathStare)&i^tum_995_isAbyssalGaze^;
+!#VA(stack:x) (result:x);
+
+!!BM(stack):F?(flags:y);
+!!VR(isUndead:y):S(flags) &(MON_FLAG_UNDEAD);
+!!FU&(isUndead)=0:E;
+
+!!VR(result):S(TRUE);
+!!VRi^tum_995_isAbyssalGaze^:S(FALSE);
 
 // Gnoll Shamans Strike First
 !?FU(ES_996_CheckIfMonIsEligible);
@@ -746,6 +775,16 @@ H3Vector<H3CombatCreature*> dendroidBinds;
 ; Dracolich
 !!MA:O(MON_DRACOLICH)/?(faction);
 !!MA:O(MON_NECROSS_DRAGON)/(faction);
+
+; Baby Dragons
+!!MA:O(MON_GREEN_DRAGONLING)/(TOWN_RAMPART);
+!!MA:O(MON_RED_DRAGONLING)/(TOWN_DUNGEON);
+!!MA:O(MON_FAERIE_DRAGON)/?(faction);
+!!MA:O(MON_FAERIE_DRAGONLING)/(faction);
+!!MA:O(MON_RUST_DRAGON)/?(faction);
+!!MA:O(MON_RUST_DRAGONLING)/(faction);
+!!MA:O(MON_AZURE_DRAGON)/?(faction);
+!!MA:O(MON_AZURE_DRAGONLING)/(faction);
 
 ******************************************************************************************
 **** Increased Blind, Lightning, Stone Gaze, Age, Acid Attack chance for 4th Upgrades ****
@@ -1447,38 +1486,6 @@ C(ebp)/16/4/d-i^tum_MonPlusLuckPower^ C(ebp)/20/4/di^tum_MonPlusLuckPower^;
 !?FU(OnEveryDay)&i^timerOnce^/i^timerDay^>1;
 !!VRi^tum_wingedMagogFightValue^&i^tum_wingedMagogFightValue^=0:S393; [fail safe]
 !!MA:F(MON_WINGED_MAGOG)/i^tum_wingedMagogFightValue^ X(MON_WINGED_MAGOG)/d|(MON_FLAG_SHOOTER);
-
-*****************************************************
-**** Bad fix: Fix calling invalid creature sound ****
-*****************************************************
-; Fix in MP Amethyst calls invalid creature sound (#122/126/128) by redirecting bad sound to slient sound
-; Fix in MP calling invalid war machine sound
-; The script is disabled as it does not work at all. 
-; Yuji, when to fix?
-!?FU(OnAfterErmInstructions);
-!!FU:E;
-
-!!VR(notUsedMons[3]:y):C(MON_NOT_USED_1)/(MON_NOT_USED_3)/(MON_NOT_USED_4);
-!!UN:C4697553/4/?(monInfoTable:y);
-
-!!re i/0/2;
-  !!VR(soundPointer:y):S116 *(notUsedMons[i]) +(monInfoTable) +8;
-  !!UN:C(soundPointer)/4/?(value:y);
-  !!SN:K4/^bad2^/(value)/1;
-!!en;
-
-!?FU(OnGameEnter);
-!!FU:E;
-
-!!VR(silenceSound:z):S^S197SHOT.82m^;
-
-; Redirect bad sound
-!!SN:R^bad2attk.82m^/(silenceSound) R^bad2dfnd.82m^/(silenceSound) R^bad2kill.82m^/(silenceSound) R^bad2move.82m^/(silenceSound) R^bad2shot.82m^/(silenceSound) R^bad2wnce.82m^/(silenceSound);
-; Redirect invalid war machine sound
-!!SN:R^cataattk.82m^/(silenceSound) R^catadfnd.82m^/(silenceSound) R^catamove.82m^/(silenceSound);
-!!SN:R^ballattk.82m^/(silenceSound) R^balldfnd.82m^/(silenceSound) R^ballmove.82m^/(silenceSound);
-!!SN:R^faidattk.82m^/(silenceSound) R^faiddfnd.82m^/(silenceSound) R^faidmove.82m^/(silenceSound) R^faidshot.82m^/(silenceSound);
-!!SN:R^cartattk.82m^/(silenceSound) R^cartdfnd.82m^/(silenceSound) R^cartmove.82m^/(silenceSound) R^cartshot.82m^/(silenceSound);
 
 *******************************
 **** Manage Creature Stats ****

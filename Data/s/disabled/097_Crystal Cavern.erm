@@ -23,8 +23,8 @@ Parameter Settings:
 !#VRi^CB_097_Type_Number^:S63;           (Write here type number of the object)
 !#VRi^CB_097_SubType_Number^:S146;        (Write here subtype number of the object)
 
-!#VRs^CB_097_CB_Name^:S^红晶洞穴宝屋^;
-!#VRs^CB_097_CB_Greeting_Text^:S^你发现了红晶洞穴宝屋，你想要与红晶龙开战吗？^; (Set the text that shows when you visit the CB)
+!#VRs^CB_097_CB_Name^:S^水晶洞穴宝屋^;
+!#VRs^CB_097_CB_Greeting_Text^:S^你发现了水晶洞穴宝屋，你想要与水晶龙开战吗？^; (Set the text that shows when you visit the CB)
 !#VRs^CB_097_CB_Cleared_Text^:S^下周再过来挑战这个巢穴宝屋吧。^; (Set the text that shows when you visit after the CB was cleared)
 
 

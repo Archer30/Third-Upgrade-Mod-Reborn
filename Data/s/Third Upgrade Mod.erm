@@ -25,6 +25,7 @@ visit www.heroescommunity.com for updates and news
 !?FU(OnDetermineMonInfoDlgUpgrade);
 !#VA(monType:x) (upgType:x) (townId:x) (hero:x);
 
+; Check for third upgrades in town - only when there is no creature upgrade specialty or artifact upgrade
 !!if&(hero)>(NO_HERO);
   ; Set upgrading to the specialty creature from the third upgrade of lower creatures, if they are included in the specialty definition
   !!HE(hero):X?(type:y)/?(specMonType1:y)/?(param:y)/?(param)/?(param)/?(specMonType2:y)/?(specUpgType:y);
@@ -63,6 +64,8 @@ visit www.heroescommunity.com for updates and news
         !!VR(specMonType2):S(upgMonType2);
       !!en;
     !!en;
+
+    !!FU&(upgType)=(specUpgType):E;
   !!en;
 
   ; Check if the any artifact givs additional upgrades (TUM Reborn only)
@@ -76,7 +79,6 @@ visit www.heroescommunity.com for updates and news
   !!en;
 !!en;
 
-; Check for third upgrades in town - only when there is no creature upgrade specialty or artifact upgrade
 !!if&(townId)>(NO_TOWN);
   !!if&i^tum_upgGuild_%(townId)^;
     !!FU(tum_GetUpgMonInTown):P(monType)/(townId)/?(upgType);
@@ -625,20 +627,20 @@ script by Archer30 and daemon_n
 !?FU(OnTownMouseClick)&999/i^mouse_action^=(MOUSE_RMB_PRESSED)/i^mouse_item^>=10/i^mouse_item^<=13; [trigger on clicking in town screen)]
 !!FU(TUM_Build_New_Building):P; 
 
-!?FU(TUM_Build_New_Building);           [trigger on clicking in town screen)]
+!?FU(TUM_Build_New_Building);           [trigger on clicking in town screen]
 !!VRv4:S0;
 !!VRv5:S0;
 !!VRv6:S0;
-!!CA(CURRENT_TOWN):B3/9;                [ckeck if there's a castle)]
-!!VRv4&1:S1;                            [set a helping var)]
+!!CA(CURRENT_TOWN):B3/9;                [ckeck if there's a castle]
+!!VRv4&1:S1;                            [set a helping var]
 
-!!CA(CURRENT_TOWN):B3/8;                [check for citadel)]
+!!CA(CURRENT_TOWN):B3/8;                [check for citadel]
 !!VRv5&1:S1;
 
-!!CA(CURRENT_TOWN):B3/7;                [check for fort)]
+!!CA(CURRENT_TOWN):B3/7;                [check for fort]
 !!VRv6&1:S1;
 
-!!CM&v4=0/v5=0/v6=0:R1;                 [if no fort, citadel or castle reenable standard text)]
+!!CM&v4=0/v5=0/v6=0:R1;                 [if no fort, citadel or castle reenable standard text]
 
 !!UN:P(WOG_OPT_DISABLE_TOWN_DEMOLISHING)/?y2; [check if town demolition is enabled]
 
@@ -1657,9 +1659,9 @@ script by Perry R and Archer30
 ; Dragon Golem's Preventive Strike by daemon_n
 ; This scirpt should be used if Ranged Retaliation is disabled from cfg. It is better doing so btw.
 !?FU(tum_CreateERMHook)&i^tum_reborn_on^;
-!#VA(hook:x);
+!#VA(setHook:x);
 
-!!SN:E(hook)/1/4463326/(tum_HOOK_BeforeStackAttackMelee); [Trigger right before melee attack, obviously before retaliation]
+!!SN:E(setHook)/1/4463326/(tum_HOOK_BeforeStackAttackMelee); [Trigger right before melee attack, obviously before retaliation]
 
 !?FU(tum_HOOK_BeforeStackAttackMelee);
 !!UN:Cx1/(STRUCT_HOOK_CONTEXT_EDI)/(UNC_INT)/?(actingStack:y) C(actingStack)/52/(UNC_INT)/?(attMonType:y) Cx1/(STRUCT_HOOK_CONTEXT_EBX)/(UNC_INT)/?(actingStackdir:y);
@@ -2008,63 +2010,63 @@ The script loops through all battlefield positions (after every battle action) a
 If yes bonus is given. After that the script loops after every battle action trough all monsters on the battlefield and checks if they are still standing next to the centaur,
 if no the bonus is removed.
 
-!#SN:W^Aura_Bravery_Creature_ID^/(MON_CENTAUR_GENERAL); Set here the creature ID that should get the Aura
+*#SN:W^Aura_Bravery_Creature_ID^/(MON_CENTAUR_GENERAL); Set here the creature ID that should get the Aura
 
 
-!?FU(OnCombatRound)&v997=0; Before every battle resets variables
-!!re y1/0/41;
-    !!SN:W^Aura_Bravery_Stack_%Y1^/0;
-!!en;
+*?FU(OnCombatRound)&v997=0; Before every battle resets variables
+*!re y1/0/41;
+    *!SN:W^Aura_Bravery_Stack_%Y1^/0;
+*!en;
 
-!?FU(OnBeforeBattleAction);
-!!FU(Check_Aura_Bravery):P;
+*?FU(OnBeforeBattleAction);
+*!FU(Check_Aura_Bravery):P;
 
-!?FU(OnAfterBattleAction);
-!!FU(Check_Aura_Bravery):P;
-
-
-!?FU(Check_Aura_Bravery);
-!!SN:W^Aura_Bravery_Creature_ID^/?y50;[Get creature ID that should emit Aura]
-
-!!re y1/0/41;                           [Reset the speed and flag every combat action]
-    !!SN:W^Aura_Bravery_Stack_%Y1^/?y2;
-    !!BMy1&y2=1:Sd-1;
-    !!SN&y2=1:W^Aura_Bravery_Stack_%Y1^/0;
-!!en; 
+*?FU(OnAfterBattleAction);
+*!FU(Check_Aura_Bravery):P;
 
 
-!!re y1/0/186;                          [Loop all battlefield positions]
-!!BU:Ey1/?y4;                           [Check if create stands on this hex]
-    !!if&y4>=0;                         [if a monster is at a given position]
-    !!BMy4:T?y10 P?y11 I?y12 B?y13 N?y14 H?y15 F?y16; [Get Creature Type and Position]
-        !!if&y13>=1/y14>=1/y15>=1/y10<>145/y10<>146/y10<>147/y10<>148/y10<>149/y10<>y50;  [If any valid creature, execlude Warmachines]
-            !!re i/0/5;                 [loop around the creatures in cirlce 0-6 positions]
-            !!FU(Calc_neighbouring_hex_2):Py1/i/?y3; [Pass position and return first neighbouring hex field]
-            !!BU&y3>=0/y3<=186:Ey3/?y5; [Check if create stands on this hex]
-            !!BMy5&y5>=0/y5<=41:I?y6 T?y20 S?y7; [Get the creatures side and speed and type]
-            !!SN&y5>=0/y5<=41:W^Aura_Bravery_Stack_%Y4^/?y8; [Check creature bravery flag]
-               !!if&y5>=0/y5<=41/y6=y12/y7>=1/y20=y50/y8=0;  [If creature is Centaure, belongs to same hero and has speel >1 and does not have bonus]
-                    !!BMy4:Sd1;         [increase speed by +1]
-                    !!SN:W^Aura_Bravery_Stack_%Y4^/1; [Set flag to true for creature to remember that bonus was given]
-                !!en; 
-            !!en; 
-        !!en; 
-    !!en; 
-!!en; 
+*?FU(Check_Aura_Bravery);
+*!SN:W^Aura_Bravery_Creature_ID^/?y50;[Get creature ID that should emit Aura]
 
-!!re y1/0/41; 
-    !!SN:W^Aura_Bravery_Stack_%Y1^/?y2;
-    !!BMy1&y2=1:F?y3;
-    !!VRy3&y2=1:&131072;                [just look at no morlae bit]
-    !!BMy1&y3=0/y2=1:G212/d1/d;         [Increase +1 Morale]
-!!en; 
+*!re y1/0/41;                           [Reset the speed and flag every combat action]
+    *!SN:W^Aura_Bravery_Stack_%Y1^/?y2;
+    *!BMy1&y2=1:Sd-1;
+    *!SN&y2=1:W^Aura_Bravery_Stack_%Y1^/0;
+*!en; 
 
 
-!?FU(Calc_neighbouring_hex_2);          [Funktion to calculate neighbouring Hex cells]
-!!UN:C6919200/4/?y1;                    [Y1 = combatManager]
-!!VRx2:*2;
-!!VRx1:*12+ y1+ 78952+ x2;
-!!UN:Cx1/2/?x3;
+*!re y1/0/186;                          [Loop all battlefield positions]
+*!BU:Ey1/?y4;                           [Check if create stands on this hex]
+    *!if&y4>=0;                         [if a monster is at a given position]
+    *!BMy4:T?y10 P?y11 I?y12 B?y13 N?y14 H?y15 F?y16; [Get Creature Type and Position]
+        *!if&y13>=1/y14>=1/y15>=1/y10<>145/y10<>146/y10<>147/y10<>148/y10<>149/y10<>y50;  [If any valid creature, execlude Warmachines]
+            *!re i/0/5;                 [loop around the creatures in cirlce 0-6 positions]
+            *!FU(Calc_neighbouring_hex_2):Py1/i/?y3; [Pass position and return first neighbouring hex field]
+            *!BU&y3>=0/y3<=186:Ey3/?y5; [Check if create stands on this hex]
+            *!BMy5&y5>=0/y5<=41:I?y6 T?y20 S?y7; [Get the creatures side and speed and type]
+            *!SN&y5>=0/y5<=41:W^Aura_Bravery_Stack_%Y4^/?y8; [Check creature bravery flag]
+               *!if&y5>=0/y5<=41/y6=y12/y7>=1/y20=y50/y8=0;  [If creature is Centaure, belongs to same hero and has speel >1 and does not have bonus]
+                    *!BMy4:Sd1;         [increase speed by +1]
+                    *!SN:W^Aura_Bravery_Stack_%Y4^/1; [Set flag to true for creature to remember that bonus was given]
+                *!en; 
+            *!en; 
+        *!en; 
+    *!en; 
+*!en; 
+
+*!re y1/0/41; 
+    *!SN:W^Aura_Bravery_Stack_%Y1^/?y2;
+    *!BMy1&y2=1:F?y3;
+    *!VRy3&y2=1:&131072;                [just look at no morlae bit]
+    *!BMy1&y3=0/y2=1:G212/d1/d;         [Increase +1 Morale]
+*!en; 
+
+
+*?FU(Calc_neighbouring_hex_2);          [Funktion to calculate neighbouring Hex cells]
+*!UN:C6919200/4/?y1;                    [Y1 = combatManager]
+*!VRx2:*2;
+*!VRx1:*12+ y1+ 78952+ x2;
+*!UN:Cx1/2/?x3;
 
 ***************************************
 **** Swordmaster Acts Twice on R10 ****
@@ -2096,18 +2098,18 @@ if no the bonus is removed.
 
 !!BG:N?i^tum_twice_actingStack^;
 
-!?FU(OnBattleActionEnd)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_abilityCounter_%i(tum_twice_actingStack)^=0/i^tum_reborn_on^<>(TRUE);
+!?FU(OnBattleActionEnd)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_abilityCounter1_%i(tum_twice_actingStack)^=0/i^tum_reborn_on^<>(TRUE);
 !!BMi^tum_twice_actingStack^:Fd~(MON_FLAG_ACTED);
 
 !?FU(OnBeforeBattleStackTurn)&i^battle_round^>=0/i^tum_twice_actingStack^<>(NO_STACK)/i^tum_reborn_on^<>(TRUE);
 !#VA(stack:x);
 
-!!FU&i^tum_abilityCounter_%i(tum_twice_actingStack)^>0:E;
+!!FU&i^tum_abilityCounter1_%i(tum_twice_actingStack)^>0:E;
 
 !!BMi^tum_twice_actingStack^:T?(monType:y) N?(monNum:y);
 !!FU|(monType)=(NO_MON)/(monNum)<=0:E;
 
-!!VRi^tum_abilityCounter_%i(tum_twice_actingStack)^:+1;
+!!VRi^tum_abilityCounter1_%i(tum_twice_actingStack)^:+1;
 !!VR(stack):Si^tum_twice_actingStack^;
 
 ****************************************************************************************
@@ -2608,6 +2610,300 @@ Updated by Archer30 (25.04.24)
   !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/5928157; 5A74DD
 !!en;
 
+****************************
+**** Kongsuni Artifacts ****
+****************************
+// Sctipt by Kongsuni
+
+** Exchange Cloak (261) : When fighting an enemy hero, the stats of the friendly hero and the enemy hero are reversed. (Except the spell power)
+
+** Atma Sword (264) : The lower value of Attack and Defense is adjusted to the higher value.
+** Atma Robe (265) : The lower value of Power and Knowledge is adjusted to the higher value.
+
+**  Cloak of Despair (261) **
+!?BF&1000/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
+
+!!BH0:N?y1;                             [Attacker]
+!!BH1:N?y2;                             [Attacker]
+!!FU&y2=-1:E;
+
+!!HEy1:A2/(ART_EXCHANGE_CLOAK)/?y20/?y21;
+!!HEy2:A2/(ART_EXCHANGE_CLOAK)/?y22/?y23;
+!!FU&y21=0/y23=0:E;
+!!FU&y21>0/y23>0:E;
+
+!!HEy1:F?y11/?y12/?y13/?y14;
+!!HEy2:F?y15/?y16/?y17/?y18;
+
+; Exchange Mana
+!!if&i^tum_reborn_on^<>(TRUE);
+  !!HEy1:I?y31;
+  !!HEy2:I?y32;
+  !!HEy1:Iy32;
+  !!HEy2:Iy31;
+!!en;
+
+!!DO(KO_cape)/0/20/1:Py15/y16;
+!!DO(KO_cape2)/0/20/1:Py11/y12;
+!!DO(KO_cape)/21/41/1:Py11/y12;
+!!DO(KO_cape2)/21/41/1:Py15/y16;
+
+!?FU(KO_cape);
+!!BMx16:T?y1;
+!!FU|y1=145/y1=146/y1=147/y1=148/y1=149:E;                                      [Execlude Warmachines]
+!!BMx16:Adx1;                                                                   [Attack]
+!!BMx16:Ddx2;                                                                   [Defense]
+
+!?FU(KO_cape2);
+!!BMx16:T?y1;
+!!FU|y1=145/y1=146/y1=147/y1=148/y1=149:E;                                      [Execlude Warmachines]
+!!VRy1:Sx1*-1;
+!!VRy2:Sx2*-1;
+!!BMx16:Ady1;                                                                   [Attack]
+!!BMx16:Ddy2;
+
+
+*** Ax of Lord (264) , Armor of abyss (265) **
+
+!?AE1&v998=264/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
+!!HE-1:N?y1;
+!!FU(KO_AXE_equip):Py1;
+
+
+!?AE0&v998=264/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
+!!HE-1:N?y1;
+!!FU(KO_AXE_unequip):Py1;
+
+
+!?FU(KO_AXE_equip);
+!!HEx1:F?y11/?y12/?y13/?y14;
+!!HEx1&y11>y12:Fy11/y11/d0/d0;
+!!HEx1&y12>y11:Fy12/y12/d0/d0;
+!!VRy21:Sy12-y11;
+!!SN:W^k_AXE_Hero%X1^/y21;
+
+!?FU(KO_AXE_unequip);
+!!HEx1:F?y11/?y12/?y13/?y14;
+!!SN:W^k_axe_Hero%X1^/?y21;
+!!VRy5:Sy21*-1;
+!!HEx1&y21>0:Fdy5/y12/d0/d0;
+!!HEx1&y21<0:Fy11/dy21/d0/d0;
+!!HEx1:F?y11/?y12/?y13/?y14;
+!!SN:W^k_AXE_Hero%X1^/0;
+
+
+
+!?AE1&v998=265/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
+!!HE-1:N?y1;
+!!FU(KO_Armor_equip):Py1;
+
+!?AE0&v998=265/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
+!!HE-1:N?y1;
+!!FU(KO_Armor_unequip):Py1;
+
+
+!?FU(KO_Armor_equip);
+!!HEx1:F?y11/?y12/?y13/?y14;
+!!HEx1&y13>y14:Fd0/d0/y13/y13;
+!!HEx1&y14>y13:Fd0/d0/y14/y14;
+!!VRy21:Sy14-y13;
+!!SN:W^k_armor_Hero%X1^/y21;
+
+
+!?FU(KO_Armor_unequip);
+!!HEx1:F?y11/?y12/?y13/?y14;
+!!SN:W^k_armor_Hero%X1^/?y21;
+!!VRy5:Sy21*-1;
+!!HEx1&y21>0:Fd0/d0/dy5/y14;
+!!HEx1&y21<0:Fd0/d0/y13/dy21;
+!!SN:W^k_armor_Hero%X1^/0;
+
+
+!?CM2&i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
+!!HE-1:F?y11/?y12/?y13/?y14;
+!!HE-1:A2/265/?y51/?y52;
+!!HE-1:A2/264/?y53/?y54;
+!!HE-1:N?y1;
+!!FU&y52=0/y54=0:E;
+!!FU(KO_Armor_unequip)&y52=1:Py1;
+!!FU(KO_Armor_equip)&y52=1:Py1;
+!!FU(KO_AXE_unequip)&y54=1:Py1;
+!!FU(KO_AXE_equip)&y54=1:Py1;
+
+***********************
+**** Lightning Rod ****
+***********************
+// Script by Archer30
+// Prevent Chain Lightning to damage own troops. Neglect all the Lightning Bolt and Chain Lightning immunity except for artifact effects
+!?FU(OnSetupBattlefield)&i^tum_emerald_on^;
+!!VRi^tum_%(ART_LIGHTNING_ROD)_equipped_0^:S(FALSE);
+!!VRi^tum_%(ART_LIGHTNING_ROD)_equipped_1^:S(FALSE);
+
+!!re i/(BATTLE_LEFT)/i^battle_hero_vs_hero^;
+  !!HEi^battle_hero_%i^:A2/(ART_LIGHTNING_ROD)/?(has:y)/?(equipped:y);
+
+  !!VRi^tum_%(ART_LIGHTNING_ROD)_equipped_%i^&(equipped):S(TRUE);
+!!en;
+
+// Must be executed later than anything else
+!?FU(OnDwarfMagicResistance_Quit)&i^tum_emerald_on^;
+; For hero casting only
+*!BG:A?(action:y);
+*!FU&(action)<>(BATTLE_ACTION_HERO_CAST):E;
+
+; Check if the spell is a lightning spell
+!!MR:S?(spell:y);
+
+!!if|(spell)=(SPELL_LIGHTNING_BOLT)/(spell)=(SPELL_CHAIN_LIGHTNING);
+  !!MR:N?(stack:y);
+  !!BM(stack):I?(side:y);
+
+  ; Exit if the target stack has any artifact that is immune to 
+  !!if&i^battle_hero_%(side)^>(NO_HERO);
+    !!HE&i^battle_hero_%(side)^:A2/(ART_PENDANT_OF_NEGATIVITY)/?(has:y)/?(equipped:y);
+    !!FU&(equipped)>0:E;
+
+    !!HE&i^battle_hero_%(side)^:A2/(ART_POWER_OF_THE_DRAGON_FATHER)/?(has)/?(equipped);
+    !!FU&(equipped)>0:E;
+
+    !!HE&i^battle_hero_%(side)^:A2/(ART_IONIZED_ARMOR)/?(has)/?(equipped);
+    !!FU&(equipped)>0:E;
+
+    !!if&i^tum_reborn_on^/i^tum_artifactImmunity_%(side)^;
+      !!SN:Mi^tum_artifactImmunity_%(side)^/(spell)/?(isImmune:y);
+      !!FU&(isImmune):E;
+    !!en;
+  !!en;
+
+  ; Set resistance to 100 and exit if the spell is Chain Lightning, the target and the caster is on the same side, with Lightning Rod equipped
+  ; Note: here we get the caster by i^battle_acting_side^. However, this could be wrong, for example - casting Chain lightning on retaliation, BG:Q is still the original attacker
+  !!if&(spell)=(SPELL_CHAIN_LIGHTNING)/i^battle_acting_side^=(side)/i^tum_%(ART_LIGHTNING_ROD)_equipped_%(side)^;
+    !!MR:F100;
+    !!FU:E;
+  !!en;
+
+  ; If any of the side has Lighting Rod, neglect the immunity to lightning
+  !!if|i^tum_%(ART_LIGHTNING_ROD)_equipped_0^/i^tum_%(ART_LIGHTNING_ROD)_equipped_1^;
+    !!MR:F0;
+  !!en;
+!!en;
+
+// Cast Lightning Bolt on every target of Chain Lightning
+!?FU(OnBeforeBattleAction)&i^tum_emerald_on^/i^tum_%(ART_LIGHTNING_ROD)_equipped_%i(battle_acting_side)^;
+!!BG:A?(action:y) S?(spell:y);
+
+!!if&(action)=(BATTLE_ACTION_HERO_CAST)/(spell)=(SPELL_CHAIN_LIGHTNING);
+  ; Get the hero's power and calculate the new power for sub targets
+  !!FU(tum_ManageHeroPowerOfSide):Pi^battle_acting_side^/?(power:y);
+
+  ; Get the school level to cast
+  !!HEi^battle_hero_%i(battle_acting_side)^:Z?(heroStruct:y);
+  !!SN:E5133040/(CALLCONV_THISCALL)/(heroStruct)/(SPELL_LIGHTNING_BOLT)/0;
+  !!VR(level:y):Sv1;
+
+  ; Calculate the damage of Lightning Bolt (artifact bonuses are ignored)
+  !!SS(SPELL_LIGHTNING_BOLT):E(level)/?(spellEffect:y) P?(spellPower:y);
+  !!VRi^tum_%(ART_LIGHTNING_ROD)_damage^:S(spellPower) *(power) +(spellEffect);
+!!en;
+
+!?FU(OnMagicCorrectedResistance)&i^tum_%(ART_LIGHTNING_ROD)_damage^>0;
+!!MR:S?(spell:y);
+
+!!if&(spell)=(SPELL_CHAIN_LIGHTNING);
+  !!MR:N?(targetStack:y);
+  !!BM(targetStack):I?(side:y);
+
+  !!if&(side)<>i^battle_acting_side^;
+    !!BM(targetStack):V37 Ki^tum_%(ART_LIGHTNING_ROD)_damage^;
+  !!en;
+!!en;
+
+!?FU(OnBattleActionEnd)&i^tum_%(ART_LIGHTNING_ROD)_damage^>0;
+!!VRi^tum_%(ART_LIGHTNING_ROD)_damage^:S0;
+
+***************************************************************************
+**** Amulet of the Return of Samsara and Implosion Amplifying Bracelet ****
+***************************************************************************
+// Script by Archer30
+// Amulet of the return of Samsara: When casting resurrection and Animate Dead, it will also be cast on all the other allied units with reduced power.
+// Implosion Amplifying Bracelet: When casting implosion, it will also be cast on all the other hostile units with reduced power.
+!?FU(OnBattleActionEnd)&i^tum_emerald_on^;
+!!BG:A?(action:y);
+
+!!if|(action)=(BATTLE_ACTION_HERO_CAST)/(action)=(BATTLE_ACTION_CANCEL); [for some reason, when a hero casts, it's possible to return BG:A as 0. Yuji is that you??]
+  !!BG:S?(spell:y);
+
+  !!if|(spell)=(SPELL_RESURRECTION)/(spell)=(SPELL_ANIMATE_DEAD);
+    !!FU(tum_CastMassiveSpell):P(spell)/(ART_AMULET_OF_THE_RETURN_OF_SAMSARA)/25;
+  !!el&(spell)=(SPELL_IMPLOSION);
+    !!FU(tum_CastMassiveSpell):P(spell)/(ART_IMPLOSION_AMPLIFYING_BRACELET)/25;
+  !!en;
+!!en;
+
+!?FU(tum_CastMassiveSpell);
+!#VA(spell:x) (art:x) (subTargetPowerPercent:x);
+
+!!BG:H?(hero:y);
+
+; Exit if the casting hero does not have the required artifact
+!!HE(hero):A2/(art)/?(has:y)/?(equipped:y);
+!!FU&(equipped)<=0:E;
+
+; Set up variables. Exit if the spell is neither a friendly or hostile targeting spell
+!!VR(castSide:y):S-1;
+!!SS(spell):O?(targetType:y);
+
+!!if&(targetType)=1;
+  !!VR(castSide):Si^battle_acting_side^;
+!!el&(targetType)=-1;
+  !!VR(castSide):Si^battle_acting_side^ X(TRUE);
+!!en;
+
+!!FU&(castSide)=-1:E;
+
+!!VR(firstStack:y):S(BATTLE_DEFENDER_STACK_FIRST) *(castSide);
+!!VR(lastStack:y):S(firstStack) +(BATTLE_STACKS_PER_SIDE) -1;
+
+; Get the hero's power and calculate the new power for sub targets
+!!VR(maxPower:y):S127;
+!!SN:F^PluginExists^/^Prima^;
+!!VR(maxPower:y)&v1:S249;
+
+!!FU(tum_ManageHeroPowerOfSide):Pi^battle_acting_side^/?(power:y);
+!!VR(newPower:y):S(power) *(subTargetPowerPercent) :100;
+!!VR(newPower)|(newPower)>(maxPower)/(newPower)<1:S1;
+
+; Get the school level to cast
+!!HE(hero):Z?(heroStruct:y);
+!!SN:E5133040/(CALLCONV_THISCALL)/(heroStruct)/(spell)/0;
+!!VR(schoolLvl:y):Sv1;
+
+; Store and set up the side to case
+!!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(combatManager:y);
+!!UN:C(combatManager)/78528/4/?(savedSide:y) C(combatManager)/78528/4/i^battle_acting_side^;
+
+; Loop through one side of battlefield and cast spells with alternative Power
+!!re i/(firstStack)/(lastStack);
+  ; Skip the main target of the spell
+  !!co&i=i^tum_targetStack^;
+
+  ; Check if the stack is eligible to be casted
+  !!BMi:T?(type:y) N?(num:y);
+  !!co|(type)<=(NO_MON)/(type)=(MON_ARROW_TOWERS)/(num)<=0;
+
+  !!FU(tum_Battle_CanStackReceiveSpell):Pi/(spell)/i^battle_acting_side^/?(canReceive:y);
+  !!co&(canReceive)=(FALSE);
+
+  ; Get the position to cast
+  !!BMi:P?(pos:y);
+
+  ; Cast the spell
+  !!SN:E5898560/(CALLCONV_THISCALL)/(combatManager)/(spell)/(pos)/2/-1/(schoolLvl)/(newPower);
+!!en;
+
+; Restore the side to cast
+!!UN:C(combatManager)/78528/4/(savedSide);
+
 ***************************
 **** Horn of the Abyss ****
 ***************************
@@ -2798,299 +3094,49 @@ Updated by Archer30 (25.04.24)
   !!en;
 !!en;
 
-****************************
-**** Kongsuni Artifacts ****
-****************************
-// Sctipt by Kongsuni
-
-** Exchange Cloak (261) : When fighting an enemy hero, the stats of the friendly hero and the enemy hero are reversed. (Except the spell power)
-
-** Atma Sword (264) : The lower value of Attack and Defense is adjusted to the higher value.
-** Atma Robe (265) : The lower value of Power and Knowledge is adjusted to the higher value.
-
-**  Cloak of Despair (261) **
-!?BF&1000/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
-
-!!BH0:N?y1;                             [Attacker]
-!!BH1:N?y2;                             [Attacker]
-!!FU&y2=-1:E;
-
-!!HEy1:A2/(ART_EXCHANGE_CLOAK)/?y20/?y21;
-!!HEy2:A2/(ART_EXCHANGE_CLOAK)/?y22/?y23;
-!!FU&y21=0/y23=0:E;
-!!FU&y21>0/y23>0:E;
-
-!!HEy1:F?y11/?y12/?y13/?y14;
-!!HEy2:F?y15/?y16/?y17/?y18;
-
-; Exchange Mana
-!!if&i^tum_reborn_on^<>(TRUE);
-  !!HEy1:I?y31;
-  !!HEy2:I?y32;
-  !!HEy1:Iy32;
-  !!HEy2:Iy31;
-!!en;
-
-!!DO(KO_cape)/0/20/1:Py15/y16;
-!!DO(KO_cape2)/0/20/1:Py11/y12;
-!!DO(KO_cape)/21/41/1:Py11/y12;
-!!DO(KO_cape2)/21/41/1:Py15/y16;
-
-!?FU(KO_cape);
-!!BMx16:T?y1;
-!!FU|y1=145/y1=146/y1=147/y1=148/y1=149:E;                                      [Execlude Warmachines]
-!!BMx16:Adx1;                                                                   [Attack]
-!!BMx16:Ddx2;                                                                   [Defense]
-
-!?FU(KO_cape2);
-!!BMx16:T?y1;
-!!FU|y1=145/y1=146/y1=147/y1=148/y1=149:E;                                      [Execlude Warmachines]
-!!VRy1:Sx1*-1;
-!!VRy2:Sx2*-1;
-!!BMx16:Ady1;                                                                   [Attack]
-!!BMx16:Ddy2;
-
-
-*** Ax of Lord (264) , Armor of abyss (265) **
-
-!?AE1&v998=264/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
-!!HE-1:N?y1;
-!!FU(KO_AXE_equip):Py1;
-
-
-!?AE0&v998=264/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
-!!HE-1:N?y1;
-!!FU(KO_AXE_unequip):Py1;
-
-
-!?FU(KO_AXE_equip);
-!!HEx1:F?y11/?y12/?y13/?y14;
-!!HEx1&y11>y12:Fy11/y11/d0/d0;
-!!HEx1&y12>y11:Fy12/y12/d0/d0;
-!!VRy21:Sy12-y11;
-!!SN:W^k_AXE_Hero%X1^/y21;
-
-!?FU(KO_AXE_unequip);
-!!HEx1:F?y11/?y12/?y13/?y14;
-!!SN:W^k_axe_Hero%X1^/?y21;
-!!VRy5:Sy21*-1;
-!!HEx1&y21>0:Fdy5/y12/d0/d0;
-!!HEx1&y21<0:Fy11/dy21/d0/d0;
-!!HEx1:F?y11/?y12/?y13/?y14;
-!!SN:W^k_AXE_Hero%X1^/0;
-
-
-
-!?AE1&v998=265/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
-!!HE-1:N?y1;
-!!FU(KO_Armor_equip):Py1;
-
-!?AE0&v998=265/i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
-!!HE-1:N?y1;
-!!FU(KO_Armor_unequip):Py1;
-
-
-!?FU(KO_Armor_equip);
-!!HEx1:F?y11/?y12/?y13/?y14;
-!!HEx1&y13>y14:Fd0/d0/y13/y13;
-!!HEx1&y14>y13:Fd0/d0/y14/y14;
-!!VRy21:Sy14-y13;
-!!SN:W^k_armor_Hero%X1^/y21;
-
-
-!?FU(KO_Armor_unequip);
-!!HEx1:F?y11/?y12/?y13/?y14;
-!!SN:W^k_armor_Hero%X1^/?y21;
-!!VRy5:Sy21*-1;
-!!HEx1&y21>0:Fd0/d0/dy5/y14;
-!!HEx1&y21<0:Fd0/d0/y13/dy21;
-!!SN:W^k_armor_Hero%X1^/0;
-
-
-!?CM2&i^tum_emerald_on^/i^tum_reborn_on^<>(TRUE);
-!!HE-1:F?y11/?y12/?y13/?y14;
-!!HE-1:A2/265/?y51/?y52;
-!!HE-1:A2/264/?y53/?y54;
-!!HE-1:N?y1;
-!!FU&y52=0/y54=0:E;
-!!FU(KO_Armor_unequip)&y52=1:Py1;
-!!FU(KO_Armor_equip)&y52=1:Py1;
-!!FU(KO_AXE_unequip)&y54=1:Py1;
-!!FU(KO_AXE_equip)&y54=1:Py1;
-
-***********************
-**** Lightning Rod ****
-***********************
+**************************
+**** Cape of Silence ****
+**************************
 // Script by Archer30
-// Prevent Chain Lightning to damage own troops. Neglect all the Lightning Bolt and Chain Lightning immunity except for artifact effects
-!?FU(OnSetupBattlefield)&i^tum_emerald_on^;
-!!VRi^tum_%(ART_LIGHTNING_ROD)_equipped_0^:S(FALSE);
-!!VRi^tum_%(ART_LIGHTNING_ROD)_equipped_1^:S(FALSE);
+// Bad implementation as here we haven't correct the text on the screen when casting a forbiddon spell!
+// Disable the cast of level 1 and Level 2 spells for both players
+!?FU(tum_OnCheckStackResistance)&i^tum_%(ART_CAPE_OF_SILENCE)_equipped^;
+!#VA(hook:x);
 
+; Skip if the spell is a high level spell
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EAX)/4/?(spellStruct:y);
+!!UN:C(spellStruct)/24/4/?(level:y);
+!!FU&(level)>2:E;
+
+; If positive, set new redirection address
+!!SN:X?t/0;
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/5932089;
+
+!?FU(tum_OnShowHeroSpellBook2);
+!#VA(hook:x);
+
+; Skip if the spell is a high level spell
+!!UN:C(hook)/(STRUCT_HOOK_CONTEXT_EAX)/4/?(level:y);
+!!FU&(level)>2:E;
+
+; Check if any of the hero has Cape of Silence
 !!re i/(BATTLE_LEFT)/i^battle_hero_vs_hero^;
-  !!HEi^battle_hero_%i^:A2/(ART_LIGHTNING_ROD)/?(has:y)/?(equipped:y);
+  !!HEi^battle_hero_%i^:A2/(ART_CAPE_OF_SILENCE)/?(has:y)/?(equipped:y);
 
-  !!VRi^tum_%(ART_LIGHTNING_ROD)_equipped_%i^&(equipped):S(TRUE);
+  !!br&(equipped)>0;
 !!en;
 
-// Must be executed later than anything else
-!?FU(OnDwarfMagicResistance_Quit)&i^tum_emerald_on^;
-; For hero casting only
-*!BG:A?(action:y);
-*!FU&(action)<>(BATTLE_ACTION_HERO_CAST):E;
+; If positive
+!!if&i<=i^battle_hero_vs_hero^;
+  ; Show msg
+  !!HEi^battle_hero_%i(battle_current_side)^:B0/?(heroName:z);
+  !!SN:T^Third_Upgrade_Mod.capeOfSilenceMain^/?(msg:z)/^hero^/(heroName);
+  !!IF:M^%(msg)^;
 
-; Check if the spell is a lightning spell
-!!MR:S?(spell:y);
-
-!!if|(spell)=(SPELL_LIGHTNING_BOLT)/(spell)=(SPELL_CHAIN_LIGHTNING);
-  !!MR:N?(stack:y);
-  !!BM(stack):I?(side:y);
-
-  ; Exit if the target stack has any artifact that is immune to 
-  !!if&i^battle_hero_%(side)^>(NO_HERO);
-    !!HE&i^battle_hero_%(side)^:A2/(ART_PENDANT_OF_NEGATIVITY)/?(has:y)/?(equipped:y);
-    !!FU&(equipped)>0:E;
-
-    !!HE&i^battle_hero_%(side)^:A2/(ART_POWER_OF_THE_DRAGON_FATHER)/?(has)/?(equipped);
-    !!FU&(equipped)>0:E;
-
-    !!HE&i^battle_hero_%(side)^:A2/(ART_IONIZED_ARMOR)/?(has)/?(equipped);
-    !!FU&(equipped)>0:E;
-
-    !!if&i^tum_reborn_on^;
-      !!SN:Mi^tum_artifactImmunity_%(side)^/(spell)/?(isImmune:y);
-      !!FU&(isImmune):E;
-    !!en;
-  !!en;
-
-  ; Set resistance to 100 and exit if the spell is Chain Lightning, the target and the caster is on the same side, with Lightning Rod equipped
-  ; Note: here we get the caster by i^battle_acting_side^. However, this could be wrong, for example - casting Chain lightning on retaliation, BG:Q is still the original attacker
-  !!if&(spell)=(SPELL_CHAIN_LIGHTNING)/i^battle_acting_side^=(side)/i^tum_%(ART_LIGHTNING_ROD)_equipped_%(side)^;
-    !!MR:F100;
-    !!FU:E;
-  !!en;
-
-  ; If any of the side has Lighting Rod, neglect the immunity to lightning
-  !!if|i^tum_%(ART_LIGHTNING_ROD)_equipped_0^/i^tum_%(ART_LIGHTNING_ROD)_equipped_1^;
-    !!MR:F0;
-  !!en;
+  ; set new redirection address
+  !!SN:X?t/0;
+  !!UN:C(hook)/(STRUCT_HOOK_CONTEXT_RET)/4/5893963;
 !!en;
-
-// Cast Lightning Bolt on every target of Chain Lightning
-!?FU(OnBeforeBattleAction)&i^tum_emerald_on^/i^tum_%(ART_LIGHTNING_ROD)_equipped_%i(battle_acting_side)^;
-!!BG:A?(action:y) S?(spell:y);
-
-!!if&(action)=(BATTLE_ACTION_HERO_CAST)/(spell)=(SPELL_CHAIN_LIGHTNING);
-  ; Get the hero's power and calculate the new power for sub targets
-  !!FU(tum_ManageHeroPowerOfSide):Pi^battle_acting_side^/?(power:y);
-
-  ; Get the school level to cast
-  !!HEi^battle_hero_%i(battle_acting_side)^:Z?(heroStruct:y);
-  !!SN:E5133040/(CALLCONV_THISCALL)/(heroStruct)/(SPELL_LIGHTNING_BOLT)/0;
-  !!VR(level:y):Sv1;
-
-  ; Calculate the damage of Lightning Bolt (artifact bonuses are ignored)
-  !!SS(SPELL_LIGHTNING_BOLT):E(level)/?(spellEffect:y) P?(spellPower:y);
-  !!VRi^tum_%(ART_LIGHTNING_ROD)_damage^:S(spellPower) *(power) +(spellEffect);
-!!en;
-
-!?FU(OnMagicCorrectedResistance)&i^tum_%(ART_LIGHTNING_ROD)_damage^>0;
-!!MR:S?(spell:y);
-
-!!if&(spell)=(SPELL_CHAIN_LIGHTNING);
-  !!MR:N?(targetStack:y);
-  !!BM(targetStack):I?(side:y);
-
-  !!if&(side)<>i^battle_acting_side^;
-    !!BM(targetStack):V37 Ki^tum_%(ART_LIGHTNING_ROD)_damage^;
-  !!en;
-!!en;
-
-!?FU(OnBattleActionEnd)&i^tum_%(ART_LIGHTNING_ROD)_damage^>0;
-!!VRi^tum_%(ART_LIGHTNING_ROD)_damage^:S0;
-
-***************************************************************************
-**** Amulet of the Return of Samsara and Implosion Amplifying Bracelet ****
-***************************************************************************
-// Script by Archer30
-// Amulet of the return of Samsara: When casting resurrection and Animate Dead, it will also be cast on all the other allied units with reduced power.
-// Implosion Amplifying Bracelet: When casting implosion, it will also be cast on all the other hostile units with reduced power.
-!?FU(OnBattleActionEnd)&i^tum_emerald_on^;
-!!BG:A?(action:y);
-
-!!if|(action)=(BATTLE_ACTION_HERO_CAST)/(action)=(BATTLE_ACTION_CANCEL); [for some reason, when a hero casts, it's possible to return BG:A as 0. Yuji is that you??]
-  !!BG:S?(spell:y);
-
-  !!if|(spell)=(SPELL_RESURRECTION)/(spell)=(SPELL_ANIMATE_DEAD);
-    !!FU(tum_CastMassiveSpell):P(spell)/(ART_AMULET_OF_THE_RETURN_OF_SAMSARA)/25;
-  !!el&(spell)=(SPELL_IMPLOSION);
-    !!FU(tum_CastMassiveSpell):P(spell)/(ART_IMPLOSION_AMPLIFYING_BRACELET)/25;
-  !!en;
-!!en;
-
-!?FU(tum_CastMassiveSpell);
-!#VA(spell:x) (art:x) (subTargetPowerPercent:x);
-
-!!BG:H?(hero:y);
-
-; Exit if the casting hero does not have the required artifact
-!!HE(hero):A2/(art)/?(has:y)/?(equipped:y);
-!!FU&(equipped)<=0:E;
-
-; Set up variables. Exit if the spell is neither a friendly or hostile targeting spell
-!!VR(castSide:y):S-1;
-!!SS(spell):O?(targetType:y);
-
-!!if&(targetType)=1;
-  !!VR(castSide):Si^battle_acting_side^;
-!!el&(targetType)=-1;
-  !!VR(castSide):Si^battle_acting_side^ X(TRUE);
-!!en;
-
-!!FU&(castSide)=-1:E;
-
-!!VR(firstStack:y):S(BATTLE_DEFENDER_STACK_FIRST) *(castSide);
-!!VR(lastStack:y):S(firstStack) +(BATTLE_STACKS_PER_SIDE) -1;
-
-; Get the hero's power and calculate the new power for sub targets
-!!VR(maxPower:y):S127;
-!!SN:F^PluginExists^/^Prima^;
-!!VR(maxPower:y)&v1:S249;
-
-!!FU(tum_ManageHeroPowerOfSide):Pi^battle_acting_side^/?(power:y);
-!!VR(newPower:y):S(power) *(subTargetPowerPercent) :100;
-!!VR(newPower)|(newPower)>(maxPower)/(newPower)<1:S1;
-
-; Get the school level to cast
-!!HE(hero):Z?(heroStruct:y);
-!!SN:E5133040/(CALLCONV_THISCALL)/(heroStruct)/(spell)/0;
-!!VR(schoolLvl:y):Sv1;
-
-; Store and set up the side to case
-!!UN:C(COMBAT_MANAGER)/(UNC_INT)/?(combatManager:y);
-!!UN:C(combatManager)/78528/4/?(savedSide:y) C(combatManager)/78528/4/i^battle_acting_side^;
-
-; Loop through one side of battlefield and cast spells with alternative Power
-!!re i/(firstStack)/(lastStack);
-  ; Skip the main target of the spell
-  !!co&i=i^tum_targetStack^;
-
-  ; Check if the stack is eligible to be casted
-  !!BMi:T?(type:y) N?(num:y);
-  !!co|(type)<=(NO_MON)/(type)=(MON_ARROW_TOWERS)/(num)<=0;
-
-  !!FU(tum_Battle_CanStackReceiveSpell):Pi/(spell)/i^battle_acting_side^/?(canReceive:y);
-  !!co&(canReceive)=(FALSE);
-
-  ; Get the position to cast
-  !!BMi:P?(pos:y);
-
-  ; Cast the spell
-  !!SN:E5898560/(CALLCONV_THISCALL)/(combatManager)/(spell)/(pos)/2/-1/(schoolLvl)/(newPower);
-!!en;
-
-; Restore the side to cast
-!!UN:C(combatManager)/78528/4/(savedSide);
 
 **************************
 **** Ring of Oblivion ****

@@ -1,7 +1,6 @@
 # Third Upgrade Mod Reborn
 
 ## Please do not add this mod to the ERA Mod Browser, as it is still under development, and English language support is incomplete!
-
 ATTENTION: Third Upgrades Mod requires "Visual Studio Redistributable" download it in official Microsoft page.
 
 
@@ -13,27 +12,27 @@ Third Upgrade Mod: Reborn is a branch of TUM official, developed by Archer30 the
 
 Note: TUM - Reborn Edition is currently being actively developed. Please report any issue you found to Archer30 in order to have them fixed in the update release.
 
---------------------------------------------------------------------------------------------------
-
-TUM can only be used in single player games or co-op multiplayer games.
---------------------------------------------------------------------------------------------------
 
 Credits:
 
 Archer30: Author, idea and scripting.
 VMaiko: Author, idea and graphics.
 PerryR: ERM author and scripting.
-Berserker: Scripting.
-Majaczek: Plugins (Amethyst and Emerald).
+Berserker: Scripting, idea.
+Majaczek: Plugins.
+SadnessPower: Plugins.
 Andruids: Graphics.
 Fiorin: Graphics.
 Moriarty89: Graphics.
 FanOfHeroes: Graphics.
 Dalion: Graphics.
-Toriko:Graphics.
+Toriko：Graphics.
 Avatar: Sounds and Graphics resources.
 FirePaladin: Graphics.
+yogdush: Graphics.
+Aphra: Graphics.
 ElfbI: New Pandora Boxes.
+Ash&Amber: Tester.
 
 Original authors of Horn of the Abyss mod which their assets were used to do this mod:
 
@@ -50,6 +49,9 @@ Drwal - 2d Artist.
 Khemiel - 2d Artist.
 avatar - json guy.
 
+Original authors of Master of Puppets mod which their assets were used to do this mod:
+
+MoP
 
 
 This mod uses Fred79's Object Patch and part of the terrain objects are tied to RMG.

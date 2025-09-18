@@ -35,6 +35,6 @@
     "hintBuild": "{建造 @buildName@}",
     "hintRecruit":  "招募 @monName@. {每周增长: @totalGrowth@ .}",
 
-    "disabled": "第8生物已被禁用。\n\n请从WOG选项的第一页中启用此选项。"
+    "disabled": "第八生物选项已被禁用。\n\n请从WOG选项的第一页中启用此选项。"
   }
 }

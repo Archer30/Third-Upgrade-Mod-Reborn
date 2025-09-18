@@ -33,7 +33,10 @@
 		"hota0": 							"Sea spirits approach, drawn by the horn's call. @num@ @mon@ join @hero@'s army.",
 		"hota1": 							"Sea spirits approach, drawn by the horn's call. @num@ @mon@ joins @hero@'s army.",
 
+		"recantersCloak":					"The @art@ prevents casting 3rd level or higher spells",
 		"orbOfInhibition": 					"The @art@ prevents all spellcasting",
+		"capeOfSilenceMain":				"The @art@ prevents @hero@ from casting 2nd level or lower spells.",
+		"capeOfSilence":					"The @art@ prevents casting 2nd level or lower spells"
 
 	},
 			
